@@ -1,4 +1,4 @@
-export const revalidate = 0 // seconds before a MISS (300 is 5 minutes)
+export const revalidate = 300 // seconds before a MISS (300 is 5 minutes)
 import fs from "fs"
 import path from "path"
 import Cartographer from "@/components/cartographer"
@@ -7,11 +7,6 @@ import db from "@/lib/db"
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3"
 import { redirect } from "next/navigation"
 import { combineAndDownload, important } from "@/lib/utils"
-
-console.log("credential check", process.env)
-console.log("CF_ACCOUNT_ID", process.env.CF_ACCOUNT_ID)
-console.log("CF_ACCESS_ID", process.env.CF_ACCESS_ID)
-console.log("CF_ACCESS_SECRET", process.env.CF_ACCESS_SECRET)
 const s3 = new S3Client({
   region: "auto",
   endpoint: `https://${process.env.CF_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -20,8 +15,6 @@ const s3 = new S3Client({
     secretAccessKey: process.env.CF_ACCESS_SECRET,
   },
 })
-console.log("s3", s3)
-
 
 /*
   This route is similar to /app/[map]/page.jsx
@@ -32,8 +25,6 @@ console.log("s3", s3)
 // TODO: should do some sort of try catch here
 export default async function mapLobby({ params }) {
   const { map, id } = await params
-  console.log("params", map, id)
-
 
   const isUUID = id.length === 36
 
@@ -45,8 +36,6 @@ export default async function mapLobby({ params }) {
   const mapDB = await db.map.findUnique({
     where: { id },
   })
-  console.log("mapDB", mapDB)
-
   if (isUUID && !mapDB) {
     // probably a new map that's not in the cache yet
 
@@ -60,7 +49,6 @@ export default async function mapLobby({ params }) {
     Key: id,
     ResponseContentType: "application/json",
   })
-  console.log("command", command)
   const response = await s3.send(command)
 
 
@@ -101,9 +89,6 @@ export default async function mapLobby({ params }) {
     }
     f.id = fid++
   })
-
-  console.log("finished!!!", data)
-
 
   return <Cartographer data={data} name={map} fid={fid} stargazer />
 }
