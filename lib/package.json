@@ -1,0 +1,19 @@
+{
+  "name": "data-scripts",
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=../.env upload.js",
+    "svg": "node svg.js",
+    "starwars": "node starwars.cjs",
+    "sprite": "node sprite.js"
+  },
+  "dependencies": {
+    "@elastic/spritezero": "^6.2.1",
+    "@mapbox/spritezero": "^8.0.3",
+    "d3-geo": "^3.1.1",
+    "fs-extra": "^11.3.0",
+    "jsdom": "^26.0.0",
+    "pg": "^8.13.3",
+    "topojson-client": "^3.1.0"
+  }
+}
