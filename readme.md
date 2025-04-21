@@ -1,7 +1,7 @@
-# 🗺️ Stargazer - Sci-Fi Maps
-> A spot for any RPG community to create accurate maps
+# 🗺️ Stargazer
+> create accurate Sci-Fi maps
 
-# 👉 [Start Stargazing](https://stargazer.vercel.app/)
+## 👉 [Start Stargazing](https://stargazer.vercel.app/)
 
 ### 🤔 Why?
 Most maps are just static images. These have a few issues
