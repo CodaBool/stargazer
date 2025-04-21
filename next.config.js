@@ -1,7 +1,3 @@
-/** @type {import('next').NextConfig} */
-// import path from "path"
-
-
 const nextConfig = {
   async headers() {
     return [
@@ -21,7 +17,7 @@ const nextConfig = {
             value: "Content-Type, Authorization",
           },
         ],
-      }
+      },
     ]
   },
   // reactStrictMode: false,
