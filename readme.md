@@ -19,4 +19,4 @@ In addition to the goal of consolidating map data. I will be creating my own sty
 If you want to create your own map. Or just make general use of the TopoJSON I'd recommend picking up [maplibre](https://maplibre.org). Then using my code as an example.
 
 ## 📅 Upcoming
-There is still a lot of polish needed for `Lancer`, `Fallout`, and `Star Wars`. Once that's done I will work towards `Alien` and `Cyberpunk`
+There's still a lot of polish needed for `Lancer`, `Fallout`, and `Star Wars`. Once that's done I will work towards `Alien` and `Cyberpunk`
