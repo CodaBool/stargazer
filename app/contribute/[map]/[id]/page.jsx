@@ -75,7 +75,7 @@ export default async function Location({ params, searchParams }) {
   DOMPurify.addHook('afterSanitizeElements', node => {
     if (node.tagName === 'A') {
       // check if relative, trusted, or already altered link
-      if (!node.href.startsWith("/") && !node.href.startsWith('https://starlazer.vercel.app/')) {
+      if (!node.href.startsWith("/") && !node.href.startsWith('https://stargazer.vercel.app/')) {
         // give a prompt that the link is external
         const href = new URLSearchParams({ url: node.href }).toString()
         node.setAttribute('href', `/link?${href}`)

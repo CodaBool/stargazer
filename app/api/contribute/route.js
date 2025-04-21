@@ -62,8 +62,8 @@ export async function POST(req) {
       }).toString()
 
       let html = `
-        <h1><a href="https://starlazer.vercel.app/contribute/${body.map}/${locationId}">${body.map.toUpperCase()}</a></h1>
-        <a href="https://starlazer.vercel.app/api/contribute?type=${body.table}&id=${response.id}&secret=${process.env.EMAIL_SECRET}">approve</a>
+        <h1><a href="https://stargazer.vercel.app/contribute/${body.map}/${locationId}">${body.map.toUpperCase()}</a></h1>
+        <a href="https://stargazer.vercel.app/api/contribute?type=${body.table}&id=${response.id}&secret=${process.env.EMAIL_SECRET}">approve</a>
         <h1>User</h1>
         <p><strong>userId:</strong> ${user.id}</p>
         <p><strong>email:</strong> ${session.user.email}</p>

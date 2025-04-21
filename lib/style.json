@@ -8,7 +8,7 @@
       "url": "https://tiles.basemaps.cartocdn.com/vector/carto.streets/v1/tiles.json"
     }
   },
-  "sprite": "https://raw.githubusercontent.com/CodaBool/starlibre/refs/heads/main/public/svg/spritesheet",
+  "sprite": "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/svg/spritesheet",
   "glyphs": "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
   "layers": [
     {

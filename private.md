@@ -59,10 +59,6 @@ npx mapshaper *.json \
 - contribute pages (save for later)
 - measure broken on mobile
 - look into why @mapbox/mapbox-gl-draw can't be used again
-- replace back some of the stargazer -> https://starlazer.vercel.app/ changes
-  - https://github.com/CodaBool/starlaser/blob/976af63a5b5b86634afad0d7f2767656d007b46f/app/api/auth/[...nextauth]/route.js#L15
-  - https://github.com/CodaBool/starlaser/blob/976af63a5b5b86634afad0d7f2767656d007b46f/app/api/contribute/route.js#L63
-  - https://github.com/CodaBool/starlaser/blob/976af63a5b5b86634afad0d7f2767656d007b46f/app/contribute/[map]/[id]/page.jsx#L78
 
 
 # menu items needed

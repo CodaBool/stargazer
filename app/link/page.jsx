@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 export default async function Page({ searchParams }) {
   const { url } = searchParams
 
-  if (url.startsWith('https://starlazer.vercel.app/') || !url.startsWith('https://')) {
+  if (url.startsWith('https://stargazer.vercel.app/') || !url.startsWith('https://')) {
     redirect(url)
   }
 

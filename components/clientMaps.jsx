@@ -368,7 +368,7 @@ export function CloudMaps({ maps, revalidate, mapName }) {
               ? <>
                 <Check className="inline text-blue-300 relative top-[-3px] ms-1" />
                 {navigator.clipboard
-                  ? <Button size="sm" className="cursor-pointer rounded" variant="ghost" onClick={() => navigator.clipboard.writeText(`https://starlazer.vercel.app/${map.map}/${map.id}`)}><Copy />Share Code</Button>
+                  ? <Button size="sm" className="cursor-pointer rounded" variant="ghost" onClick={() => navigator.clipboard.writeText(`https://stargazer.vercel.app/${map.map}/${map.id}`)}><Copy />Share Code</Button>
                   : <Input value={map.id} readOnly className="inline ms-2 w-20" />
                 }
               </>
