@@ -128,7 +128,6 @@ export default function Menu({ path, params }) {
         <MenubarMenu>
           <MenubarTrigger className="cursor-pointer">Account</MenubarTrigger  >
           <MenubarContent>
-            <MenubarSeparator />
             <Link href="/profile">
               <MenubarItem className="cursor-pointer pl-[.98em]">
                 <User size={18} className="inline mr-1" /> Profile
