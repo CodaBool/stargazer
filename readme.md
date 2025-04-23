@@ -1,7 +1,7 @@
 # 🗺️ Stargazer
 > create accurate Sci-Fi maps
 
-## 👉 [Start Stargazing](https://stargazer.vercel.app/)
+## 👉 [Start Stargazing](https://stargazer.vercel.app)
 
 ### 🤔 Why?
 Most maps are just static images. These have a few issues

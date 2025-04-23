@@ -225,7 +225,8 @@ function Credits({ name }) {
       </span>
       <span className="text-center block text-[dimgray] mt-4">Created with <Heart size={14} className="inline" /> by <Link href={`/easteregg?redirect=${window?.location?.href || "/" + name}`} style={{ color: "#60677c" }}>CodaBool</Link></span>
       {name.includes("lancer") && <span className="text-center block text-[dimgray] mt-4">Stargazer is not an official Lancer product<br />Lancer is copyright Massif Press</span>}
-      {name === "fallout" && <span className="text-center block text-[dimgray] mt-4">Stargazer is not an official Fallout product<br />Fallout is copyright Bethesda Softworks</span>}
+      {name === "fallout" && <span className="text-center block text-[dimgray] mt-4">This project is a fan-made, non-commercial work and is not affiliated with, endorsed by, or associated with Bethesda Softworks. "Fallout" and all related names, logos, and intellectual property are trademarks or registered trademarks of Bethesda Softworks. This work is intended for entertainment and educational purposes only</span>}
+      {name === "starwars" && <span className="text-center block text-[dimgray] mt-4">This is an unofficial, fan-made project with no affiliation to Lucasfilm. "Star Wars" and all associated names, logos, and intellectual property are trademarks or registered trademarks of Lucasfilm. This project is non-commercial and created solely for fan enjoyment and educational purposes.</span>}
     </>
   )
 }
