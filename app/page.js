@@ -36,11 +36,16 @@ export default function page() {
           <Card className="max-w-[150px] cursor-pointer lg:max-w-[269px] rounded-xl m-1">
             <CardContent className="p-2">
               <StarsBackground>
-                <Image
+                <CardDescription className="text-center w-[243px] h-[243px]">
+                  <div className="flex items-center justify-center w-full h-full">
+                    <span className="text-center text-5xl text-white">FALLOUT</span>
+                  </div>
+                </CardDescription>
+                {/* <Image
                   src={falloutTitle}
                   alt="Fallout Map"
                   className="hover-grow rounded-xl"
-                />
+                /> */}
               </StarsBackground>
             </CardContent>
           </Card >
@@ -49,11 +54,16 @@ export default function page() {
           <Card className="max-w-[150px] cursor-pointer lg:max-w-[269px] rounded-xl m-1">
             <CardContent className="p-2">
               <StarsBackground>
-                <Image
+                <CardDescription className="text-center w-[243px] h-[243px]">
+                  <div className="flex items-center justify-center w-full h-full">
+                    <span className="text-center text-4xl text-white">STARWARS</span>
+                  </div>
+                </CardDescription>
+                {/* <Image
                   src={starwarsTitle}
                   alt="Starwars Map"
                   className="hover-grow rounded-xl"
-                />
+                /> */}
               </StarsBackground>
             </CardContent>
           </Card >
@@ -68,11 +78,16 @@ export default function page() {
             </CardHeader>
             <CardContent className="p-2">
               <StarsBackground>
-                <Image
+                <CardDescription className="text-center w-[182px] h-[182px]">
+                  <div className="flex items-center justify-center w-[182px] h-[182px]">
+                    <span className="text-center text-3xl text-white">CYBERPUNK</span>
+                  </div>
+                </CardDescription>
+                {/* <Image
                   src={cyberpunkTitle}
                   alt="Cyberpunk RED Map"
                   className="hover-grow rounded-xl"
-                />
+                /> */}
               </StarsBackground>
             </CardContent>
           </Card >
@@ -84,11 +99,17 @@ export default function page() {
             </CardHeader>
             <CardContent className="p-2">
               <StarsBackground>
-                <Image
+
+                <CardDescription className="text-center w-[182px] h-[182px]">
+                  <div className="flex items-center justify-center w-[182px] h-[182px]">
+                    <span className="text-center text-4xl text-white">ALIEN</span>
+                  </div>
+                </CardDescription>
+                {/* <Image
                   src={alienTitle}
                   alt="Alien map"
                   className="hover-grow rounded-xl"
-                />
+                /> */}
               </StarsBackground>
             </CardContent>
           </Card >
@@ -100,11 +121,16 @@ export default function page() {
             </CardHeader>
             <CardContent className="p-2">
               <StarsBackground>
-                <Image
+                <CardDescription className="text-center w-[182px] h-[182px]">
+                  <div className="flex items-center justify-center w-[182px] h-[182px]">
+                    <span className="text-center text-2xl text-white">WARHAMMER</span>
+                  </div>
+                </CardDescription>
+                {/* <Image
                   src={warhammerTitle}
                   alt="Warhammer 40K map"
                   className="hover-grow rounded-xl"
-                />
+                /> */}
               </StarsBackground>
             </CardContent>
           </Card >
