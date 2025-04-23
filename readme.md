@@ -21,3 +21,13 @@ If you want to create your own map. Or just make general use of the TopoJSON I'd
 
 ### 📅 Upcoming
 There's still a lot of polish needed for `Lancer`, `Fallout`, and `Star Wars`. Once that's done I will work towards `Alien` and `Cyberpunk`
+
+### Legal
+#### Lancer
+Stargazer is not an official Lancer product; it is a third party work, and is not affiliated with Massif Press. Stargazer is published via the Lancer Third Party License.
+
+#### Fallout
+This project is a fan-made, non-commercial work and is not affiliated with, endorsed by, or associated with Bethesda Softworks. "Fallout" and all related names, logos, and intellectual property are trademarks or registered trademarks of Bethesda Softworks. This work is intended for entertainment and educational purposes only
+
+#### Star Wars
+This is an unofficial, fan-made project with no affiliation to Lucasfilm. "Star Wars" and all associated names, logos, and intellectual property are trademarks or registered trademarks of Lucasfilm. This project is non-commercial and created solely for fan enjoyment and educational purposes.

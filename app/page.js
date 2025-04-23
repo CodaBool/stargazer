@@ -12,11 +12,12 @@ import warhammerTitle from '@/public/warhammer_40k_title.webp'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import StarsBackground from "@/components/ui/starbackground"
+import Legal from "@/components/legal"
 
 export default function page() {
   return (
     <>
-      <h1 className="text-5xl my-2 text-center">Sci-Fi Maps</h1 >
+      <h1 className="text-5xl my-2 text-center">Unofficial Maps</h1 >
       <div className="container mx-auto flex flex-wrap justify-center">
         <Link href="/lancer">
           <Card className="max-w-[150px] cursor-pointer lg:max-w-[269px] rounded-xl m-1">
@@ -109,6 +110,7 @@ export default function page() {
           </Card >
         </Link>
       </div>
+      <Legal />
     </>
   )
 }
