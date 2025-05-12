@@ -1,0 +1,64 @@
+/* General styles */
+.markdown {
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  line-height: 1.6;
+  color: #e9f4ff;
+}
+
+/* Bold */
+.markdown b,
+.markdown strong {
+  font-weight: 600;
+}
+
+/* Italics */
+.markdown i,
+.markdown em {
+  font-style: italic;
+}
+
+/* Links */
+.markdown a {
+  color: #99c9ff;
+  text-decoration: none;
+}
+
+.markdown a:hover {
+  text-decoration: underline;
+}
+
+/* Headers */
+.markdown h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0.6rem 0;
+  border-bottom: 1px solid #3e5a79;
+  padding-bottom: 0.2rem;
+}
+
+.markdown h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0.4rem 0;
+  border-bottom: 1px solid #3e5a79;
+  padding-bottom: 0.1rem;
+  color: #e5f1ff;
+}
+
+/* Blockquote */
+.markdown blockquote {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  border-left: 4px solid #dfe2e5;
+  color: #bcc7d8;
+  background-color: #171e25;
+  font-style: italic;
+}
