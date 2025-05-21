@@ -20,7 +20,7 @@ const nextConfig = {
       },
     ]
   },
-  // reactStrictMode: false,
+  reactStrictMode: false,
   // experimental: {
   //   // outputFileTracingRoot: path.join(__dirname),
   //   outputFileTracingIncludes: {

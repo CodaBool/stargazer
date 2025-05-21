@@ -43,7 +43,7 @@ export default async function Export({ params }) {
       <div className='flex flex-col md:flex-row'>
         <h1 className='md:text-6xl text-4xl inline md:me-4'>{map.charAt(0).toUpperCase() + map.slice(1)}</h1>
         <div className='flex flex-col md:flex-row mt-4 justify-start'>
-          <Link href={`/${map}/form`} className='md:mx-4'>
+          <Link href={`/${map}/${map === "custom" ? "form" : "?new=1"}`} className='md:mx-4'>
             <Button className="cursor-pointer rounded pr-[1.8em] relative top-[-8px] w-full mb-2" variant="secondary"><Plus /> New </Button>
           </Link>
 
