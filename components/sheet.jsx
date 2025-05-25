@@ -18,29 +18,12 @@ import { useEffect } from "react"
 import SolarSystemDiagram from "./solarSystem.jsx"
 import seedrandom from 'seedrandom'
 
-export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, coordinates, name, selected, width }) {
+const MAX_GEN_LOCATIONS = 8
+
+export default function SheetComponent({ setDrawerOpen, drawerOpen, myGroup, nearbyGroups, coordinates, name, selectedId, height }) {
   const { map } = useMap()
   const { UNIT } = getConsts(name)
-  const sel = locations?.find(loc => loc.properties.name === selected)
-  if (sel) console.log(selected, "system",)
-
-  function handleMouseOver({ id }) {
-    map.setFeatureState(
-      { source: 'source', id },
-      { hover: true }
-    )
-  }
-
-  function handleMouseOut({ id }) {
-    map.setFeatureState(
-      { source: 'source', id },
-      { hover: false }
-    )
-  }
-
-  function handle(e) {
-    e.preventDefault()
-  }
+  const GROUP_NAME = UNIT === "ly" ? "Solar Systems" : "Locations"
 
   useEffect(() => {
 
@@ -73,36 +56,54 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
     }
   }, [drawerOpen])
 
-  if (!sel) {
-    return null
+  if (!coordinates) return null
+  const local = generateLocations(myGroup)
+  const nearby = nearbyGroups.map(g => generateLocations(g))
+
+  console.log("local", local)
+  console.log("nearby", nearby)
+
+  function handleMouseOver({ id }) {
+    map.setFeatureState(
+      { source: 'source', id },
+      { hover: true }
+    )
   }
-  const system = generateSystem(selected + sel?.geometry.coordinates.toString())
+
+  function handleMouseOut({ id }) {
+    map.setFeatureState(
+      { source: 'source', id },
+      { hover: false }
+    )
+  }
+
+  function handle(e) {
+    e.preventDefault()
+  }
+
+
 
   return (
     <Sheet onOpenChange={setDrawerOpen} open={drawerOpen} modal={false} style={{ color: 'white' }}>
       <SheetContent side="bottom" style={{ maxHeight: '38vh', overflowY: 'auto', minHeight: '38vh' }} className="map-sheet" onPointerDownOutside={handle}>
         <SheetHeader >
           <SheetTitle className="text-center">{coordinates ? `${UNIT === "ly" ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${UNIT === "ly" ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}</SheetTitle>
-          {locations?.length > 1 && <SheetDescription className="text-center" >Nearby Locations</SheetDescription>}
+          {nearby.length > 1 && <SheetDescription className="text-center" >{nearby.length} Nearby {GROUP_NAME}</SheetDescription>}
         </SheetHeader >
-        <SolarSystemDiagram bodies={system} />
 
-        {/* <SolarSystemDiagram bodies={[
-          {
-            type: "lancer/ringed_planet",
-            name: "ring guy",
-            size: 80,
-            tint: "red",
-            moons: [
-              { name: "moon 1", size: 12 },
-              { name: "moon 2", size: 12 },
-              { name: "moon 3", size: 12 },
-              { name: "moon 4", size: 12 },
-              { name: "moon 5", size: 12 },
-              { name: "moon 6", size: 12 },
-            ],
-          },
-        ]} /> */}
+        <SolarSystemDiagram group={local} height={height} />
+        <hr />
+        {nearby.length > 0 && (
+          <>
+            <h1 className="text-center text-2xl my-4">Nearby {GROUP_NAME}</h1>
+            {nearby.map((group, index) => (
+              <div key={index}>
+                <SolarSystemDiagram group={group} height={height} />
+                {index + 1 !== nearby.length && <hr />}
+              </div>
+            ))}
+          </>
+        )}
       </SheetContent>
     </Sheet>
   )
@@ -175,18 +176,40 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
 }
 
 
-function generateSystem(seed) {
-  const rng = seedrandom(seed);
-  const random = () => rng();
+function generateLocations(group) {
+  const seed = group[0].geometry.coordinates.toString()
+  const rng = seedrandom(seed)
+  const random1 = () => rng()
 
-  const numPlanets = Math.floor(random() * 9) + 2;
-  const planets = []
+  const numToGen = Math.floor(range(random1, [1, MAX_GEN_LOCATIONS])) - group.length
+  // if (numToGen > 0) console.log("will generate", numToGen, "locations for", group)
 
-  for (let i = 0; i < numPlanets; i++) {
-    planets.push(generatePlanet(seed + i))
+  const locations = []
+  const starLocation = group.find(l => l.properties.type === "star")
+  locations.push(generateStar(seed + `${starLocation?.properties.name || ""}`))
+  if (starLocation) {
+    locations[0] = { ...locations[0], name: starLocation.properties.name }
   }
 
-  return planets
+  for (const location of group) {
+    const type = location.properties.type
+    if (type === "star") continue
+    locations.push({
+      name: location.properties.name,
+      type,
+      threejs: {
+        type,
+      },
+      icon: iconMap[type],
+      tint: tintMap[type] || "gray",
+    })
+  }
+
+  for (let i = 0; i < numToGen; i++) {
+    locations.push(generateLocation(seed + i))
+  }
+
+  return locations
 }
 
 const iconMap = {
@@ -198,87 +221,143 @@ const iconMap = {
   desert: "lancer/desert",
   ocean: "lancer/ocean",
   asteroids: "lancer/asteroid",
+  gate: "lancer/gate",
+  station: "lancer/station",
+  star: "lancer/star",
+  moon: "lancer/moon",
 }
 
 const tintMap = {
-  barren: "gray",
   ice: "blue",
   terrestrial: "green",
   jovian: "brown",
   lava: "red",
   desert: "yellow",
   ocean: "blue",
-  asteroids: "gray",
+  gate: "purple",
+  "red dwarf": "red",
+  "white dwarf": "white",
+  "red giant": "red",
+  "red supergiant": "red",
+  "blue giant": "blue",
+  "blue supergiant": "blue",
+  "neutron": "blue",
+  "red": "red",
+  "blue": "blue",
 }
 
-function generatePlanet(seed) {
+function generateStar(seed) {
   const rng = seedrandom(seed)
-  const random = () => rng();
+  const random = () => rng()
+  const weightedTypes = [
+    { type: 'red dwarf', chance: 60 },
+    { type: 'white dwarf', chance: 10 },
+    { type: 'red giant', chance: 5 },
+    { type: 'red supergiant', chance: 4 },
+    { type: 'blue giant', chance: 5 },
+    { type: 'blue supergiant', chance: 3 },
+    { type: 'neutron', chance: 3 },
+    { type: 'red', chance: 5 },
+    { type: 'blue', chance: 5 },
+  ];
+
+  const totalChance = weightedTypes.reduce((sum, item) => sum + item.chance, 0);
+  let cumulativeChance = 0;
+  const cumulativeWeights = weightedTypes.map(item => {
+    cumulativeChance += item.chance / totalChance;
+    return { ...item, cumulativeChance };
+  });
+
+  const rand = random();
+  const type = cumulativeWeights.find(item => rand <= item.cumulativeChance).type
+
+  return {
+    type,
+    radius: Math.floor(range(random, planetData[type].radius)),
+    size: 50,
+    icon: iconMap["star"],
+    tint: tintMap[type],
+    threejs: {
+      type: "star",
+      // add option for white dwarf
+      schemeColor: tintMap[type] === "red" ? "yellow" : "blue",
+      // add option for white dwarf
+      baseColors: tintMap[type] === "red" ? "" : "4753fc",
+    },
+    temperature: Math.floor(range(random, planetData[type].temperature || [0, 0])),
+  }
+}
+
+function generateLocation(seed) {
+  const rng = seedrandom(seed)
+  const random = () => rng()
 
   const types = ['barren', 'ice', 'terrestrial', 'jovian', 'lava', 'desert', 'ocean', 'dwarf', 'supermassive', 'asteroids']
   const rand = random()
   let type = types[Math.floor(rand * types.length)]
 
   let sizeMod = 1
+  const sub = (Math.floor(Math.abs(rand) * 100) % 10) / 10
+  let isMoon = false
+
   if (type === "dwarf") {
-    const sub = (Math.floor(Math.abs(rand) * 100) % 10) / 10
     const dwarf = ["barren", "ice"];
     const subIndex = Math.floor(sub * dwarf.length)
     type = dwarf[subIndex]
     sizeMod = 0.5
   } else if (type === "supermassive") {
-    const sub = (Math.floor(Math.abs(rand) * 100) % 10) / 10
     const supermassive = ["ice", "terrestrial", "jovian", "lava", "desert", "ocean"];
     const subIndex = Math.floor(sub * supermassive.length);
     type = supermassive[subIndex]
     sizeMod = 2
   } else if (type === "asteroids") {
-
-    // {
-    //   icon: "lancer/ringed_planet",
-    //   name: "ring guy",
-    //   size: 80,
-    //   tint: "red",
-    //   moons: [
-    //     { name: "moon 1", size: 12 },
-    //     { name: "moon 2", size: 12 },
-    //     { name: "moon 3", size: 12 },
-    //     { name: "moon 4", size: 12 },
-    //     { name: "moon 5", size: 12 },
-    //     { name: "moon 6", size: 12 },
-    //   ],
-    // }
-
     return {
       type,
+      threejs: {
+        type,
+      },
       radius: Math.floor(range(random, planetData[type].radius)),
       icon: "lancer/asteroid",
       size: 50,
       daysInYear: Math.floor(range(random, planetData[type].year)),
       dominantChemical: pickWeightedChemical(type, random),
     }
+  } else if (type === "moon") {
+    const typesOfMoons = ['barren', 'ice', 'terrestrial', 'lava', 'desert', 'ocean']
+    const subIndex = Math.floor(sub * typesOfMoons.length)
+    type = typesOfMoons[subIndex]
+    sizeMod = 0.1
+    isMoon = true
   }
 
   const radius = Math.floor(range(random, planetData[type].radius)) * sizeMod
   const ringed = checkRings(radius, random)
+
   return {
     type,
+    threejs: {
+      // TODO: might need to drop the ring and make it just for jovain
+      type: ringed ? "ring" : type,
+      // TODO: just for testing purpose
+      land: type === "ocean" ? Math.floor(range(random, planetData[type].ice || [0, 0])) : undefined,
+    },
     radius,
     ringed,
     size: 50,
     icon: ringed ? "lancer/ringed_planet" : iconMap[type],
-    tint: tintMap[type],
-    gravity: Math.floor(range(random, planetData[type].gravity)),
-    pressure: Math.floor(range(random, planetData[type].pressure)),
-    temperature: Math.floor(range(random, planetData[type].temperature)),
-    daysInYear: Math.floor(range(random, planetData[type].year)),
-    hoursInDay: Math.floor(range(random, planetData[type].day)),
-    hydrosphere: Math.floor(range(random, planetData[type].hydro)),
-    cloud: Math.floor(range(random, planetData[type].cloud)),
-    ice: Math.floor(range(random, planetData[type].ice)),
+    tint: tintMap[type] || "gray",
+    gravity: Math.floor(range(random, planetData[type].gravity || [0, 0])),
+    pressure: Math.floor(range(random, planetData[type].pressure || [0, 0])),
+    temperature: Math.floor(range(random, planetData[type].temperature || [0, 0])),
+    daysInYear: Math.floor(range(random, planetData[type].year || [0, 0])),
+    hoursInDay: Math.floor(range(random, planetData[type].day || [0, 0])),
+    hydrosphere: Math.floor(range(random, planetData[type].hydro || [0, 0])),
+    cloud: Math.floor(range(random, planetData[type].cloud || [0, 0])),
+    ice: Math.floor(range(random, planetData[type].ice || [0, 0])),
     dominantChemical: pickWeightedChemical(type, random),
     moons: generateMoons(radius, random),
-    modifier: sizeMod !== 1 ? sizeMod === 2 ? "supermassive" : "dwarf" : "",
+    modifier: sizeMod !== 1 ? sizeMod === 2 ? "supermassive" : sizeMod === 0.5 ? "dwarf" : "moon" : "",
+    isMoon,
   }
 }
 
@@ -390,8 +469,50 @@ const planetData = {
   asteroids: {
     radius: [10, 500],
     year: [150, 10000],
-    chemical: ["silicate", "oxygen", "hydrogen", "carbon", "nitrogen", "platinum", "iron", "nickel", "magnesium"]
   },
+  gate: {
+    radius: [200, 400],
+  },
+  station: {
+    radius: [10, 500],
+    year: [150, 10000],
+  },
+  "red dwarf": {
+    temperature: [2500, 3500],
+    radius: [0.1, 0.7],
+  },
+  "white dwarf": {
+    temperature: [8000, 40000],
+    radius: [2000, 7000],
+  },
+  "red giant": {
+    temperature: [3000, 6000],
+    radius: [10, 150],
+  },
+  "red supergiant": {
+    temperature: [3500, 4500],
+    radius: [30, 1500],
+  },
+  "blue giant": {
+    temperature: [10000, 50000],
+    radius: [5, 10],
+  },
+  "blue supergiant": {
+    temperature: [10000, 50000],
+    radius: [10, 40],
+  },
+  "neutron": {
+    temperature: [1000000, 5000000],
+    radius: [8, 14],
+  },
+  "red": {
+    temperature: [2000, 4000],
+    radius: [1, 5],
+  },
+  "blue": {
+    temperature: [30000, 60000],
+    radius: [2, 16],
+  }
 }
 
 function range(rng, [min, max]) {
@@ -399,6 +520,6 @@ function range(rng, [min, max]) {
 }
 
 export function pickWeightedChemical(type, rng) {
-  const options = planetData[type].chemical;
+  const options = planetData[type].chemical || [0, 0];
   return options[Math.floor(rng() * options.length)];
 }

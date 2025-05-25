@@ -20,7 +20,7 @@ import { useDraw } from "./controls";
 import { Calibrate, Link } from './foundry'
 
 let popup, mode = new Set([])
-let isRightDragging = false;
+let isRightDragging = false
 export async function getIcon(d, fillRGBA) {
   const icon = d.properties.icon || SVG[d.properties.type]
   const fill = fillRGBA || d.properties.fill
@@ -59,14 +59,56 @@ export async function getIcon(d, fillRGBA) {
   return null;
 }
 
+function getLocationGroups(features, maxDistance = 20) {
+  const unvisited = new Set(features.map(f => f.id))
+  const solarSystems = []
+
+  while (unvisited.size > 0) {
+    const startId = unvisited.values().next().value
+    const startFeature = features.find(f => f.id === startId)
+
+    const cluster = []
+    const queue = [startFeature]
+    unvisited.delete(startId)
+
+    while (queue.length > 0) {
+      const current = queue.pop()
+      cluster.push(current)
+      unvisited.delete(current.id)
+
+      for (const f of features) {
+        if (!unvisited.has(f.id)) continue
+        const dist = turf.distance(current.geometry.coordinates, turf.point(f.geometry.coordinates))
+        if (dist <= maxDistance) {
+          queue.push(f)
+          unvisited.delete(f.id)
+        }
+      }
+    }
+
+    const centroid = turf.centroid({
+      type: "FeatureCollection",
+      features: cluster,
+    });
+
+    solarSystems.push({
+      id: `solar-${solarSystems.length}`,
+      center: centroid.geometry.coordinates,
+      members: cluster.map(f => f.id)
+    });
+  }
+  return solarSystems;
+}
+
 export default function Map({ width, height, data, name, mobile, params, locked, stargazer }) {
   const { map: wrapper } = useMap()
   const [drawerOpen, setDrawerOpen] = useState()
   const [drawerContent, setDrawerContent] = useState()
   const recreateListeners = useDraw(s => s.recreateListeners)
   const { CENTER, SCALE, CLICK_ZOOM, NO_PAN, LAYER_PRIO, LAYOUT_OVERIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER } = getConsts(name)
+  const locationGroups = getLocationGroups(data.features.filter(f => f.geometry.type === "Point" && f.properties.type !== "text"))
 
-  async function pan(d, locations, fit) {
+  async function pan(d, myGroup, nearbyGroups, fit) {
     if (locked && !fit) return
     mode.add("zooming")
     let fly = true, lat, lng, bounds, coordinates = d.geometry.coordinates
@@ -103,7 +145,8 @@ export default function Map({ width, height, data, name, mobile, params, locked,
     // offset for sheet
     // TODO: doesn't this always need to be done?
     if (zoomedOut) {
-      const arbitraryNumber = locations?.length > 5 ? 9.5 : 10
+      const arbitraryNumber = 9.7
+      // const arbitraryNumber = locations?.length > 5 ? 9.5 : 10
       let zoomFactor = Math.pow(2, arbitraryNumber - wrapper.getZoom())
       zoomFactor = Math.max(zoomFactor, 4)
       const latDiff = (wrapper.getBounds().getNorth() - wrapper.getBounds().getSouth()) / zoomFactor
@@ -125,7 +168,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       setTimeout(() => mode.delete("zooming"), 801)
     }
 
-    setDrawerContent({ locations: locations || [d], coordinates, selected: d.properties.name })
+    setDrawerContent({ coordinates, selectedId: d.id, myGroup, nearbyGroups })
     setDrawerOpen(true)
   }
 
@@ -203,18 +246,68 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap());
     }
 
-    const locationClick = (e) => {
-      if (mode.has("measure") || (mode.has("crosshair") && mobile) || locked) return
-      const locations = data.features.filter(f => {
-        if (f.geometry.type !== "Point") return
-        // always include yourself
-        if (e.features[0].id === f.id) return true
-        // distance in km
-        const d = turf.distance(e.features[0].geometry.coordinates, turf.point(f.geometry.coordinates))
-        return d <= (UNIT === "ly" ? 70 : 20)
+
+    function locationClick(e) {
+      if (mode.has("measure") || (mode.has("crosshair") && mobile) || locked) return;
+
+      const clicked = e.features[0];
+
+      // Find the group that the clicked location belongs to
+      const group = locationGroups.find(g => g.members.includes(clicked.id))
+
+      if (!group) return
+
+      // Find nearby groups excluding the clicked group
+      const nearbyGroups = locationGroups.filter(g => {
+        if (g === group) return false; // Exclude the clicked group
+        return turf.distance(group.center, g.center) <= (UNIT === "ly" ? 510 : 60);
       })
-      pan(e.features[0], locations)
+
+      const nearby = nearbyGroups.map(g => (
+        g.members.map(id => data.features.find(f => f.id === id))
+      ))
+
+      const myGroup = group.members.map(id => data.features.find(f => f.id === id))
+
+      // console.log("Clicked", clicked)
+      // console.log("my group", myGroup)
+      // console.log("Nearby groups (excluding clicked group)", nearby)
+
+      pan(clicked, myGroup, nearby)
     }
+
+
+    // function locationClick(e) {
+
+    //   if (mode.has("measure") || (mode.has("crosshair") && mobile) || locked) return;
+
+    //   const clicked = e.features[0];
+
+    //   // Find closest system by center coordinate
+    //   const closestSystem = locationGroups.reduce((closest, system) => {
+    //     const d = turf.distance(clicked.geometry.coordinates, turf.point(system.center));
+    //     return (!closest || d < closest.dist) ? { system, dist: d } : closest;
+    //   }, null)?.system;
+
+    //   if (!closestSystem) return;
+
+    //   // console.log("all groups", locationGroups)
+    //   const nearby = locationGroups.filter(f => {
+    //     return turf.distance(closestSystem.center, f.center) <= (UNIT === "ly" ? 510 : 60)
+    //   }).map(group => {
+    //     // console.log("group", group.members)
+    //     return group.members.map(id => {
+    //       if (data.features.find(f => f.id === id)) {
+    //         return data.features.find(f => f.id === id)
+    //       }
+    //     })
+    //   })
+
+    //   console.log("nearby locations, including self", nearby)
+    //   console.log("clicked location", clicked)
+
+    //   // pan(clicked, members, nearby)
+    // }
 
     const ensureCheckbox = () => {
       if (mode.has("measureStart")) {
@@ -489,7 +582,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       {params.get("secret") && <Link mode={mode} width={width} height={height} mobile={mobile} name={name} params={params} />}
       {params.get("calibrate") && <Calibrate mode={mode} width={width} height={height} mobile={mobile} name={name} />}
 
-      <Sheet {...drawerContent} setDrawerOpen={setDrawerOpen} drawerOpen={drawerOpen} name={name} width={width} />
+      <Sheet {...drawerContent} setDrawerOpen={setDrawerOpen} drawerOpen={drawerOpen} name={name} height={height} />
 
       <Toolbox mode={mode} width={width} height={height} mobile={mobile} name={name} map={wrapper} />
       {params.get("hamburger") !== "0" && <Hamburger mode={mode} name={name} params={params} map={wrapper} stargazer={stargazer} mobile={mobile} />}

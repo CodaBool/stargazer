@@ -44,7 +44,7 @@ export default function MenuComponent({ map, data, mobile, name, pan }) {
     // Update the previousFeatureId state
     setPreviousFeatureId(d.id)
 
-    pan(d, null, true)
+    pan(d, null, null, true)
   }
 
   useEffect(() => {

@@ -1,24 +1,63 @@
 import React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import ThreejsPlanet from "./threejsPlanet"
 
-const svgBase = "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/svg/";
+const svgBase = "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/svg/"
 
-export default function SolarSystemDiagram({ bodies }) {
+export default function SolarSystemDiagram({ group, height }) {
 
-  console.log("system", bodies)
+
+  console.log("diagram", group)
   return (
-    <div className="w-full overflow-x-auto overflow-y-visible border-t border-b py-2 h-[28vh]">
+    <div className="w-full overflow-x-auto overflow-y-visible py-2 h-[14vh]">
       <div className="flex items-baseline h-full space-x-6 px-4 justify-evenly">
-        {bodies.map((body, index) => (
+        {group.map((body, index) => (
           <div key={index} className="flex flex-col items-center relative">
-            <img
-              src={`${body.icon ? svgBase + body.icon + ".svg" : svgBase + "lancer/moon.svg"}`}
-              alt={body.name}
-              style={{
-                width: body.size + "px",
-                height: body.size + "px",
-                filter: body.tint ? `drop-shadow(0 0 6px ${body.tint})` : undefined,
-              }}
-            />
+            <Dialog>
+              <DialogTrigger className="" >
+                <img
+                  src={`${body.icon ? svgBase + body.icon + ".svg" : svgBase + "lancer/moon.svg"}`}
+                  alt={body.name}
+                  style={{
+                    width: body.size || 50 + "px",
+                    height: body.size || 50 + "px",
+                    filter: body.tint ? `drop-shadow(0 0 6px ${body.tint})` : undefined,
+                  }}
+                />
+              </DialogTrigger>
+              <DialogContent className="" style={{ minWidth: '95vw', height: (height * .8) + "px" }}>
+                <DialogTitle>{body.name}</DialogTitle>
+                {(body.threejs.type !== "station" && body.threejs.type !== "gate" && body.threejs.type !== "abbb") ? (
+                  <ThreejsPlanet
+                    height={height * .75}
+                    type={body.threejs.type}
+                    pixels={800}
+                    baseColors={body.threejs.baseColors}
+                    featureColors={body.threejs.featureColors}
+                    layerColors={body.threejs.layerColors}
+                    schemeColor={body.threejs.schemeColor}
+                    atmosphere={body.atmosphere}
+                    clouds={body.threejs.clouds}
+                    cloudCover={body.threejs.cloudCover}
+                    size={body.threejs.size}
+                    land={body.threejs.land}
+                    ringWidth={body.ringWidth}
+                    lakes={body.lakes}
+                    rivers={body.rivers}
+                    seed={body.seed}
+                  />
+                )
+                  :
+                  <h1>this type is not supported yet</h1>}
+              </DialogContent>
+            </Dialog>
             {typeof body.moons === "array" && (
               <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 flex flex-col items-center space-y-2">
                 {body.moons.map((moon, mi) => (
