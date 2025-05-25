@@ -87,7 +87,6 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
         </SheetHeader >
         <SolarSystemDiagram bodies={system} />
 
-
         {/* <SolarSystemDiagram bodies={[
           {
             type: "lancer/ringed_planet",
@@ -103,80 +102,6 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
               { name: "moon 6", size: 12 },
             ],
           },
-        ]} /> */}
-
-
-        {/* <SolarSystemDiagram bodies={[
-          {
-            type: "lancer/ringed_planet",
-            name: "ring guy",
-            size: 80,
-            tint: "red",
-            moons: [
-              { name: "moon 1", size: 12 },
-              { name: "moon 2", size: 12 },
-              { name: "moon 3", size: 12 },
-              { name: "moon 4", size: 12 },
-              { name: "moon 5", size: 12 },
-              { name: "moon 6", size: 12 },
-            ],
-          },
-          {
-            type: "lancer/sun",
-            name: "bing guy",
-            size: 20,
-            tint: "green",
-            // moons: [{ type: "ringed", name: "moon 1", size: 12 }],
-          },
-          {
-            type: "lancer/asteroid",
-            name: "bing guy",
-            size: 30,
-            tint: "green",
-            // moons: [{ type: "ringed", name: "moon 1", size: 12 }],
-          },
-          {
-            type: "lancer/gate",
-            name: "bing guy",
-            size: 40,
-            tint: "green",
-            // moons: [{ type: "ringed", name: "moon 1", size: 12 }],
-          },
-          {
-            type: "lancer/jovian",
-            name: "bing guy",
-            size: 50,
-            tint: "green",
-            // moons: [{ type: "ringed", name: "moon 1", size: 12 }],
-          },
-          {
-            type: "lancer/star",
-            name: "bing guy",
-            size: 60,
-            tint: "green",
-            // moons: [{ type: "ringed", name: "moon 1", size: 12 }],
-          },
-          {
-            type: "lancer/terrestrial",
-            name: "bing guy",
-            size: 70,
-            tint: "green",
-            // moons: [{ type: "ringed", name: "moon 1", size: 12 }],
-          },
-          {
-            type: "lancer/station",
-            name: "bing guy",
-            size: 80,
-            tint: "green",
-            // moons: [{ type: "ringed", name: "moon 1", size: 12 }],
-          },
-          {
-            type: "lancer/moon",
-            name: "sing guy",
-            size: 90,
-            tint: "yellow",
-            // moons: [{ type: "ringed", name: "moon 1", size: 12 }],
-          }
         ]} /> */}
       </SheetContent>
     </Sheet>
@@ -275,6 +200,17 @@ const iconMap = {
   asteroids: "lancer/asteroid",
 }
 
+const tintMap = {
+  barren: "gray",
+  ice: "blue",
+  terrestrial: "green",
+  jovian: "brown",
+  lava: "red",
+  desert: "yellow",
+  ocean: "blue",
+  asteroids: "gray",
+}
+
 function generatePlanet(seed) {
   const rng = seedrandom(seed)
   const random = () => rng();
@@ -289,14 +225,12 @@ function generatePlanet(seed) {
     const dwarf = ["barren", "ice"];
     const subIndex = Math.floor(sub * dwarf.length)
     type = dwarf[subIndex]
-    // console.log("Dwarf sub-roll:", type)
     sizeMod = 0.5
   } else if (type === "supermassive") {
     const sub = (Math.floor(Math.abs(rand) * 100) % 10) / 10
     const supermassive = ["ice", "terrestrial", "jovian", "lava", "desert", "ocean"];
     const subIndex = Math.floor(sub * supermassive.length);
     type = supermassive[subIndex]
-    // console.log("Supermassive sub-roll:", type)
     sizeMod = 2
   } else if (type === "asteroids") {
 
@@ -333,6 +267,7 @@ function generatePlanet(seed) {
     ringed,
     size: 50,
     icon: ringed ? "lancer/ringed_planet" : iconMap[type],
+    tint: tintMap[type],
     gravity: Math.floor(range(random, planetData[type].gravity)),
     pressure: Math.floor(range(random, planetData[type].pressure)),
     temperature: Math.floor(range(random, planetData[type].temperature)),
