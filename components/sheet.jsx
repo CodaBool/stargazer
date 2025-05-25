@@ -86,7 +86,9 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
           {locations?.length > 1 && <SheetDescription className="text-center" >Nearby Locations</SheetDescription>}
         </SheetHeader >
         <SolarSystemDiagram bodies={system} />
-        <SolarSystemDiagram bodies={[
+
+
+        {/* <SolarSystemDiagram bodies={[
           {
             type: "lancer/ringed_planet",
             name: "ring guy",
@@ -101,7 +103,9 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
               { name: "moon 6", size: 12 },
             ],
           },
-        ]} />
+        ]} /> */}
+
+
         {/* <SolarSystemDiagram bodies={[
           {
             type: "lancer/ringed_planet",
@@ -261,24 +265,15 @@ function generateSystem(seed) {
 }
 
 const iconMap = {
-  barren: "lancer/",
-  ice: "lancer/",
+  barren: "lancer/barren",
+  ice: "lancer/ice",
   terrestrial: "lancer/terrestrial",
   jovian: "lancer/jovian",
-  lava: "lancer/",
-  desert: "lancer/",
-  ocean: "lancer/",
-  dwarf: "lancer/",
-  supermassive: "lancer/",
-  asteroids: "lancer/",
+  lava: "lancer/lava",
+  desert: "lancer/desert",
+  ocean: "lancer/ocean",
+  asteroids: "lancer/asteroid",
 }
-
-
-// ocean (1-7)
-// desert (1-2)
-// lava (1-3)
-// ice
-// barren
 
 function generatePlanet(seed) {
   const rng = seedrandom(seed)
@@ -304,10 +299,27 @@ function generatePlanet(seed) {
     // console.log("Supermassive sub-roll:", type)
     sizeMod = 2
   } else if (type === "asteroids") {
+
+    // {
+    //   icon: "lancer/ringed_planet",
+    //   name: "ring guy",
+    //   size: 80,
+    //   tint: "red",
+    //   moons: [
+    //     { name: "moon 1", size: 12 },
+    //     { name: "moon 2", size: 12 },
+    //     { name: "moon 3", size: 12 },
+    //     { name: "moon 4", size: 12 },
+    //     { name: "moon 5", size: 12 },
+    //     { name: "moon 6", size: 12 },
+    //   ],
+    // }
+
     return {
       type,
       radius: Math.floor(range(random, planetData[type].radius)),
       icon: "lancer/asteroid",
+      size: 50,
       daysInYear: Math.floor(range(random, planetData[type].year)),
       dominantChemical: pickWeightedChemical(type, random),
     }
@@ -319,6 +331,7 @@ function generatePlanet(seed) {
     type,
     radius,
     ringed,
+    size: 50,
     icon: ringed ? "lancer/ringed_planet" : iconMap[type],
     gravity: Math.floor(range(random, planetData[type].gravity)),
     pressure: Math.floor(range(random, planetData[type].pressure)),
