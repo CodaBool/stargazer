@@ -5,7 +5,7 @@ import maplibregl, {
   LngLatBounds,
 } from 'maplibre-gl'
 import { useMap, Layer, Source, Popup } from 'react-map-gl/maplibre'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { color, important, accent, getConsts, hashString, getColorExpression, createPopupHTML } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import SearchBar from './searchbar'
@@ -21,6 +21,7 @@ import { Calibrate, Link } from './foundry'
 
 let popup, mode = new Set([])
 let isRightDragging = false
+
 export async function getIcon(d, fillRGBA) {
   const icon = d.properties.icon || SVG[d.properties.type]
   const fill = fillRGBA || d.properties.fill
@@ -100,10 +101,14 @@ function getLocationGroups(features, maxDistance = 20) {
   return solarSystems;
 }
 
-export default function Map({ width, height, data, name, mobile, params, locked, stargazer }) {
+export default function Map({ width, height, data, name, mobile, params, locked, stargazer, setCrashed }) {
   const { map: wrapper } = useMap()
   const [drawerOpen, setDrawerOpen] = useState()
   const [drawerContent, setDrawerContent] = useState()
+
+  // an optional performance thing that chatgpt suggested
+  // const addedIcons = useRef(new Set());
+
   const recreateListeners = useDraw(s => s.recreateListeners)
   const { CENTER, SCALE, CLICK_ZOOM, NO_PAN, LAYER_PRIO, LAYOUT_OVERIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER } = getConsts(name)
   const locationGroups = getLocationGroups(data.features.filter(f => f.geometry.type === "Point" && f.properties.type !== "text"))
@@ -276,39 +281,6 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       pan(clicked, myGroup, nearby)
     }
 
-
-    // function locationClick(e) {
-
-    //   if (mode.has("measure") || (mode.has("crosshair") && mobile) || locked) return;
-
-    //   const clicked = e.features[0];
-
-    //   // Find closest system by center coordinate
-    //   const closestSystem = locationGroups.reduce((closest, system) => {
-    //     const d = turf.distance(clicked.geometry.coordinates, turf.point(system.center));
-    //     return (!closest || d < closest.dist) ? { system, dist: d } : closest;
-    //   }, null)?.system;
-
-    //   if (!closestSystem) return;
-
-    //   // console.log("all groups", locationGroups)
-    //   const nearby = locationGroups.filter(f => {
-    //     return turf.distance(closestSystem.center, f.center) <= (UNIT === "ly" ? 510 : 60)
-    //   }).map(group => {
-    //     // console.log("group", group.members)
-    //     return group.members.map(id => {
-    //       if (data.features.find(f => f.id === id)) {
-    //         return data.features.find(f => f.id === id)
-    //       }
-    //     })
-    //   })
-
-    //   console.log("nearby locations, including self", nearby)
-    //   console.log("clicked location", clicked)
-
-    //   // pan(clicked, members, nearby)
-    // }
-
     const ensureCheckbox = () => {
       if (mode.has("measureStart")) {
         mode.delete("measureStart")
@@ -419,6 +391,17 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       });
     }
     listeners({ target: wrapper })
+
+    // crash detection
+    const checkWebGLCrash = () => {
+      if (wrapper.getMap().getCanvas().getContext("webgl2").drawingBufferFormat === 0) {
+        console.error("🛑 WebGL crashed. Forcing Map remount.");
+        setCrashed(prev => prev + 1)
+      }
+    }
+
+    const interval = setInterval(checkWebGLCrash, 1_000) // check every 3 seconds
+    return () => clearInterval(interval)
   }, [wrapper, recreateListeners, params.get("preview")])
 
   useEffect(() => {
@@ -451,6 +434,25 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       }
     })
   }
+  // useEffect(() => {
+  //   if (!wrapper) return;
+  //   data.features.forEach(f => {
+  //     const iconId = f.properties.icon;
+  //     if (iconId && !addedIcons.current.has(iconId)) {
+  //       const img = new Image();
+  //       img.crossOrigin = "anonymous";
+  //       img.width = 19;
+  //       img.height = 19;
+  //       img.src = iconId;
+  //       img.onload = () => {
+  //         if (!wrapper.hasImage(iconId)) {
+  //           wrapper.addImage(iconId, img, { sdf: true });
+  //           addedIcons.current.add(iconId);
+  //         }
+  //       };
+  //     }
+  //   });
+  // }, [wrapper, data]);
 
   /*
   TODO:

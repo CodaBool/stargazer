@@ -16,6 +16,9 @@ export const useStore = create((set) => ({
 
 export default function Cartographer({ name, data, stargazer, fid }) {
   const { SCALE, CENTER, STYLE, VIEW, MAX_ZOOM, MIN_ZOOM, BOUNDS, BG } = getConsts(name)
+
+  // crash reloading
+  const [crashed, setCrashed] = useState()
   const [size, setSize] = useState()
   const params = useSearchParams()
   const mobile = isMobile()
@@ -114,6 +117,7 @@ export default function Cartographer({ name, data, stargazer, fid }) {
     <>
       <Map
         id="map"
+        key={crashed}
         dragRotate={false}
         scrollZoom={!locked}
         dragPan={!locked}
@@ -126,7 +130,7 @@ export default function Cartographer({ name, data, stargazer, fid }) {
         mapStyle={STYLE}
         pixelRatio={2}
       >
-        <MapComponent width={size.width} height={size.height} name={name} data={data} mobile={mobile} SCALE={SCALE} CENTER={CENTER} params={params} stargazer={stargazer} locked={locked} />
+        <MapComponent width={size.width} height={size.height} name={name} data={data} mobile={mobile} SCALE={SCALE} CENTER={CENTER} params={params} stargazer={stargazer} locked={locked} setCrashed={setCrashed} />
         {showControls && <Controls name={name} params={params} setSize={setSize} />}
       </Map>
       {showEditor && <Editor mapName={name} params={params} />}

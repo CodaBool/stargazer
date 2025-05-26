@@ -60,8 +60,8 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, myGroup, nea
   const local = generateLocations(myGroup)
   const nearby = nearbyGroups.map(g => generateLocations(g))
 
-  console.log("local", local)
-  console.log("nearby", nearby)
+  // console.log("local", local)
+  // console.log("nearby", nearby)
 
   function handleMouseOver({ id }) {
     map.setFeatureState(

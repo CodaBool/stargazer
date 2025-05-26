@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import { Clock, Group, Scene, WebGLRenderer, Vector4, PerspectiveCamera } from 'three';
-import { createStars } from './planets/layers/stars'
+// import { createStars } from './planets/layers/stars'
 
 // planet generation
 import { createAsteroid } from "./planets/asteroid.js";
@@ -15,29 +15,36 @@ import { createLavaPlanet } from "./planets/lavaPlanet.js";
 import { createNoAtmospherePlanet } from "./planets/noAtmosphere.js";
 import { createStarPlanet } from "./planets/starPlanet.js";
 
-export default function ThreejsPlanet({ height, type, pixels, baseColors, featureColors, layerColors, schemeColor, atmosphere, clouds, cloudCover, size, land, ringWidth, lakes, rivers, seed }) {
-  const containerRef = useRef(null);
+function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, baseColors, featureColors, layerColors, schemeColor, atmosphere, clouds, cloudCover, size, land, ringWidth, lakes, rivers, seed }) {
+  const containerRef = useRef(null)
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    const container = containerRef.current
+    if (!container) return
 
-    const p = new URLSearchParams(window.location.search);
-    const aspect = container.clientWidth / container.clientHeight;
+    // Initialize shared renderer + canvas once
+    if (!sharedRenderer) {
+      sharedRenderer = new WebGLRenderer({ antialias: true });
+      sharedRenderer.setPixelRatio(window.devicePixelRatio);
+      sharedCanvas = sharedRenderer.domElement
+    }
 
-    const scene = new Scene();
+    // Prevent duplicate canvas
+    if (!container.contains(sharedCanvas)) {
+      sharedRenderer.setSize(container.clientWidth, container.clientHeight);
+      container.appendChild(sharedCanvas);
+    }
+
+    const scene = new Scene()
+    // fov, default 50
+    // aspect, default 1
+    // near, default 0.1
+    // far, default 2000
+    const camera = new PerspectiveCamera(75)
+    // const camera = new PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 100000);
     const clock = new Clock();
-    const camera = new PerspectiveCamera(75, aspect, 0.1, 100000);
-
-    let totalX = 0;
-    let moveX = 0;
-    let holding = false;
-    const baseSpeed = 0.5;
-    const maxTimeSpeed = 0.9;
-    const timeFriction = 0.95;
-    const maxAccel = 0.01;
-
     const planetGroup = new Group();
+
     planetGroup.add(generatePlanetByType({
       pixels: pixels ? Number(pixels) : undefined,
       colors: {
@@ -59,73 +66,117 @@ export default function ThreejsPlanet({ height, type, pixels, baseColors, featur
     }));
     scene.add(planetGroup);
 
-    const skySpeed = 0.00001;
-    const renderer = new WebGLRenderer();
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-
-    const starGroup = createStars(1000);
-    scene.add(starGroup);
-    container.appendChild(renderer.domElement);
-
-    camera.position.z = 1;
-    const notLava = p.get("type") !== "lava";
-
-    function animate() {
-      requestAnimationFrame(animate);
-
-      planetGroup.children.forEach(planet => {
-        planet.children.forEach(layer => {
-          const u = layer.material.uniforms;
-          if (!u?.time || !u?.time_speed) return;
-
-          const elapsed = clock.getElapsedTime() % 10000;
-          u.time.value = elapsed;
-
-          if (holding && notLava) {
-            const rawDelta = moveX * 0.01;
-            const limitedDelta = Math.max(-maxAccel, Math.min(maxAccel, rawDelta));
-            u.time_speed.value += limitedDelta;
-          } else {
-            u.time_speed.value = baseSpeed + (u.time_speed.value - baseSpeed) * timeFriction;
-          }
-
-          u.time_speed.value = Math.max(-maxTimeSpeed, Math.min(maxTimeSpeed, u.time_speed.value));
-        });
-      });
-
-      camera.updateProjectionMatrix();
-
-      starGroup.rotateY(skySpeed);
-      starGroup.rotateX(skySpeed);
-      starGroup.rotateZ(skySpeed);
-
-      renderer.render(scene, camera);
-      moveX = totalX = 0;
+    // const starGroup = createStars(200);
+    // scene.add(starGroup);
+    // container.appendChild(sharedRenderer.domElement);
+    if (!container.contains(sharedCanvas)) {
+      sharedCanvas.style.display = 'block';
+      container.appendChild(sharedCanvas);
     }
 
-    animate();
+    camera.position.z = 1;
 
-    const handleMouseDown = () => { holding = true; };
-    const handleMouseUp = () => { holding = false; };
-    const handleMouseMove = (e) => {
-      e.preventDefault();
-      totalX += Math.abs(e.movementX);
-      moveX += e.movementX;
+    let animationId;
+    let totalX = 0;
+    let moveX = 0;
+    let holding = false;
+    // const skySpeed = 0.00001;
+    const baseSpeed = 0.5;
+    const maxTimeSpeed = 0.9;
+    const timeFriction = 0.95;
+    const maxAccel = 0.01;
+    const notLava = type !== "lava";
+
+    const animate = () => {
+      animationId = requestAnimationFrame(animate);
+      function animate() {
+        requestAnimationFrame(animate);
+
+        planetGroup.children.forEach(planet => {
+          planet.children.forEach(layer => {
+            const u = layer.material.uniforms;
+            if (!u?.time || !u?.time_speed) return;
+
+            const elapsed = clock.getElapsedTime() % 10000;
+            u.time.value = elapsed;
+
+            if (holding && notLava) {
+              const rawDelta = moveX * 0.01;
+              const limitedDelta = Math.max(-maxAccel, Math.min(maxAccel, rawDelta));
+              u.time_speed.value += limitedDelta;
+            } else {
+              u.time_speed.value = baseSpeed + (u.time_speed.value - baseSpeed) * timeFriction;
+            }
+
+            u.time_speed.value = Math.max(-maxTimeSpeed, Math.min(maxTimeSpeed, u.time_speed.value));
+          });
+        });
+
+        camera.updateProjectionMatrix();
+
+        // starGroup.rotateY(skySpeed);
+        // starGroup.rotateX(skySpeed);
+        // starGroup.rotateZ(skySpeed);
+
+        sharedRenderer.render(scene, camera);
+        moveX = totalX = 0;
+      }
     };
+    animate()
 
-    container.addEventListener("mousedown", handleMouseDown, false);
-    container.addEventListener("mouseup", handleMouseUp, false);
-    container.addEventListener("mousemove", handleMouseMove, false);
+    // const handleMouseDown = () => { holding = true; };
+    // const handleMouseUp = () => { holding = false; };
+    // const handleMouseMove = (e) => {
+    //   totalX += Math.abs(e.movementX);
+    //   moveX += e.movementX;
+    // };
 
+    // container.addEventListener("mousedown", handleMouseDown, false);
+    // container.addEventListener("mouseup", handleMouseUp, false);
+    // container.addEventListener("mousemove", handleMouseMove, false);
+    // setInterval(() => {
+    //   console.log("Nodes:", document.getElementsByTagName("*").length);
+    // }, 500);
     return () => {
-      container.removeEventListener("mousedown", handleMouseDown);
-      container.removeEventListener("mouseup", handleMouseUp);
-      container.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, [])
+      cancelAnimationFrame(animationId);
+      scene.traverse(obj => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach(m => m.dispose());
+          } else {
+            obj.material.dispose();
+          }
+        }
+      });
+      scene.clear();
+      sharedRenderer.renderLists.dispose()
+      sharedRenderer.info.reset();
 
-  return <div ref={containerRef} style={{ width: '100%', height: height + "px" }} />;
+      // sharedCanvas.removeEventListener("mousedown", handleMouseDown);
+      // sharedCanvas.removeEventListener("mouseup", handleMouseUp);
+      // sharedCanvas.removeEventListener("mousemove", handleMouseMove);
+
+      // Don't remove sharedCanvas from DOM — just hide it
+      // sharedCanvas.style.display = 'none'
+      if (container.contains(sharedCanvas)) {
+        container.removeChild(sharedCanvas);
+      }
+
+    };
+  }, []);
+
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        width: "100%",
+        aspectRatio: "1 / 1",
+        height: "auto",
+      }}
+    />
+  );
 }
 
 function generatePlanetByType(params) {
@@ -184,3 +235,5 @@ export function hexToVector4(rawHex) {
 
   return new Vector4(r, g, b, a);
 }
+
+export default memo(ThreejsPlanet)
