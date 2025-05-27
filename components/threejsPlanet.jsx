@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, memo } from 'react';
 import { Clock, Group, Scene, WebGLRenderer, Vector4, PerspectiveCamera } from 'three';
-// import { createStars } from './planets/layers/stars'
+import { createStars } from './planets/layers/stars'
 
 // planet generation
 import { createAsteroid } from "./planets/asteroid.js";
@@ -14,11 +14,14 @@ import { createIcePlanet } from "./planets/icePlanet.js";
 import { createLavaPlanet } from "./planets/lavaPlanet.js";
 import { createNoAtmospherePlanet } from "./planets/noAtmosphere.js";
 import { createStarPlanet } from "./planets/starPlanet.js";
+import { isMobile } from '@/lib/utils';
 
 function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, baseColors, featureColors, layerColors, schemeColor, atmosphere, clouds, cloudCover, size, land, ringWidth, lakes, rivers, seed }) {
   const containerRef = useRef(null)
 
   useEffect(() => {
+    const mobile = isMobile()
+
     const container = containerRef.current
     if (!container) return
 
@@ -66,9 +69,8 @@ function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, bas
     }));
     scene.add(planetGroup);
 
-    // const starGroup = createStars(200);
-    // scene.add(starGroup);
-    // container.appendChild(sharedRenderer.domElement);
+    const starGroup = createStars(200);
+    scene.add(starGroup);
     if (!container.contains(sharedCanvas)) {
       sharedCanvas.style.display = 'block';
       container.appendChild(sharedCanvas);
@@ -80,7 +82,7 @@ function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, bas
     let totalX = 0;
     let moveX = 0;
     let holding = false;
-    // const skySpeed = 0.00001;
+    const skySpeed = 0.00001;
     const baseSpeed = 0.5;
     const maxTimeSpeed = 0.9;
     const timeFriction = 0.95;
@@ -114,9 +116,9 @@ function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, bas
 
         camera.updateProjectionMatrix();
 
-        // starGroup.rotateY(skySpeed);
-        // starGroup.rotateX(skySpeed);
-        // starGroup.rotateZ(skySpeed);
+        starGroup.rotateY(skySpeed);
+        starGroup.rotateX(skySpeed);
+        starGroup.rotateZ(skySpeed);
 
         sharedRenderer.render(scene, camera);
         moveX = totalX = 0;
@@ -124,19 +126,18 @@ function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, bas
     };
     animate()
 
-    // const handleMouseDown = () => { holding = true; };
-    // const handleMouseUp = () => { holding = false; };
-    // const handleMouseMove = (e) => {
-    //   totalX += Math.abs(e.movementX);
-    //   moveX += e.movementX;
-    // };
+    const handleMouseDown = () => { holding = true; };
+    const handleMouseUp = () => { holding = false; };
+    const handleMouseMove = (e) => {
+      totalX += Math.abs(e.movementX);
+      moveX += e.movementX;
+    };
 
-    // container.addEventListener("mousedown", handleMouseDown, false);
-    // container.addEventListener("mouseup", handleMouseUp, false);
-    // container.addEventListener("mousemove", handleMouseMove, false);
-    // setInterval(() => {
-    //   console.log("Nodes:", document.getElementsByTagName("*").length);
-    // }, 500);
+    container.addEventListener("pointerdown", handleMouseDown, false);
+    container.addEventListener("pointerup", handleMouseUp, false);
+    container.addEventListener("pointermove", handleMouseMove, false);
+
+
     return () => {
       cancelAnimationFrame(animationId);
       scene.traverse(obj => {
@@ -153,16 +154,15 @@ function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, bas
       sharedRenderer.renderLists.dispose()
       sharedRenderer.info.reset();
 
-      // sharedCanvas.removeEventListener("mousedown", handleMouseDown);
-      // sharedCanvas.removeEventListener("mouseup", handleMouseUp);
-      // sharedCanvas.removeEventListener("mousemove", handleMouseMove);
+      container.removeEventListener("pointerdown", handleMouseDown);
+      container.removeEventListener("pointerup", handleMouseUp);
+      container.removeEventListener("pointermove", handleMouseMove);
 
       // Don't remove sharedCanvas from DOM — just hide it
       // sharedCanvas.style.display = 'none'
       if (container.contains(sharedCanvas)) {
         container.removeChild(sharedCanvas);
       }
-
     };
   }, []);
 

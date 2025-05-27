@@ -60,8 +60,8 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, myGroup, nea
   const local = generateLocations(myGroup)
   const nearby = nearbyGroups.map(g => generateLocations(g))
 
-  // console.log("local", local)
-  // console.log("nearby", nearby)
+  console.log("local", local)
+  console.log("nearby", nearby)
 
   function handleMouseOver({ id }) {
     map.setFeatureState(
@@ -81,11 +81,9 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, myGroup, nea
     e.preventDefault()
   }
 
-
-
   return (
     <Sheet onOpenChange={setDrawerOpen} open={drawerOpen} modal={false} style={{ color: 'white' }}>
-      <SheetContent side="bottom" style={{ maxHeight: '38vh', overflowY: 'auto', minHeight: '38vh' }} className="map-sheet" onPointerDownOutside={handle}>
+      <SheetContent side="bottom" style={{ maxHeight: '38vh', overflowY: 'auto' }} onPointerDownOutside={handle}>
         <SheetHeader >
           <SheetTitle className="text-center">{coordinates ? `${UNIT === "ly" ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${UNIT === "ly" ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}</SheetTitle>
           {nearby.length > 1 && <SheetDescription className="text-center" >{nearby.length} Nearby {GROUP_NAME}</SheetDescription>}
@@ -182,7 +180,6 @@ function generateLocations(group) {
   const random1 = () => rng()
 
   const numToGen = Math.floor(range(random1, [1, MAX_GEN_LOCATIONS])) - group.length
-  // if (numToGen > 0) console.log("will generate", numToGen, "locations for", group)
 
   const locations = []
   const starLocation = group.find(l => l.properties.type === "star")
@@ -362,15 +359,46 @@ function generateLocation(seed) {
 }
 
 function generateMoons(radius, random) {
-  if (radius < 4000) return 0;
-
-  let moons = 1;
+  const moonData = []
+  if (radius < 4000) return moonData
+  let moons = 0;
   let extraRadius = radius - 4000;
-  while (extraRadius > 0 && moons < 200) {
-    if (random() < 0.5) moons++;
-    extraRadius -= 1000;
+  while (extraRadius > 0 && moons < 100) {
+    if (random() < 0.5) moons++
+    extraRadius -= 1000
   }
-  return moons;
+  const typesOfMoons = ['barren', 'ice', 'terrestrial', 'lava', 'desert', 'ocean']
+  for (let i = 0; i < moons; i++) {
+    const subIndex = Math.floor(random() * typesOfMoons.length)
+    const type = typesOfMoons[subIndex]
+    moonData.push({
+      type,
+      threejs: {
+        type,
+        // TODO: just for testing purpose
+        land: type === "ocean" ? Math.floor(range(random, planetData[type].ice || [0, 0])) : undefined,
+      },
+      radius: radius * .1,
+      ringed: false,
+      size: 50,
+      icon: iconMap[type],
+      tint: tintMap[type] || "gray",
+      gravity: Math.floor(range(random, planetData[type].gravity || [0, 0])),
+      pressure: Math.floor(range(random, planetData[type].pressure || [0, 0])),
+      temperature: Math.floor(range(random, planetData[type].temperature || [0, 0])),
+      daysInYear: Math.floor(range(random, planetData[type].year || [0, 0])),
+      // TODO: moons are usually tidally locked
+      hoursInDay: Math.floor(range(random, planetData[type].day || [0, 0])),
+      hydrosphere: Math.floor(range(random, planetData[type].hydro || [0, 0])),
+      cloud: Math.floor(range(random, planetData[type].cloud || [0, 0])),
+      ice: Math.floor(range(random, planetData[type].ice || [0, 0])),
+      dominantChemical: pickWeightedChemical(type, random),
+      modifier: "moon",
+      isMoon: true,
+    })
+  }
+  console.log("moons", moonData)
+  return moonData
 }
 
 function checkRings(radius, random) {

@@ -305,9 +305,6 @@ export default function Map({ width, height, data, name, mobile, params, locked,
         offset = e.point;
       }
     })
-    map.on("mouseup", () => isMoving = false)
-
-
     map.off("move", ensureCheckbox)
     map.off('mousemove', 'location', mouseMove)
     map.off('mouseleave', 'location', mouseLeave)
@@ -317,6 +314,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
     map.off('click', 'location', locationClick)
 
     map.on("move", ensureCheckbox)
+    map.on("mouseup", () => isMoving = false)
     map.on('mousemove', 'location', mouseMove)
     map.on('mouseleave', 'location', mouseLeave)
     map.on('mousemove', 'guide', mouseMove)
@@ -395,12 +393,12 @@ export default function Map({ width, height, data, name, mobile, params, locked,
     // crash detection
     const checkWebGLCrash = () => {
       if (wrapper.getMap().getCanvas().getContext("webgl2").drawingBufferFormat === 0) {
-        console.error("🛑 WebGL crashed. Forcing Map remount.");
+        console.error("🛑 Maplibre Canvas WebGL crashed, forcing Map remount")
         setCrashed(prev => prev + 1)
       }
     }
 
-    const interval = setInterval(checkWebGLCrash, 1_000) // check every 3 seconds
+    const interval = setInterval(checkWebGLCrash, 1_500) // check every 1.5 seconds
     return () => clearInterval(interval)
   }, [wrapper, recreateListeners, params.get("preview")])
 
