@@ -13,7 +13,7 @@ const svgBase = "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads
 let sharedRenderer = null;
 let sharedCanvas = null;
 
-export default function SolarSystemDiagram({ group, height }) {
+export default function SolarSystemDiagram({ group, height, isGalaxy }) {
   const [squareSize, setSquareSize] = useState()
   const [activeBody, setActiveBody] = useState()
   const [moonBodies, setMoonBodies] = useState()
@@ -39,7 +39,7 @@ export default function SolarSystemDiagram({ group, height }) {
           {group.map((body, index) => (
             <div key={index} className="flex flex-col items-center relative min-w-[40px]">
               <img
-                src={`${body.icon ? svgBase + body.icon + ".svg" : svgBase + "lancer/moon.svg"}`}
+                src={`${isGalaxy ? svgBase + "lancer/" + body.type + ".svg" : svgBase + "lancer/moon.svg"}`}
                 alt={body.name}
                 onClick={() => setActiveBody(body)}
                 style={{
@@ -127,25 +127,38 @@ export default function SolarSystemDiagram({ group, height }) {
             }}
           >
             <DialogTitle>{activeBody.name}</DialogTitle>
-            {activeBody.threejs?.type !== "station" && activeBody.threejs?.type !== "gate" ? (
+            {activeBody.type !== "station" && activeBody.type !== "gate" ? (
               <ThreejsPlanet
                 sharedCanvas={sharedCanvas}
                 sharedRenderer={sharedRenderer}
                 height={squareSize}
-                type={activeBody.threejs.type}
+                type={activeBody.type}
                 pixels={800}
-                baseColors={activeBody.threejs.baseColors}
-                featureColors={activeBody.threejs.featureColors}
-                layerColors={activeBody.threejs.layerColors}
-                schemeColor={activeBody.threejs.schemeColor}
+                // 4 comma separated hexes
+                baseColors={activeBody.baseColors}
+                // 4 comma separated hexes
+                featureColors={activeBody.featureColors}
+                // 4 comma separated alpha hexes
+                layerColors={activeBody.layerColors}
+                // star ([blue, orange, red, white, yellow], default orange)
+                schemeColor={activeBody.schemeColor}
+                // 3 comma separated alpha hexes
                 atmosphere={activeBody.atmosphere}
-                clouds={activeBody.threejs.clouds}
-                cloudCover={activeBody.threejs.cloudCover}
-                size={activeBody.threejs.size}
-                land={activeBody.threejs.land}
+                // ice & terrestrial (defaults true)
+                clouds={activeBody.clouds}
+                // ice & terrestrial (lower is more clouds)
+                cloudCover={activeBody.cloudCover}
+                // asteroid 1-9
+                size={activeBody.size}
+                // terrestrial, lower is more land
+                land={activeBody.land}
+                // ring size 0-.2
                 ringWidth={activeBody.ringWidth}
+                // ice (lower is more lakes)
                 lakes={activeBody.lakes}
+                // lava (lower is more lava)
                 rivers={activeBody.rivers}
+                // a number
                 seed={activeBody.seed}
               />
             ) : (

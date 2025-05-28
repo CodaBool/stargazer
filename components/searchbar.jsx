@@ -8,14 +8,15 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Sparkle, BookOpen, Bug, Pencil, Plus, MapPin, RectangleHorizontal, Map, ArrowRightFromLine, Hexagon, ListCollapse, User, LogOut, Ruler, CodeXml, Menu, Crosshair } from "lucide-react"
-import { searchBar, accent } from "@/lib/utils.js"
+import { searchBar, accent, getConsts } from "@/lib/utils.js"
 import * as turf from '@turf/turf'
 import { useEffect, useRef, useState } from "react"
 import { useStore } from "./cartographer"
 
-export default function MenuComponent({ map, data, mobile, name, pan }) {
+export default function MenuComponent({ map, data, mobile, name, pan, locationGroups }) {
   const [active, setActive] = useState()
   const [previousFeatureId, setPreviousFeatureId] = useState(null)
+  const { UNIT } = getConsts(name)
   const { editorTable } = useStore()
   const cmd = useRef(null)
   const input = useRef(null)
@@ -44,7 +45,33 @@ export default function MenuComponent({ map, data, mobile, name, pan }) {
     // Update the previousFeatureId state
     setPreviousFeatureId(d.id)
 
-    pan(d, null, null, true)
+
+
+    // duplcate of what's in locationClick in map.jsx
+    // const clicked = e.features[0];
+
+    // Find the group that the clicked location belongs to
+    const group = locationGroups.find(g => g.members.includes(d.id))
+
+    if (!group) return
+
+    // Find nearby groups excluding the clicked group
+    const nearbyGroups = locationGroups.filter(g => {
+      if (g === group) return false; // Exclude the clicked group
+      return turf.distance(group.center, g.center) <= (UNIT === "ly" ? 510 : 60);
+    })
+
+    const nearby = nearbyGroups.map(g => (
+      g.members.map(id => data.features.find(f => f.id === id))
+    ))
+
+    const myGroup = group.members.map(id => data.features.find(f => f.id === id))
+
+    // console.log("Clicked", clicked)
+    // console.log("my group", myGroup)
+    // console.log("Nearby groups (excluding clicked group)", nearby)
+
+    pan(d, myGroup, nearby, true)
   }
 
   useEffect(() => {

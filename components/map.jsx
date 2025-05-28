@@ -103,7 +103,6 @@ function getLocationGroups(features, maxDistance = 20) {
 
 export default function Map({ width, height, data, name, mobile, params, locked, stargazer, setCrashed }) {
   const { map: wrapper } = useMap()
-  const [drawerOpen, setDrawerOpen] = useState()
   const [drawerContent, setDrawerContent] = useState()
 
   // an optional performance thing that chatgpt suggested
@@ -174,7 +173,6 @@ export default function Map({ width, height, data, name, mobile, params, locked,
     }
 
     setDrawerContent({ coordinates, selectedId: d.id, myGroup, nearbyGroups })
-    setDrawerOpen(true)
   }
 
   function listeners({ target: map }) {
@@ -198,6 +196,10 @@ export default function Map({ width, height, data, name, mobile, params, locked,
 
       // popup
       if (e.features[0].properties.type === "text") return
+      if (e.features[0].geometry.type === "Point") {
+        // don't show tooltips if the sheet/drawer is open
+        if (document.querySelector('#bottom-sheet')) return
+      }
       const featureCoordinates = e.features[0].geometry.coordinates.toString();
       if (currentFeatureCoordinates !== featureCoordinates) {
         currentFeatureCoordinates = featureCoordinates;
@@ -205,8 +207,8 @@ export default function Map({ width, height, data, name, mobile, params, locked,
         // Change the cursor style as a UI indicator.
         if (e.features[0].geometry.type === "Point") wrapper.getCanvas().style.cursor = 'pointer'
 
-        let coordinates = e.features[0].geometry.coordinates.slice();
-        const popupContent = createPopupHTML(e)
+        let coordinates = e.features[0].geometry.coordinates.slice()
+        const popupContent = createPopupHTML(e, UNIT === "ly")
 
         // Ensure that if the map is zoomed out such that multiple
         // copies of the feature are visible, the popup appears
@@ -247,7 +249,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
     const territoryClick = (e) => {
       if (IGNORE_POLY?.includes(e.features[0].properties.type)) return
       const coordinates = e.lngLat;
-      const popupContent = createPopupHTML(e)
+      const popupContent = createPopupHTML(e, UNIT === "ly")
       popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap());
     }
 
@@ -342,10 +344,6 @@ export default function Map({ width, height, data, name, mobile, params, locked,
 
         // wait for state change to happen
         map.once('idle', ({ target: map }) => {
-          // window.parent.postMessage({
-          //   type: 'log',
-          //   message: userCreated,
-          // }, '*')
 
           const topBound = map.getBounds().getNorth();
           const bottomBound = map.getBounds().getSouth();
@@ -419,7 +417,6 @@ export default function Map({ width, height, data, name, mobile, params, locked,
     data.features.forEach(f => {
       if (f.properties.icon) {
         if (!wrapper.hasImage(f.properties.icon)) {
-          // console.log("adding icon for", f.properties.name)
           const img = new Image()
           img.crossOrigin = "anonymous"
           img.width = 19
@@ -576,13 +573,13 @@ export default function Map({ width, height, data, name, mobile, params, locked,
         <ZoomIn size={34} onClick={() => wrapper.zoomIn()} className='m-2 hover:stroke-blue-200' />
         <ZoomOut size={34} onClick={() => wrapper.zoomOut()} className='m-2 mt-4 hover:stroke-blue-200' />
       </div>}
-      {params.get("search") !== "0" && <SearchBar map={wrapper} name={name} data={data} pan={pan} mobile={mobile} />}
+      {params.get("search") !== "0" && <SearchBar map={wrapper} name={name} data={data} pan={pan} mobile={mobile} locationGroups={locationGroups} />}
 
       {/* FOUNDRY */}
       {params.get("secret") && <Link mode={mode} width={width} height={height} mobile={mobile} name={name} params={params} />}
       {params.get("calibrate") && <Calibrate mode={mode} width={width} height={height} mobile={mobile} name={name} />}
 
-      <Sheet {...drawerContent} setDrawerOpen={setDrawerOpen} drawerOpen={drawerOpen} name={name} height={height} />
+      <Sheet {...drawerContent} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} isGalaxy={UNIT === "ly"} />
 
       <Toolbox mode={mode} width={width} height={height} mobile={mobile} name={name} map={wrapper} />
       {params.get("hamburger") !== "0" && <Hamburger mode={mode} name={name} params={params} map={wrapper} stargazer={stargazer} mobile={mobile} />}

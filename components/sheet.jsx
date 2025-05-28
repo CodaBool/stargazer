@@ -20,17 +20,16 @@ import seedrandom from 'seedrandom'
 
 const MAX_GEN_LOCATIONS = 8
 
-export default function SheetComponent({ setDrawerOpen, drawerOpen, myGroup, nearbyGroups, coordinates, name, selectedId, height }) {
+export default function SheetComponent({ drawerContent, setDrawerContent, myGroup, nearbyGroups, coordinates, name, selectedId, height, isGalaxy }) {
   const { map } = useMap()
-  const { UNIT } = getConsts(name)
-  const GROUP_NAME = UNIT === "ly" ? "Solar Systems" : "Locations"
+  // const { UNIT } = getConsts(name)
+  const GROUP_NAME = isGalaxy ? "Solar Systems" : "Locations"
 
   useEffect(() => {
-
     // move editor table
     const el = document.querySelector(".editor-table")
     if (el) {
-      if (drawerOpen) {
+      if (drawerContent) {
         el.style.bottom = "40%"
       } else {
         el.style.bottom = "20px"
@@ -41,10 +40,10 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, myGroup, nea
     const hamburger = document.querySelector(".hamburger")
     const zoomControls = document.querySelector(".zoom-controls")
     if (hamburger && zoomControls && window.innerWidth < 1200) {
-      if (drawerOpen) {
+      if (drawerContent) {
         hamburger.style.bottom = "40%"
         zoomControls.style.bottom = "55%"
-      } else if (!drawerOpen) {
+      } else if (!drawerContent) {
         hamburger.style.bottom = "0.5em"
         zoomControls.style.bottom = "7em"
       }
@@ -54,7 +53,7 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, myGroup, nea
         zoomControls.style.removeProperty("bottom")
       }
     }
-  }, [drawerOpen])
+  }, [drawerContent])
 
   if (!coordinates) return null
   const local = generateLocations(myGroup)
@@ -82,21 +81,21 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, myGroup, nea
   }
 
   return (
-    <Sheet onOpenChange={setDrawerOpen} open={drawerOpen} modal={false} style={{ color: 'white' }}>
-      <SheetContent side="bottom" style={{ maxHeight: '38vh', overflowY: 'auto' }} onPointerDownOutside={handle}>
+    <Sheet open={!!drawerContent} onOpenChange={() => setDrawerContent(null)} modal={false} style={{ color: 'white' }} >
+      <SheetContent side="bottom" style={{ maxHeight: '38vh', overflowY: 'auto' }} onPointerDownOutside={handle} id="bottom-sheet">
         <SheetHeader >
-          <SheetTitle className="text-center">{coordinates ? `${UNIT === "ly" ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${UNIT === "ly" ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}</SheetTitle>
+          <SheetTitle className="text-center">{coordinates ? `${isGalaxy ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${isGalaxy ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}</SheetTitle>
           {nearby.length > 1 && <SheetDescription className="text-center" >{nearby.length} Nearby {GROUP_NAME}</SheetDescription>}
         </SheetHeader >
 
-        <SolarSystemDiagram group={local} height={height} />
+        <SolarSystemDiagram group={local} height={height} isGalaxy={isGalaxy} />
         <hr />
         {nearby.length > 0 && (
           <>
             <h1 className="text-center text-2xl my-4">Nearby {GROUP_NAME}</h1>
             {nearby.map((group, index) => (
               <div key={index}>
-                <SolarSystemDiagram group={group} height={height} />
+                <SolarSystemDiagram group={group} height={height} isGalaxy={isGalaxy} />
                 {index + 1 !== nearby.length && <hr />}
               </div>
             ))}
@@ -106,71 +105,71 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, myGroup, nea
     </Sheet>
   )
 
-  return (
-    <Sheet onOpenChange={setDrawerOpen} open={drawerOpen} modal={false} style={{ color: 'white' }}>
-      <SheetContent side="bottom" style={{ maxHeight: '38vh', overflowY: 'auto' }} className="map-sheet" onPointerDownOutside={handle}>
-        <SheetHeader >
-          <SheetTitle className="text-center">{coordinates ? `${UNIT === "ly" ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${UNIT === "ly" ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}</SheetTitle>
-          {locations?.length > 1 && <SheetDescription className="text-center" >Nearby Locations</SheetDescription>}
-        </SheetHeader >
-        <div className="flex flex-wrap justify-center">
-          {locations?.map((d, index) => {
-            const { properties, geometry } = d
-            const params = new URLSearchParams({
-              description: properties.description || "",
-              name: properties.name,
-              map: name,
-            }).toString()
-            const icon = SVG[d.properties.type]
-            const remoteIcon = d.properties.icon
-            const card = (
-              <Card
-                className="min-h-[80px] m-2 min-w-[150px] cursor-pointer"
-                onMouseOver={() => handleMouseOver(d)}
-                onMouseOut={() => handleMouseOut(d)}
-              >
-                <CardContent className={`p-2 text-center ${selected === properties.name ? 'bg-yellow-800' : 'hover:bg-yellow-950'}`}>
-                  {properties.unofficial && <Badge variant="destructive" className="mx-auto">unofficial</Badge>}
-                  <p className="font-bold text-xl text-center">{properties.name}</p>
-                  {remoteIcon ?
-                    <p className="text-center text-gray-400 flex justify-center">
-                      <svg width="20" height="20" className="m-1">
-                        <image href={remoteIcon} width="20" height="20" />
-                      </svg>
-                      {properties.type}
-                    </p>
-                    : <p className="text-center text-gray-400 flex justify-center"><span dangerouslySetInnerHTML={{ __html: icon }} style={{ fill: "white", margin: '.2em' }} />{properties.type}</p>
-                  }
-                  {properties.faction && <Badge className="mx-auto">{properties.faction}</Badge>}
-                  {properties.destroyed && <Badge className="mx-auto">destroyed</Badge>}
-                  {properties.capital && <Badge variant="destructive" className="mx-auto">capital</Badge>}
-                </CardContent>
-              </Card >
-            )
-            return properties.name === selected ? (
-              <Link
-                href={genLink(d, name, "href")}
-                target={genLink(d, name, "target")}
-                key={index}
-              >
-                {card}
-              </Link>
-            ) : <div key={index} onClick={() => {
+  // return (
+  //   <Sheet open={!!setDrawerContent} modal={false} style={{ color: 'white' }}>
+  //     <SheetContent side="bottom" style={{ maxHeight: '38vh', overflowY: 'auto' }} className="map-sheet" onPointerDownOutside={handle}>
+  //       <SheetHeader >
+  //         <SheetTitle className="text-center">{coordinates ? `${UNIT === "ly" ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${UNIT === "ly" ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}</SheetTitle>
+  //         {locations?.length > 1 && <SheetDescription className="text-center" >Nearby Locations</SheetDescription>}
+  //       </SheetHeader >
+  //       <div className="flex flex-wrap justify-center">
+  //         {locations?.map((d, index) => {
+  //           const { properties, geometry } = d
+  //           const params = new URLSearchParams({
+  //             description: properties.description || "",
+  //             name: properties.name,
+  //             map: name,
+  //           }).toString()
+  //           const icon = SVG[d.properties.type]
+  //           const remoteIcon = d.properties.icon
+  //           const card = (
+  //             <Card
+  //               className="min-h-[80px] m-2 min-w-[150px] cursor-pointer"
+  //               onMouseOver={() => handleMouseOver(d)}
+  //               onMouseOut={() => handleMouseOut(d)}
+  //             >
+  //               <CardContent className={`p-2 text-center ${selected === properties.name ? 'bg-yellow-800' : 'hover:bg-yellow-950'}`}>
+  //                 {properties.unofficial && <Badge variant="destructive" className="mx-auto">unofficial</Badge>}
+  //                 <p className="font-bold text-xl text-center">{properties.name}</p>
+  //                 {remoteIcon ?
+  //                   <p className="text-center text-gray-400 flex justify-center">
+  //                     <svg width="20" height="20" className="m-1">
+  //                       <image href={remoteIcon} width="20" height="20" />
+  //                     </svg>
+  //                     {properties.type}
+  //                   </p>
+  //                   : <p className="text-center text-gray-400 flex justify-center"><span dangerouslySetInnerHTML={{ __html: icon }} style={{ fill: "white", margin: '.2em' }} />{properties.type}</p>
+  //                 }
+  //                 {properties.faction && <Badge className="mx-auto">{properties.faction}</Badge>}
+  //                 {properties.destroyed && <Badge className="mx-auto">destroyed</Badge>}
+  //                 {properties.capital && <Badge variant="destructive" className="mx-auto">capital</Badge>}
+  //               </CardContent>
+  //             </Card >
+  //           )
+  //           return properties.name === selected ? (
+  //             <Link
+  //               href={genLink(d, name, "href")}
+  //               target={genLink(d, name, "target")}
+  //               key={index}
+  //             >
+  //               {card}
+  //             </Link>
+  //           ) : <div key={index} onClick={() => {
 
-              // duplicate of map pan()
-              const arbitraryNumber = locations.length > 5 ? 9.5 : 10
-              let zoomFactor = Math.pow(2, arbitraryNumber - map.getZoom())
-              zoomFactor = Math.max(zoomFactor, 4)
-              const latDiff = (map.getBounds().getNorth() - map.getBounds().getSouth()) / zoomFactor
-              const lat = d.geometry.coordinates[1] - latDiff / 2
+  //             // duplicate of map pan()
+  //             const arbitraryNumber = locations.length > 5 ? 9.5 : 10
+  //             let zoomFactor = Math.pow(2, arbitraryNumber - map.getZoom())
+  //             zoomFactor = Math.max(zoomFactor, 4)
+  //             const latDiff = (map.getBounds().getNorth() - map.getBounds().getSouth()) / zoomFactor
+  //             const lat = d.geometry.coordinates[1] - latDiff / 2
 
-              map.easeTo({ center: [d.geometry.coordinates[0], lat], duration: 800 })
-            }}>{card}</div>
-          })}
-        </div>
-      </SheetContent >
-    </Sheet >
-  )
+  //             map.easeTo({ center: [d.geometry.coordinates[0], lat], duration: 800 })
+  //           }}>{card}</div>
+  //         })}
+  //       </div>
+  //     </SheetContent >
+  //   </Sheet >
+  // )
 }
 
 
@@ -194,11 +193,8 @@ function generateLocations(group) {
     locations.push({
       name: location.properties.name,
       type,
-      threejs: {
-        type,
-      },
-      icon: iconMap[type],
-      tint: tintMap[type] || "gray",
+      variant: "red",
+      tint: "red",
     })
   }
 
@@ -209,20 +205,21 @@ function generateLocations(group) {
   return locations
 }
 
-const iconMap = {
-  barren: "lancer/barren",
-  ice: "lancer/ice",
-  terrestrial: "lancer/terrestrial",
-  jovian: "lancer/jovian",
-  lava: "lancer/lava",
-  desert: "lancer/desert",
-  ocean: "lancer/ocean",
-  asteroids: "lancer/asteroid",
-  gate: "lancer/gate",
-  station: "lancer/station",
-  star: "lancer/star",
-  moon: "lancer/moon",
-}
+// TODO: fix asteroids
+// const iconMap = {
+//   barren: "lancer/barren",
+//   ice: "lancer/ice",
+//   terrestrial: "lancer/terrestrial",
+//   jovian: "lancer/jovian",
+//   lava: "lancer/lava",
+//   desert: "lancer/desert",
+//   ocean: "lancer/ocean",
+//   asteroids: "lancer/asteroid",
+//   gate: "lancer/gate",
+//   station: "lancer/station",
+//   star: "lancer/star",
+//   moon: "lancer/moon",
+// }
 
 const tintMap = {
   ice: "blue",
@@ -247,15 +244,15 @@ function generateStar(seed) {
   const rng = seedrandom(seed)
   const random = () => rng()
   const weightedTypes = [
-    { type: 'red dwarf', chance: 60 },
-    { type: 'white dwarf', chance: 10 },
-    { type: 'red giant', chance: 5 },
-    { type: 'red supergiant', chance: 4 },
-    { type: 'blue giant', chance: 5 },
-    { type: 'blue supergiant', chance: 3 },
-    { type: 'neutron', chance: 3 },
-    { type: 'red', chance: 5 },
-    { type: 'blue', chance: 5 },
+    { type: 'star', variant: 'red dwarf', chance: 60 },
+    { type: 'star', variant: 'white dwarf', chance: 10 },
+    { type: 'star', variant: 'red giant', chance: 5 },
+    { type: 'star', variant: 'red supergiant', chance: 4 },
+    { type: 'star', variant: 'blue giant', chance: 5 },
+    { type: 'star', variant: 'blue supergiant', chance: 3 },
+    { type: 'star', variant: 'neutron', chance: 3 },
+    { type: 'star', variant: 'red', chance: 5 },
+    { type: 'star', variant: 'blue', chance: 5 },
   ];
 
   const totalChance = weightedTypes.reduce((sum, item) => sum + item.chance, 0);
@@ -266,22 +263,18 @@ function generateStar(seed) {
   });
 
   const rand = random();
-  const type = cumulativeWeights.find(item => rand <= item.cumulativeChance).type
+  const { variant } = cumulativeWeights.find(item => rand <= item.cumulativeChance)
 
   return {
-    type,
-    radius: Math.floor(range(random, planetData[type].radius)),
+    type: 'star',
+    radius: Math.floor(range(random, planetData[variant].radius)),
     size: 50,
-    icon: iconMap["star"],
-    tint: tintMap[type],
-    threejs: {
-      type: "star",
-      // add option for white dwarf
-      schemeColor: tintMap[type] === "red" ? "yellow" : "blue",
-      // add option for white dwarf
-      baseColors: tintMap[type] === "red" ? "" : "4753fc",
-    },
-    temperature: Math.floor(range(random, planetData[type].temperature || [0, 0])),
+    tint: tintMap[variant],
+    // add option for white dwarf
+    schemeColor: tintMap[variant] === "red" ? "yellow" : "blue",
+    // add option for white dwarf
+    baseColors: tintMap[variant] === "red" ? "" : "4753fc",
+    temperature: Math.floor(range(random, planetData[variant].temperature || [0, 0])),
   }
 }
 
@@ -289,7 +282,7 @@ function generateLocation(seed) {
   const rng = seedrandom(seed)
   const random = () => rng()
 
-  const types = ['barren', 'ice', 'terrestrial', 'jovian', 'lava', 'desert', 'ocean', 'dwarf', 'supermassive', 'asteroids']
+  const types = ['barren', 'ice', 'terrestrial', 'jovian', 'lava', 'desert', 'ocean', 'dwarf', 'supermassive', 'asteroid']
   const rand = random()
   let type = types[Math.floor(rand * types.length)]
 
@@ -307,14 +300,10 @@ function generateLocation(seed) {
     const subIndex = Math.floor(sub * supermassive.length);
     type = supermassive[subIndex]
     sizeMod = 2
-  } else if (type === "asteroids") {
+  } else if (type === "asteroid") {
     return {
       type,
-      threejs: {
-        type,
-      },
       radius: Math.floor(range(random, planetData[type].radius)),
-      icon: "lancer/asteroid",
       size: 50,
       daysInYear: Math.floor(range(random, planetData[type].year)),
       dominantChemical: pickWeightedChemical(type, random),
@@ -332,16 +321,13 @@ function generateLocation(seed) {
 
   return {
     type,
-    threejs: {
-      // TODO: might need to drop the ring and make it just for jovain
-      type: ringed ? "ring" : type,
-      // TODO: just for testing purpose
-      land: type === "ocean" ? Math.floor(range(random, planetData[type].ice || [0, 0])) : undefined,
-    },
+    // TODO: might need to drop the ring and make it just for jovain
+    // TODO: just for testing purpose
+    land: type === "ocean" ? Math.floor(range(random, planetData[type].ice || [0, 0])) : undefined,
     radius,
     ringed,
     size: 50,
-    icon: ringed ? "lancer/ringed_planet" : iconMap[type],
+    // icon: ringed ? "lancer/ringed_planet" : type,
     tint: tintMap[type] || "gray",
     gravity: Math.floor(range(random, planetData[type].gravity || [0, 0])),
     pressure: Math.floor(range(random, planetData[type].pressure || [0, 0])),
@@ -373,15 +359,11 @@ function generateMoons(radius, random) {
     const type = typesOfMoons[subIndex]
     moonData.push({
       type,
-      threejs: {
-        type,
-        // TODO: just for testing purpose
-        land: type === "ocean" ? Math.floor(range(random, planetData[type].ice || [0, 0])) : undefined,
-      },
+      // TODO: just for testing purpose
+      land: type === "ocean" ? Math.floor(range(random, planetData[type].ice || [0, 0])) : undefined,
       radius: radius * .1,
       ringed: false,
       size: 50,
-      icon: iconMap[type],
       tint: tintMap[type] || "gray",
       gravity: Math.floor(range(random, planetData[type].gravity || [0, 0])),
       pressure: Math.floor(range(random, planetData[type].pressure || [0, 0])),
@@ -494,7 +476,7 @@ const planetData = {
     ice: [0, 30],
     chemical: ["oxygen", "hydrogen", "carbon", "nitrogen", "ammonia", "methane", "sulfur", "iron"]
   },
-  asteroids: {
+  asteroid: {
     radius: [10, 500],
     year: [150, 10000],
   },
