@@ -126,8 +126,16 @@ function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, bas
     };
     animate()
 
-    const handleMouseDown = () => { holding = true; };
-    const handleMouseUp = () => { holding = false; };
+    const handleMouseDown = () => {
+      holding = true
+      document.body.style.cursor = 'grabbing'
+      document.body.style.userSelect = 'none';
+    };
+    const handleMouseUp = () => {
+      holding = false;
+      document.body.style.cursor = 'grab';
+      document.body.style.userSelect = 'auto';
+    };
     const handleMouseMove = (e) => {
       totalX += Math.abs(e.movementX);
       moveX += e.movementX;
@@ -137,8 +145,10 @@ function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, bas
     container.addEventListener("pointerup", handleMouseUp, false);
     container.addEventListener("pointermove", handleMouseMove, false);
 
-
+    document.body.style.cursor = 'grab';
+    document.body.style.userSelect = 'auto';
     return () => {
+
       cancelAnimationFrame(animationId);
       scene.traverse(obj => {
         if (obj.geometry) obj.geometry.dispose();
