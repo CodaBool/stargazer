@@ -16,7 +16,7 @@ import { createNoAtmospherePlanet } from "./planets/noAtmosphere.js";
 import { createStarPlanet } from "./planets/starPlanet.js";
 import { isMobile } from '@/lib/utils';
 
-function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, baseColors, featureColors, layerColors, schemeColor, atmosphere, clouds, cloudCover, size, land, ringWidth, lakes, rivers, seed }) {
+function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, baseColors, featureColors, layerColors, schemeColor, atmosphere, clouds, cloudCover, size, land, ringWidth, lakes, rivers, seed, planetSize }) {
   const containerRef = useRef(null)
 
   useEffect(() => {
@@ -44,6 +44,11 @@ function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, bas
     // near, default 0.1
     // far, default 2000
     const camera = new PerspectiveCamera(75)
+    // move the planet away from the camera to create smaller planets
+    // should be a 1-4 value
+    const zoomAwayAmount = planetSize || 1
+    camera.position.z = zoomAwayAmount
+
     // const camera = new PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 100000);
     const clock = new Clock();
     const planetGroup = new Group();
@@ -67,16 +72,15 @@ function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, bas
       rivers: rivers ? Number(rivers) : undefined,
       seed: seed ? Number(seed) : undefined,
     }));
-    scene.add(planetGroup);
+    scene.add(planetGroup)
 
-    const starGroup = createStars(200);
-    scene.add(starGroup);
+    const starGroup = createStars(200)
+    starGroup.position.z = -0.5
+    scene.add(starGroup)
     if (!container.contains(sharedCanvas)) {
       sharedCanvas.style.display = 'block';
       container.appendChild(sharedCanvas);
     }
-
-    camera.position.z = 1;
 
     let animationId;
     let totalX = 0;

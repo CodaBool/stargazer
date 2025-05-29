@@ -26,7 +26,12 @@ export default function SolarSystemDiagram({ group, height, isGalaxy }) {
     updateSize();
     window.addEventListener("resize", updateSize);
     return () => window.removeEventListener("resize", updateSize);
-  }, []);
+  }, [])
+
+  useEffect(() => {
+    if (!activeBody) return
+    console.log("opened", activeBody)
+  }, [activeBody]);
 
   const closeDialog = func => {
     func(null)
@@ -39,7 +44,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy }) {
           {group.map((body, index) => (
             <div key={index} className="flex flex-col items-center relative min-w-[40px]">
               <img
-                src={`${isGalaxy ? svgBase + "lancer/" + body.type + ".svg" : svgBase + "lancer/moon.svg"}`}
+                src={`${isGalaxy ? svgBase + "lancer/" + (body.ringed ? "ringed_planet" : body.type) + ".svg" : svgBase + "lancer/moon.svg"}`}
                 alt={body.name}
                 onClick={() => setActiveBody(body)}
                 style={{
@@ -92,7 +97,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy }) {
 
             <div className={`flex flex-wrap justify-evenly content-start`}>
               {moonBodies.map((moon, i) => {
-                console.log("display moon", moon)
+                // console.log("display moon", moon)
                 return (
                   <img
                     src={svgBase + "lancer/" + moon.type + ".svg"}
@@ -126,13 +131,13 @@ export default function SolarSystemDiagram({ group, height, isGalaxy }) {
               maxHeight: "95vh",
             }}
           >
-            <DialogTitle>{activeBody.name}</DialogTitle>
+            <DialogTitle>{activeBody.name || activeBody.type + `${activeBody.variant ? ` (${activeBody.variant})` : ""}`}</DialogTitle>
             {activeBody.type !== "station" && activeBody.type !== "gate" ? (
               <ThreejsPlanet
                 sharedCanvas={sharedCanvas}
                 sharedRenderer={sharedRenderer}
                 height={squareSize}
-                type={activeBody.type}
+                type={activeBody.ringed ? "ring" : activeBody.type}
                 pixels={800}
                 // 4 comma separated hexes
                 baseColors={activeBody.baseColors}
@@ -145,21 +150,22 @@ export default function SolarSystemDiagram({ group, height, isGalaxy }) {
                 // 3 comma separated alpha hexes
                 atmosphere={activeBody.atmosphere}
                 // ice & terrestrial (defaults true)
-                clouds={activeBody.clouds}
+                clouds={activeBody.cloud}
                 // ice & terrestrial (lower is more clouds)
-                cloudCover={activeBody.cloudCover}
+                cloudCover={activeBody.cloud}
                 // asteroid 1-9
                 size={activeBody.size}
                 // terrestrial, lower is more land
-                land={activeBody.land}
+                land={activeBody.hydrosphere}
                 // ring size 0-.2
-                ringWidth={activeBody.ringWidth}
+                ringWidth={activeBody.ringSize}
                 // ice (lower is more lakes)
-                lakes={activeBody.lakes}
+                lakes={activeBody.ice}
                 // lava (lower is more lava)
-                rivers={activeBody.rivers}
+                rivers={activeBody.hydrosphere}
                 // a number
                 seed={activeBody.seed}
+                planetSize={activeBody.planetSize}
               />
             ) : (
               <h1 className="text-center text-4xl">No preview available for this type</h1>

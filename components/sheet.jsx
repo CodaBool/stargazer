@@ -59,8 +59,8 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
   const local = generateLocations(myGroup)
   const nearby = nearbyGroups.map(g => generateLocations(g))
 
-  console.log("local", local)
-  console.log("nearby", nearby)
+  // console.log("local", local)
+  // console.log("nearby", nearby)
 
   function handleMouseOver({ id }) {
     map.setFeatureState(
@@ -176,9 +176,9 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
 function generateLocations(group) {
   const seed = group[0].geometry.coordinates.toString()
   const rng = seedrandom(seed)
-  const random1 = () => rng()
+  const random = () => rng()
 
-  const numToGen = Math.floor(range(random1, [1, MAX_GEN_LOCATIONS])) - group.length
+  const numToGen = Math.floor(range(random, [1, MAX_GEN_LOCATIONS])) - group.length
 
   const locations = []
   const starLocation = group.find(l => l.properties.type === "star")
@@ -205,22 +205,6 @@ function generateLocations(group) {
   return locations
 }
 
-// TODO: fix asteroids
-// const iconMap = {
-//   barren: "lancer/barren",
-//   ice: "lancer/ice",
-//   terrestrial: "lancer/terrestrial",
-//   jovian: "lancer/jovian",
-//   lava: "lancer/lava",
-//   desert: "lancer/desert",
-//   ocean: "lancer/ocean",
-//   asteroids: "lancer/asteroid",
-//   gate: "lancer/gate",
-//   station: "lancer/station",
-//   star: "lancer/star",
-//   moon: "lancer/moon",
-// }
-
 const tintMap = {
   ice: "blue",
   terrestrial: "green",
@@ -235,24 +219,28 @@ const tintMap = {
   "red supergiant": "red",
   "blue giant": "blue",
   "blue supergiant": "blue",
-  "neutron": "blue",
+  // "neutron": "blue",
   "red": "red",
   "blue": "blue",
+  "orange": "orange",
+  "yellow": "yellow",
 }
 
 function generateStar(seed) {
-  const rng = seedrandom(seed)
-  const random = () => rng()
+  const rng = seedrandom(seed);
+  const random = () => rng();
+
   const weightedTypes = [
-    { type: 'star', variant: 'red dwarf', chance: 60 },
-    { type: 'star', variant: 'white dwarf', chance: 10 },
-    { type: 'star', variant: 'red giant', chance: 5 },
-    { type: 'star', variant: 'red supergiant', chance: 4 },
-    { type: 'star', variant: 'blue giant', chance: 5 },
-    { type: 'star', variant: 'blue supergiant', chance: 3 },
-    { type: 'star', variant: 'neutron', chance: 3 },
-    { type: 'star', variant: 'red', chance: 5 },
-    { type: 'star', variant: 'blue', chance: 5 },
+    { type: 'star', variant: 'red dwarf', chance: 50, scheme: "red", baseColor: "c20000" },
+    { type: 'star', variant: 'orange', chance: 5, scheme: "orange", baseColor: "fc8c03" },
+    { type: 'star', variant: 'yellow', chance: 5, scheme: "yellow", baseColor: "ffeb91" },
+    { type: 'star', variant: 'white dwarf', chance: 10, scheme: "white", baseColor: "b3b3b3" },
+    { type: 'star', variant: 'red giant', chance: 5, scheme: "red", baseColor: "c20000" },
+    { type: 'star', variant: 'red supergiant', chance: 4, scheme: "red", baseColor: "c20000" },
+    { type: 'star', variant: 'blue giant', chance: 5, scheme: "blue", baseColor: "4753fc" },
+    { type: 'star', variant: 'blue supergiant', chance: 3, scheme: "blue", baseColor: "4753fc" },
+    { type: 'star', variant: 'red', chance: 5, scheme: "red", baseColor: "c20000" },
+    { type: 'star', variant: 'blue', chance: 5, scheme: "blue", baseColor: "4753fc" },
   ];
 
   const totalChance = weightedTypes.reduce((sum, item) => sum + item.chance, 0);
@@ -263,33 +251,54 @@ function generateStar(seed) {
   });
 
   const rand = random();
-  const { variant } = cumulativeWeights.find(item => rand <= item.cumulativeChance)
+  const star = cumulativeWeights.find(item => rand <= item.cumulativeChance);
+
+  const radius = range(random, planetData[star.variant].radius);
+  const clampedRadius = Math.min(Math.max(radius, 0), 1500); // Clamp 0–1500
+
+  // Custom size band mapping
+  let planetSize;
+  if (clampedRadius < 0.5) {
+    planetSize = 4
+    if (star.variant === "white dwarf") {
+      planetSize = 12
+    }
+  } else if (clampedRadius < 1) {
+    planetSize = 3;
+  } else if (clampedRadius < 5) {
+    planetSize = 2;
+  } else {
+    planetSize = 1;
+  }
 
   return {
     type: 'star',
-    radius: Math.floor(range(random, planetData[variant].radius)),
-    size: 50,
-    tint: tintMap[variant],
-    // add option for white dwarf
-    schemeColor: tintMap[variant] === "red" ? "yellow" : "blue",
-    // add option for white dwarf
-    baseColors: tintMap[variant] === "red" ? "" : "4753fc",
-    temperature: Math.floor(range(random, planetData[variant].temperature || [0, 0])),
-  }
+    radius,
+    variant: star.variant,
+    planetSize,
+    tint: tintMap[star.variant],
+    schemeColor: star.scheme,
+    baseColors: star.baseColor,
+    temperature: range(random, planetData[star.variant].temperature || [0, 0]),
+  };
 }
 
-function generateLocation(seed) {
+function generateLocation(seed, isMoon) {
   const rng = seedrandom(seed)
   const random = () => rng()
 
   const types = ['barren', 'ice', 'terrestrial', 'jovian', 'lava', 'desert', 'ocean', 'dwarf', 'supermassive', 'asteroid']
   const rand = random()
-  let type = types[Math.floor(rand * types.length)]
+  let type, ringed, sizeMod = 1
+  if (isMoon) {
+    const moonTypes = ['barren', 'ice', 'terrestrial', 'lava', 'desert', 'ocean', 'asteroid']
+    type = moonTypes[Math.floor(rand * moonTypes.length)]
+    sizeMod = 0.1
+  } else {
+    type = types[Math.floor(rand * types.length)]
+  }
 
-  let sizeMod = 1
   const sub = (Math.floor(Math.abs(rand) * 100) % 10) / 10
-  let isMoon = false
-
   if (type === "dwarf") {
     const dwarf = ["barren", "ice"];
     const subIndex = Math.floor(sub * dwarf.length)
@@ -301,50 +310,58 @@ function generateLocation(seed) {
     type = supermassive[subIndex]
     sizeMod = 2
   } else if (type === "asteroid") {
+    const size = Math.floor(range(random, planetData[type].radius))
     return {
       type,
-      radius: Math.floor(range(random, planetData[type].radius)),
-      size: 50,
+      radius: size,
+      size: 1 + (size / planetData[type].radius[1]) * 8,
+      planetSize: 0.9,
       daysInYear: Math.floor(range(random, planetData[type].year)),
       dominantChemical: pickWeightedChemical(type, random),
     }
-  } else if (type === "moon") {
-    const typesOfMoons = ['barren', 'ice', 'terrestrial', 'lava', 'desert', 'ocean']
-    const subIndex = Math.floor(sub * typesOfMoons.length)
-    type = typesOfMoons[subIndex]
-    sizeMod = 0.1
-    isMoon = true
   }
 
   const radius = Math.floor(range(random, planetData[type].radius)) * sizeMod
-  const ringed = checkRings(radius, random)
+  if (type === "jovian") ringed = checkRings(radius, random)
+
+  let planetSize;
+  if (radius < 4000) {
+    planetSize = 2.6
+  } else if (radius < 5000) {
+    planetSize = 1.6
+  } else if (radius < 10000) {
+    planetSize = 1.4
+  } else {
+    planetSize = 1.2
+  }
+  if (type === "station" || type === "gate" || type === "asteroid") {
+    planetSize = 1.5
+  }
 
   return {
     type,
-    // TODO: might need to drop the ring and make it just for jovain
-    // TODO: just for testing purpose
-    land: type === "ocean" ? Math.floor(range(random, planetData[type].ice || [0, 0])) : undefined,
     radius,
     ringed,
-    size: 50,
-    // icon: ringed ? "lancer/ringed_planet" : type,
+    planetSize,
     tint: tintMap[type] || "gray",
     gravity: Math.floor(range(random, planetData[type].gravity || [0, 0])),
     pressure: Math.floor(range(random, planetData[type].pressure || [0, 0])),
     temperature: Math.floor(range(random, planetData[type].temperature || [0, 0])),
     daysInYear: Math.floor(range(random, planetData[type].year || [0, 0])),
     hoursInDay: Math.floor(range(random, planetData[type].day || [0, 0])),
-    hydrosphere: Math.floor(range(random, planetData[type].hydro || [0, 0])),
-    cloud: Math.floor(range(random, planetData[type].cloud || [0, 0])),
-    ice: Math.floor(range(random, planetData[type].ice || [0, 0])),
+    // used for lava on lava planet, and land for terrestrial
+    hydrosphere: range(random, planetData[type].hydro || [0, 0]) / 100,
+    cloud: range(random, planetData[type].cloud || [0, 0]) / 100,
+    ringSize: range(random, planetData[type].ringSize || [0, 0]),
+    ice: range(random, planetData[type].ice || [0, 0]) / 100,
     dominantChemical: pickWeightedChemical(type, random),
-    moons: generateMoons(radius, random),
+    moons: isMoon ? [] : generateMoons(radius, random, seed),
     modifier: sizeMod !== 1 ? sizeMod === 2 ? "supermassive" : sizeMod === 0.5 ? "dwarf" : "moon" : "",
-    isMoon,
+    isMoon: !!isMoon,
   }
 }
 
-function generateMoons(radius, random) {
+function generateMoons(radius, random, seed) {
   const moonData = []
   if (radius < 4000) return moonData
   let moons = 0;
@@ -353,39 +370,16 @@ function generateMoons(radius, random) {
     if (random() < 0.5) moons++
     extraRadius -= 1000
   }
-  const typesOfMoons = ['barren', 'ice', 'terrestrial', 'lava', 'desert', 'ocean']
   for (let i = 0; i < moons; i++) {
-    const subIndex = Math.floor(random() * typesOfMoons.length)
-    const type = typesOfMoons[subIndex]
-    moonData.push({
-      type,
-      // TODO: just for testing purpose
-      land: type === "ocean" ? Math.floor(range(random, planetData[type].ice || [0, 0])) : undefined,
-      radius: radius * .1,
-      ringed: false,
-      size: 50,
-      tint: tintMap[type] || "gray",
-      gravity: Math.floor(range(random, planetData[type].gravity || [0, 0])),
-      pressure: Math.floor(range(random, planetData[type].pressure || [0, 0])),
-      temperature: Math.floor(range(random, planetData[type].temperature || [0, 0])),
-      daysInYear: Math.floor(range(random, planetData[type].year || [0, 0])),
-      // TODO: moons are usually tidally locked
-      hoursInDay: Math.floor(range(random, planetData[type].day || [0, 0])),
-      hydrosphere: Math.floor(range(random, planetData[type].hydro || [0, 0])),
-      cloud: Math.floor(range(random, planetData[type].cloud || [0, 0])),
-      ice: Math.floor(range(random, planetData[type].ice || [0, 0])),
-      dominantChemical: pickWeightedChemical(type, random),
-      modifier: "moon",
-      isMoon: true,
-    })
+    moonData.push(generateLocation(seed + i, true))
   }
-  console.log("moons", moonData)
   return moonData
 }
 
 function checkRings(radius, random) {
   if (radius < 10000) return false
-  const chance = 0.1 + (radius - 10000) / 200000
+  // const chance = 1 + (radius - 10000) / 200000
+  const chance = 0.2 + (radius - 10000) / 200000
   const subChance = (Math.floor(Math.abs(random()) * 100) % 10) / 10
   return subChance < chance;
 }
@@ -399,8 +393,6 @@ const planetData = {
     radius: [800, 8000],
     year: [60, 130000],
     day: [250, 125000],
-    hydro: [0, 0],
-    cloud: [0, 0],
     ice: [0, 30],
     chemical: ["iron", "silicate", "carbon", "sulfur", "oxygen"]
   },
@@ -411,9 +403,8 @@ const planetData = {
     radius: [4200, 11000],
     year: [250, 125000],
     day: [12, 60],
-    hydro: [0, 0],
-    cloud: [0, 20],
-    ice: [20, 100],
+    cloud: [40, 90],
+    ice: [35, 75],
     chemical: ["ammonia", "methane", "oxygen", "carbon", "nitrogen", "sulfur"]
   },
   terrestrial: {
@@ -423,8 +414,9 @@ const planetData = {
     radius: [4224, 8382],
     year: [290, 800],
     day: [13, 40],
-    hydro: [30, 90],
-    cloud: [15, 100],
+    // lower is more land
+    hydro: [40, 60],
+    cloud: [40, 80],
     ice: [0, 10],
     chemical: ["silicate", "iron", "oxygen", "carbon", "nitrogen", "sulfur", "hydrogen", "helium"]
   },
@@ -435,8 +427,8 @@ const planetData = {
     radius: [7800, 120000],
     year: [600, 98000],
     day: [5, 30],
-    hydro: [0, 0],
     cloud: [50, 100],
+    ringSize: [0, 0.2],
     ice: [0, 0],
     chemical: ["hydrogen", "helium", "methane", "ammonia", "sulfur", "carbon", "oxygen"]
   },
@@ -447,9 +439,10 @@ const planetData = {
     radius: [4000, 9000],
     year: [200, 1000],
     day: [10, 35],
-    hydro: [0, 0],
+    // use hydro as a lava proxy, lower is more lava
+    // TODO: this seems bugged
+    hydro: [50, 64],
     cloud: [30, 100],
-    ice: [0, 0],
     chemical: ["oxygen", "iron", "silicate", "sulfur", "carbon", "hydrogen"]
   },
   desert: {
@@ -471,8 +464,8 @@ const planetData = {
     radius: [5000, 10000],
     year: [250, 1000],
     day: [12, 30],
-    hydro: [80, 100],
-    cloud: [30, 100],
+    hydro: [60, 95],
+    cloud: [25, 80],
     ice: [0, 30],
     chemical: ["oxygen", "hydrogen", "carbon", "nitrogen", "ammonia", "methane", "sulfur", "iron"]
   },
@@ -493,7 +486,7 @@ const planetData = {
   },
   "white dwarf": {
     temperature: [8000, 40000],
-    radius: [2000, 7000],
+    radius: [0.001, 0.1],
   },
   "red giant": {
     temperature: [3000, 6000],
@@ -511,10 +504,10 @@ const planetData = {
     temperature: [10000, 50000],
     radius: [10, 40],
   },
-  "neutron": {
-    temperature: [1000000, 5000000],
-    radius: [8, 14],
-  },
+  // "neutron": {
+  //   temperature: [1000000, 5000000],
+  //   radius: [8, 14],
+  // },
   "red": {
     temperature: [2000, 4000],
     radius: [1, 5],
@@ -522,6 +515,14 @@ const planetData = {
   "blue": {
     temperature: [30000, 60000],
     radius: [2, 16],
+  },
+  "orange": {
+    temperature: [2000, 4000],
+    radius: [1, 5],
+  },
+  "yellow": {
+    temperature: [2000, 4000],
+    radius: [1, 5],
   }
 }
 
