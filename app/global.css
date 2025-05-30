@@ -147,8 +147,15 @@ body {
 .hover-grow {
   transition: transform 0.3s ease-in-out;
 }
+.hover-grow-xl {
+  transition: transform 0.3s ease-in-out;
+}
 .hover-grow:hover {
   transform: scale(1.02);
+}
+
+.hover-grow-xl:hover {
+  transform: scale(1.2);
 }
 
 @media (width < 1200px) {

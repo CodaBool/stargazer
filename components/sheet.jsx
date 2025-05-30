@@ -22,7 +22,6 @@ const MAX_GEN_LOCATIONS = 8
 
 export default function SheetComponent({ drawerContent, setDrawerContent, myGroup, nearbyGroups, coordinates, name, selectedId, height, isGalaxy }) {
   const { map } = useMap()
-  // const { UNIT } = getConsts(name)
   const GROUP_NAME = isGalaxy ? "Solar Systems" : "Locations"
 
   useEffect(() => {
@@ -59,43 +58,22 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
   const local = generateLocations(myGroup)
   const nearby = nearbyGroups.map(g => generateLocations(g))
 
-  // console.log("local", local)
-  // console.log("nearby", nearby)
-
-  function handleMouseOver({ id }) {
-    map.setFeatureState(
-      { source: 'source', id },
-      { hover: true }
-    )
-  }
-
-  function handleMouseOut({ id }) {
-    map.setFeatureState(
-      { source: 'source', id },
-      { hover: false }
-    )
-  }
-
-  function handle(e) {
-    e.preventDefault()
-  }
-
   return (
     <Sheet open={!!drawerContent} onOpenChange={() => setDrawerContent(null)} modal={false} style={{ color: 'white' }} >
-      <SheetContent side="bottom" style={{ maxHeight: '38vh', overflowY: 'auto' }} onPointerDownOutside={handle} id="bottom-sheet">
+      <SheetContent side="bottom" style={{ maxHeight: '38vh', overflowY: 'auto' }} onPointerDownOutside={e => e.preventDefault()} id="bottom-sheet">
         <SheetHeader >
           <SheetTitle className="text-center">{coordinates ? `${isGalaxy ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${isGalaxy ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}</SheetTitle>
           {nearby.length > 1 && <SheetDescription className="text-center" >{nearby.length} Nearby {GROUP_NAME}</SheetDescription>}
         </SheetHeader >
 
-        <SolarSystemDiagram group={local} height={height} isGalaxy={isGalaxy} />
+        <SolarSystemDiagram group={local} height={height} isGalaxy={isGalaxy} map={map} selectedId={selectedId} name={name} />
         <hr />
         {nearby.length > 0 && (
           <>
             <h1 className="text-center text-2xl my-4">Nearby {GROUP_NAME}</h1>
             {nearby.map((group, index) => (
               <div key={index}>
-                <SolarSystemDiagram group={group} height={height} isGalaxy={isGalaxy} />
+                <SolarSystemDiagram group={group} height={height} isGalaxy={isGalaxy} map={map} name={name} />
                 {index + 1 !== nearby.length && <hr />}
               </div>
             ))}
@@ -105,70 +83,15 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
     </Sheet>
   )
 
-  // return (
-  //   <Sheet open={!!setDrawerContent} modal={false} style={{ color: 'white' }}>
-  //     <SheetContent side="bottom" style={{ maxHeight: '38vh', overflowY: 'auto' }} className="map-sheet" onPointerDownOutside={handle}>
-  //       <SheetHeader >
-  //         <SheetTitle className="text-center">{coordinates ? `${UNIT === "ly" ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${UNIT === "ly" ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}</SheetTitle>
-  //         {locations?.length > 1 && <SheetDescription className="text-center" >Nearby Locations</SheetDescription>}
-  //       </SheetHeader >
-  //       <div className="flex flex-wrap justify-center">
-  //         {locations?.map((d, index) => {
-  //           const { properties, geometry } = d
-  //           const params = new URLSearchParams({
-  //             description: properties.description || "",
-  //             name: properties.name,
-  //             map: name,
-  //           }).toString()
-  //           const icon = SVG[d.properties.type]
-  //           const remoteIcon = d.properties.icon
-  //           const card = (
-  //             <Card
-  //               className="min-h-[80px] m-2 min-w-[150px] cursor-pointer"
-  //               onMouseOver={() => handleMouseOver(d)}
-  //               onMouseOut={() => handleMouseOut(d)}
-  //             >
-  //               <CardContent className={`p-2 text-center ${selected === properties.name ? 'bg-yellow-800' : 'hover:bg-yellow-950'}`}>
-  //                 {properties.unofficial && <Badge variant="destructive" className="mx-auto">unofficial</Badge>}
-  //                 <p className="font-bold text-xl text-center">{properties.name}</p>
-  //                 {remoteIcon ?
-  //                   <p className="text-center text-gray-400 flex justify-center">
-  //                     <svg width="20" height="20" className="m-1">
-  //                       <image href={remoteIcon} width="20" height="20" />
-  //                     </svg>
-  //                     {properties.type}
-  //                   </p>
-  //                   : <p className="text-center text-gray-400 flex justify-center"><span dangerouslySetInnerHTML={{ __html: icon }} style={{ fill: "white", margin: '.2em' }} />{properties.type}</p>
-  //                 }
-  //                 {properties.faction && <Badge className="mx-auto">{properties.faction}</Badge>}
-  //                 {properties.destroyed && <Badge className="mx-auto">destroyed</Badge>}
-  //                 {properties.capital && <Badge variant="destructive" className="mx-auto">capital</Badge>}
-  //               </CardContent>
-  //             </Card >
-  //           )
-  //           return properties.name === selected ? (
-  //             <Link
-  //               href={genLink(d, name, "href")}
-  //               target={genLink(d, name, "target")}
-  //               key={index}
-  //             >
-  //               {card}
-  //             </Link>
-  //           ) : <div key={index} onClick={() => {
-
+  //           <div key={index} onClick={() => {
   //             // duplicate of map pan()
   //             const arbitraryNumber = locations.length > 5 ? 9.5 : 10
   //             let zoomFactor = Math.pow(2, arbitraryNumber - map.getZoom())
   //             zoomFactor = Math.max(zoomFactor, 4)
   //             const latDiff = (map.getBounds().getNorth() - map.getBounds().getSouth()) / zoomFactor
   //             const lat = d.geometry.coordinates[1] - latDiff / 2
-
   //             map.easeTo({ center: [d.geometry.coordinates[0], lat], duration: 800 })
   //           }}>{card}</div>
-  //         })}
-  //       </div>
-  //     </SheetContent >
-  //   </Sheet >
   // )
 }
 
@@ -182,7 +105,7 @@ function generateLocations(group) {
 
   const locations = []
   const starLocation = group.find(l => l.properties.type === "star")
-  locations.push(generateStar(seed + `${starLocation?.properties.name || ""}`))
+  locations.push(generateStar(seed + `${starLocation?.properties.name || ""}`, starLocation))
   if (starLocation) {
     locations[0] = { ...locations[0], name: starLocation.properties.name }
   }
@@ -195,6 +118,7 @@ function generateLocations(group) {
       type,
       variant: "red",
       tint: "red",
+      source: location,
     })
   }
 
@@ -226,7 +150,7 @@ const tintMap = {
   "yellow": "yellow",
 }
 
-function generateStar(seed) {
+function generateStar(seed, location) {
   const rng = seedrandom(seed);
   const random = () => rng();
 
@@ -276,6 +200,7 @@ function generateStar(seed) {
     radius,
     variant: star.variant,
     planetSize,
+    source: location,
     tint: tintMap[star.variant],
     schemeColor: star.scheme,
     baseColors: star.baseColor,
@@ -293,7 +218,7 @@ function generateLocation(seed, isMoon) {
   if (isMoon) {
     const moonTypes = ['barren', 'ice', 'terrestrial', 'lava', 'desert', 'ocean', 'asteroid']
     type = moonTypes[Math.floor(rand * moonTypes.length)]
-    sizeMod = 0.1
+    sizeMod = 0.3
   } else {
     type = types[Math.floor(rand * types.length)]
   }
@@ -415,8 +340,8 @@ const planetData = {
     year: [290, 800],
     day: [13, 40],
     // lower is more land
-    hydro: [40, 60],
-    cloud: [40, 80],
+    hydro: [50, 60],
+    cloud: [50, 70],
     ice: [0, 10],
     chemical: ["silicate", "iron", "oxygen", "carbon", "nitrogen", "sulfur", "hydrogen", "helium"]
   },
@@ -472,6 +397,7 @@ const planetData = {
   asteroid: {
     radius: [10, 500],
     year: [150, 10000],
+    chemical: ["oxygen", "hydrogen", "carbon", "nitrogen", "silicate", "methane", "sulfur", "iron", "copper"],
   },
   gate: {
     radius: [200, 400],
