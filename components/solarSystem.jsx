@@ -11,7 +11,6 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { genLink } from "@/lib/utils";
 import Link from "next/link";
-import { RGBA_PVRTC_2BPPV1_Format } from "three";
 
 const svgBase = "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/svg/";
 
@@ -61,10 +60,10 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
   return (
     <>
       <div className="w-full overflow-x-auto overflow-y-visible py-2">
-        <div className="flex items-baseline h-full space-x-6 px-4 justify-evenly">
+        <div className="flex items-baseline h-full space-x-6 px-4 justify-center">
           {group.map((body, index) => {
             const source = body.source?.id === selectedId ? body.source : undefined
-            if (source) console.log("source", source)
+            // if (source) console.log("source", source)
             return (
               <div key={index} className="flex flex-col items-center relative min-w-[40px]">
                 <img
@@ -232,21 +231,21 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
                 {activeBody.modifier && <Badge variant="destructive" className="">{activeBody.modifier}</Badge>}
                 {activeBody.isMoon && <Badge variant="destructive" className="">Moon</Badge>}
               </div>
-              : <div className="absolute top-[85px] left-[40px] flex flex-col text-sm">
-                {(typeof activeBody.cloud === "number" && (activeBody.type === "terrestrial" || activeBody.type === "ice")) && <p variant="destructive" className="mt-4">{(1 - activeBody.cloud).toFixed(2)} cloud coverage %</p>}
-                {(typeof activeBody.hydrosphere === "number" && activeBody.type !== "ice") && <p className="mt-4">{activeBody.hydrosphere.toFixed(2)} hydrosphere %</p>}
-                {(typeof activeBody.hydrosphere === "number" && activeBody.type === "ice") && <p className="mt-4">{(1 - activeBody.ice).toFixed(2)} hydrosphere %</p>}
-                {typeof activeBody.ice === "number" && <p variant="destructive" className="mt-4">{activeBody.ice.toFixed(2)} ice coverage %</p>}
-                {typeof activeBody.radius === "number" && <p variant="destructive" className="mt-4">{activeBody.radius.toFixed(2)} {activeBody.type === "star" ? "solar radii" : "km radius"}</p>}
-                {typeof activeBody.temperature === "number" && <p variant="destructive" className="mt-4">{activeBody.temperature}°C</p>}
-                {typeof activeBody.dominantChemical === "string" && <p variant="destructive" className="mt-4">Dominant Chemical: {activeBody.dominantChemical}</p>}
-                {typeof activeBody.daysInYear === "number" && <p variant="destructive" className="mt-4">{activeBody.daysInYear} days in year</p>}
-                {typeof activeBody.hoursInDay === "number" && <p variant="destructive" className="mt-4">{activeBody.hoursInDay} hours in day</p>}
-                {typeof activeBody.gravity === "number" && <p variant="destructive" className="mt-4">Gavity: {activeBody.gravity} cm/sec²</p>}
-                {activeBody.pressure > 0 && <p variant="destructive" className="mt-4">Pressure: {activeBody.pressure} millibars</p>}
-                {activeBody.moons?.length > 0 && <p variant="destructive" className="mt-4">{activeBody.moons.length} moon{activeBody.moons.length === 1 ? "" : "s"}</p>}
-                {typeof activeBody.modifier === "string" && <p variant="destructive" className="mt-4">{activeBody.modifier}</p>}
-                {activeBody.isMoon && <p variant="destructive" className="mt-4">Moon</p>}
+              : <div className="absolute top-[55px] left-[35px] flex flex-col text-sm">
+                {(typeof activeBody.cloud === "number" && (activeBody.type === "terrestrial" || activeBody.type === "ice")) && <p variant="destructive" className="mt-2">{(1 - activeBody.cloud).toFixed(1)} cloud coverage %</p>}
+                {(typeof activeBody.hydrosphere === "number" && activeBody.type !== "ice") && <p className="mt-2">{activeBody.hydrosphere.toFixed(1)} hydrosphere %</p>}
+                {(typeof activeBody.hydrosphere === "number" && activeBody.type === "ice") && <p className="mt-2">{(1 - activeBody.ice).toFixed(1)} hydrosphere %</p>}
+                {typeof activeBody.ice === "number" && activeBody.type === "ice" && <p variant="destructive" className="mt-2">{activeBody.ice.toFixed(1)} ice coverage %</p>}
+                {typeof activeBody.radius === "number" && <p variant="destructive" className="mt-2">{activeBody.radius.toFixed(2)} {activeBody.type === "star" ? "solar radii" : "km radius"}</p>}
+                {typeof activeBody.temperature === "number" && <p variant="destructive" className="mt-2">{activeBody.temperature}°C</p>}
+                {typeof activeBody.dominantChemical === "string" && <p variant="destructive" className="mt-2">Dominant Chemical: {activeBody.dominantChemical}</p>}
+                {typeof activeBody.daysInYear === "number" && <p variant="destructive" className="mt-2">{activeBody.daysInYear} days in year</p>}
+                {typeof activeBody.hoursInDay === "number" && <p variant="destructive" className="mt-2">{activeBody.hoursInDay} hours in day</p>}
+                {typeof activeBody.gravity === "number" && <p variant="destructive" className="mt-2">Gavity: {(activeBody.gravity * 0.0010197162).toFixed(1)} g</p>}
+                {activeBody.pressure > 0 && <p variant="destructive" className="mt-2">Pressure: {(activeBody.pressure / 1000).toFixed(1)} bars</p>}
+                {activeBody.moons?.length > 0 && <p variant="destructive" className="mt-2">{activeBody.moons.length} moon{activeBody.moons.length === 1 ? "" : "s"}</p>}
+                {typeof activeBody.modifier === "string" && <p variant="destructive" className="mt-2">{activeBody.modifier}</p>}
+                {activeBody.isMoon && <p variant="destructive" className="mt-2">Moon</p>}
               </div>
             }
           </DialogContent>

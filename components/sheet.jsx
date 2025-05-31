@@ -17,6 +17,7 @@ import { useMap } from 'react-map-gl/maplibre'
 import { useEffect } from "react"
 import SolarSystemDiagram from "./solarSystem.jsx"
 import seedrandom from 'seedrandom'
+import { Crosshair } from "lucide-react"
 
 const MAX_GEN_LOCATIONS = 8
 
@@ -58,21 +59,51 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
   const local = generateLocations(myGroup)
   const nearby = nearbyGroups.map(g => generateLocations(g))
 
+  function panToGroup(group) {
+    // duplicate code to map pan()
+    const arbitraryNumber = group.length > 5 ? 9.5 : 10
+    let zoomFactor = Math.pow(2, arbitraryNumber - map.getZoom())
+    zoomFactor = Math.max(zoomFactor, 4)
+    const latDiff = (map.getBounds().getNorth() - map.getBounds().getSouth()) / zoomFactor
+    const lat = group[0].groupCenter[1] - latDiff / 2
+    map.easeTo({ center: [group[0].groupCenter[0], lat], duration: 800 })
+    group.forEach((d) => {
+      if (d.source) {
+        map.setFeatureState(
+          { source: 'source', id: d.source.id },
+          { hover: true }
+        )
+        setTimeout(() => {
+          map.setFeatureState(
+            { source: 'source', id: d.source.id },
+            { hover: false }
+          )
+        }, 1_000)
+      }
+    })
+  }
+
   return (
     <Sheet open={!!drawerContent} onOpenChange={() => setDrawerContent(null)} modal={false} style={{ color: 'white' }} >
       <SheetContent side="bottom" style={{ maxHeight: '38vh', overflowY: 'auto' }} onPointerDownOutside={e => e.preventDefault()} id="bottom-sheet">
         <SheetHeader >
-          <SheetTitle className="text-center">{coordinates ? `${isGalaxy ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${isGalaxy ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}</SheetTitle>
+          <SheetTitle className="text-center">
+            <Crosshair onClick={() => panToGroup(local)} className="inline mr-2 mb-1 cursor-pointer" />
+            {coordinates ? `${isGalaxy ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${isGalaxy ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}
+          </SheetTitle>
           {nearby.length > 1 && <SheetDescription className="text-center" >{nearby.length} Nearby {GROUP_NAME}</SheetDescription>}
         </SheetHeader >
-
         <SolarSystemDiagram group={local} height={height} isGalaxy={isGalaxy} map={map} selectedId={selectedId} name={name} />
         <hr />
         {nearby.length > 0 && (
           <>
             <h1 className="text-center text-2xl my-4">Nearby {GROUP_NAME}</h1>
             {nearby.map((group, index) => (
-              <div key={index}>
+              <div key={index} className="flex flex-col">
+                <div className="mx-auto">
+                  <Crosshair onClick={() => panToGroup(group)} className="cursor-pointer inline" />
+                  <span className="ml-2">{`${isGalaxy ? "Y" : "lat"}: ${Math.floor(group[0].groupCenter[1])}, ${isGalaxy ? "X" : "lng"}: ${Math.floor(group[0].groupCenter[0])}`}</span>
+                </div>
                 <SolarSystemDiagram group={group} height={height} isGalaxy={isGalaxy} map={map} name={name} />
                 {index + 1 !== nearby.length && <hr />}
               </div>
@@ -82,17 +113,6 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
       </SheetContent>
     </Sheet>
   )
-
-  //           <div key={index} onClick={() => {
-  //             // duplicate of map pan()
-  //             const arbitraryNumber = locations.length > 5 ? 9.5 : 10
-  //             let zoomFactor = Math.pow(2, arbitraryNumber - map.getZoom())
-  //             zoomFactor = Math.max(zoomFactor, 4)
-  //             const latDiff = (map.getBounds().getNorth() - map.getBounds().getSouth()) / zoomFactor
-  //             const lat = d.geometry.coordinates[1] - latDiff / 2
-  //             map.easeTo({ center: [d.geometry.coordinates[0], lat], duration: 800 })
-  //           }}>{card}</div>
-  // )
 }
 
 
@@ -104,8 +124,9 @@ function generateLocations(group) {
   const numToGen = Math.floor(range(random, [1, MAX_GEN_LOCATIONS])) - group.length
 
   const locations = []
+  const g = group.find(l => !!l.groupCenter)
   const starLocation = group.find(l => l.properties.type === "star")
-  locations.push(generateStar(seed + `${starLocation?.properties.name || ""}`, starLocation))
+  locations.push(generateStar(seed + `${starLocation?.properties.name || ""}`, starLocation, g?.groupCenter))
   if (starLocation) {
     locations[0] = { ...locations[0], name: starLocation.properties.name }
   }
@@ -116,14 +137,17 @@ function generateLocations(group) {
     locations.push({
       name: location.properties.name,
       type,
-      variant: "red",
-      tint: "red",
+      tint: "gray",
       source: location,
+      groupCenter: g?.groupCenter,
     })
   }
 
   for (let i = 0; i < numToGen; i++) {
-    locations.push(generateLocation(seed + i))
+    locations.push({
+      groupCenter: g?.groupCenter,
+      ...generateLocation(seed + i)
+    })
   }
 
   return locations
@@ -150,7 +174,7 @@ const tintMap = {
   "yellow": "yellow",
 }
 
-function generateStar(seed, location) {
+function generateStar(seed, location, groupCenter) {
   const rng = seedrandom(seed);
   const random = () => rng();
 
@@ -199,6 +223,7 @@ function generateStar(seed, location) {
     type: 'star',
     radius,
     variant: star.variant,
+    groupCenter: groupCenter,
     planetSize,
     source: location,
     tint: tintMap[star.variant],
