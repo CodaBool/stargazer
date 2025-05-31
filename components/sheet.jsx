@@ -41,7 +41,7 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
     const zoomControls = document.querySelector(".zoom-controls")
     if (hamburger && zoomControls && window.innerWidth < 1200) {
       if (drawerContent) {
-        hamburger.style.bottom = "40%"
+        hamburger.style.bottom = "45%"
         zoomControls.style.bottom = "55%"
       } else if (!drawerContent) {
         hamburger.style.bottom = "0.5em"
@@ -87,9 +87,9 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
     <Sheet open={!!drawerContent} onOpenChange={() => setDrawerContent(null)} modal={false} style={{ color: 'white' }} >
       <SheetContent side="bottom" style={{ maxHeight: '38vh', overflowY: 'auto' }} onPointerDownOutside={e => e.preventDefault()} id="bottom-sheet">
         <SheetHeader >
-          <SheetTitle className="text-center">
+          <SheetTitle className="text-center ">
             <Crosshair onClick={() => panToGroup(local)} className="inline mr-2 mb-1 cursor-pointer" />
-            {coordinates ? `${isGalaxy ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${isGalaxy ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}
+            <span className="text-gray-400">{coordinates ? `${isGalaxy ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${isGalaxy ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}</span>
           </SheetTitle>
           {nearby.length > 1 && <SheetDescription className="text-center" >{nearby.length} Nearby {GROUP_NAME}</SheetDescription>}
         </SheetHeader >
@@ -102,7 +102,7 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
               <div key={index} className="flex flex-col">
                 <div className="mx-auto">
                   <Crosshair onClick={() => panToGroup(group)} className="cursor-pointer inline" />
-                  <span className="ml-2">{`${isGalaxy ? "Y" : "lat"}: ${Math.floor(group[0].groupCenter[1])}, ${isGalaxy ? "X" : "lng"}: ${Math.floor(group[0].groupCenter[0])}`}</span>
+                  <span className="ml-2 text-gray-400">{`${isGalaxy ? "Y" : "lat"}: ${Math.floor(group[0].groupCenter[1])}, ${isGalaxy ? "X" : "lng"}: ${Math.floor(group[0].groupCenter[0])}`}</span>
                 </div>
                 <SolarSystemDiagram group={group} height={height} isGalaxy={isGalaxy} map={map} name={name} />
                 {index + 1 !== nearby.length && <hr />}

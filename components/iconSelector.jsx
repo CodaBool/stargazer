@@ -170,6 +170,18 @@ export default function IconSelector({ onSelect, mapName, show }) {
                     </li>
                   )}
                   <li>
+                    Some icons are from
+                    <a
+                      href="https://www.freepik.com/search?format=search&type=icon"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-300 cursor-pointer"
+                    >
+                      Freepik
+                    </a>
+                    , this can be a good resource for adding new icons.
+                  </li>
+                  <li>
                     Sometimes icon's are named different than you'd guess. More robust search alogrithms are on the source websites. Try searching on {' '}
                     <a
                       href="https://fontawesome.com/search"

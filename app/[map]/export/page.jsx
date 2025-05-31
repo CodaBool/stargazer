@@ -89,7 +89,7 @@ export default async function Export({ params }) {
                   <p className='text-sm text-gray-400'>Warning: this exposes your Stargazer account to some risk. All connected players and enabled modules in Foundry can read this value once entered. Local maps are always safe, this risk only applies to Cloud maps.</p>
                   <FoundryLink secret={user?.secret} />
                 </>
-                : <h3 className='text-gray-300 text-center'>Provide an <Link href={`/api/auth/signin?callbackUrl=${process.env.NEXTAUTH_URL}/${map}/export`} className='text-blue-300'>email address</Link> to link to Foundry <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
+                : <h3 className='text-gray-300 text-center'>Provide an <Link href={`/api/auth/signin?callbackUrl=${process.env.NEXTAUTH_URL || process.env.VERCEL_URL}/${map}/export`} className='text-blue-300'>email address</Link> to link to Foundry <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
               }
             </PopoverContent>
           </Popover>
@@ -108,7 +108,7 @@ export default async function Export({ params }) {
         <p>You have no {map} maps saved remotely</p>
       }
       {!user &&
-        <h3 className='text-gray-300'>Provide an <Link href={`/api/auth/signin?callbackUrl=${process.env.NEXTAUTH_URL}/${map}/export`} className='text-blue-300'>email address</Link> to publish a map <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
+        <h3 className='text-gray-300'>Provide an <Link href={`/api/auth/signin?callbackUrl=${process.env.NEXTAUTH_URL || process.env.VERCEL_URL}/${map}/export`} className='text-blue-300'>email address</Link> to publish a map <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
       }
       <CloudMaps maps={cloud} revalidate={revalidate} mapName={map} />
     </div>

@@ -194,12 +194,15 @@ export default function Map({ width, height, data, name, mobile, params, locked,
         );
       }
 
+      console.log("popup 1")
+
       // popup
       if (e.features[0].properties.type === "text") return
       if (e.features[0].geometry.type === "Point") {
         // don't show tooltips if the sheet/drawer is open
         if (document.querySelector('#bottom-sheet')) return
       }
+
       const featureCoordinates = e.features[0].geometry.coordinates.toString();
       if (currentFeatureCoordinates !== featureCoordinates) {
         currentFeatureCoordinates = featureCoordinates;
@@ -287,10 +290,17 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       }))
 
       // console.log("Clicked", clicked)
-      console.log("click group", group)
+      // console.log("click group", group)
       // console.log("Nearby groups (excluding clicked group)", nearby)
 
       pan(clicked, myGroup, nearby)
+
+      // remove popup
+      const popupElement = document.querySelector('.maplibregl-popup');
+      if (popupElement) {
+        popupElement.classList.remove('fade-in');
+      }
+      popup.remove()
     }
 
     const ensureCheckbox = () => {
@@ -298,6 +308,11 @@ export default function Map({ width, height, data, name, mobile, params, locked,
         mode.delete("measureStart")
       } else if (mode.has("crosshairZoom")) {
         mode.delete("crosshairZoom")
+      }
+
+      // remove popup when moving
+      if (popup._container) {
+        popup.remove()
       }
     }
 

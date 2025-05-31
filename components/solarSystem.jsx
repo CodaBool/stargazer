@@ -60,7 +60,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
   return (
     <>
       <div className="w-full overflow-x-auto overflow-y-visible py-2">
-        <div className="flex items-baseline h-full space-x-6 px-4 justify-center">
+        <div className="flex items-baseline h-full space-x-6 px-4 justify-evenly">
           {group.map((body, index) => {
             const source = body.source?.id === selectedId ? body.source : undefined
             // if (source) console.log("source", source)
@@ -98,7 +98,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
                     </div>
                   </div>
                 )}
-                <div className="text-xs mt-2 text-center text-white opacity-80">
+                <div className="text-xs mt-2 text-center text-white md:text-sm">
                   {body.name}
                 </div>
                 {source && (
@@ -130,7 +130,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
           >
             <DialogTitle style={{ height: "2em", maxHeight: "2em" }}>Moons</DialogTitle>
 
-            <div className={`flex flex-wrap justify-evenly content-start`}>
+            <div className={`flex flex-wrap justify-evenly content-start overflow-auto`}>
               {moonBodies.map((moon, i) => {
                 // console.log("display moon", moon)
                 return (
@@ -205,33 +205,35 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
             ) : (
               <h1 className="text-center text-4xl">No preview available for this type</h1>
             )}
-            {activeBody.source
+            {(activeBody.source && !activeBody.source?.properties?.userCreated)
               ? <div className="absolute top-[85px] left-[40px] flex flex-col items-center">
                 <Link href={genLink(activeBody.source, name, "href")} className="mb-2">
-                  {name === "lancer" && <Button className="cursor-pointer rounded" variant="outline">Discussion</Button>}
+                  {name === "lancer" && <Button className="cursor-pointer rounded" variant="outline">Contribute</Button>}
                   {name === "postwar" && <Button className="cursor-pointer">Wiki</Button>}
                   {name === "mousewars" && <Button className="cursor-pointer">Wiki</Button>}
                 </Link>
-                {activeBody.source.properties.unofficial && <Badge variant="destructive" className="">unofficial</Badge>}
-                {activeBody.source.properties.faction && <Badge className="">{activeBody.source.properties.faction}</Badge>}
-                {activeBody.source.properties.destroyed && <Badge className="">destroyed</Badge>}
-                {activeBody.source.properties.capital && <Badge variant="destructive" className="">capital</Badge>}
+                <div className="pointer-events-none">
+                  {activeBody.source.properties.unofficial && <Badge variant="destructive" className="">unofficial</Badge>}
+                  {activeBody.source.properties.faction && <Badge className="">{activeBody.source.properties.faction}</Badge>}
+                  {activeBody.source.properties.destroyed && <Badge className="">destroyed</Badge>}
+                  {activeBody.source.properties.capital && <Badge variant="destructive" className="">capital</Badge>}
 
-                {activeBody.cloud && <Badge variant="destructive" className="">{1 - activeBody.cloud} cloud coverage</Badge>}
-                {activeBody.hydrosphere && <Badge variant="destructive" className="">{activeBody.hydrosphere} hydrosphere</Badge>}
-                {activeBody.ice && <Badge variant="destructive" className="">{activeBody.ice} ice coverage</Badge>}
-                {activeBody.radius && <Badge variant="destructive" className="">{activeBody.radius.toFixed(2)} {activeBody.type === "star" ? "solar radii" : "km radius"}</Badge>}
-                {activeBody.temperature && <Badge variant="destructive" className="">{activeBody.temperature}°C</Badge>}
-                {activeBody.dominantChemical && <Badge variant="destructive" className="">Dominant Chemical: {activeBody.dominantChemical}</Badge>}
-                {activeBody.daysInYear && <Badge variant="destructive" className="">{activeBody.daysInYear} days in year</Badge>}
-                {activeBody.hoursInDay && <Badge variant="destructive" className="">{activeBody.hoursInDay} hours in day</Badge>}
-                {activeBody.gravity && <Badge variant="destructive" className="">{activeBody.gravity} cm/sec²</Badge>}
-                {activeBody.pressure && <Badge variant="destructive" className="">{activeBody.pressure} millibars</Badge>}
-                {activeBody.moons && <Badge variant="destructive" className="">{activeBody.moons.length} moons</Badge>}
-                {activeBody.modifier && <Badge variant="destructive" className="">{activeBody.modifier}</Badge>}
-                {activeBody.isMoon && <Badge variant="destructive" className="">Moon</Badge>}
+                  {activeBody.cloud && <Badge variant="destructive" className="">{1 - activeBody.cloud} cloud coverage</Badge>}
+                  {activeBody.hydrosphere && <Badge variant="destructive" className="">{activeBody.hydrosphere} hydrosphere</Badge>}
+                  {activeBody.ice && <Badge variant="destructive" className="">{activeBody.ice} ice coverage</Badge>}
+                  {activeBody.radius && <Badge variant="destructive" className="">{activeBody.radius.toFixed(2)} {activeBody.type === "star" ? "solar radii" : "km radius"}</Badge>}
+                  {activeBody.temperature && <Badge variant="destructive" className="">{activeBody.temperature}°C</Badge>}
+                  {activeBody.dominantChemical && <Badge variant="destructive" className="">Dominant Chemical: {activeBody.dominantChemical}</Badge>}
+                  {activeBody.daysInYear && <Badge variant="destructive" className="">{activeBody.daysInYear} days in year</Badge>}
+                  {activeBody.hoursInDay && <Badge variant="destructive" className="">{activeBody.hoursInDay} hours in day</Badge>}
+                  {activeBody.gravity && <Badge variant="destructive" className="">{activeBody.gravity} cm/sec²</Badge>}
+                  {activeBody.pressure && <Badge variant="destructive" className="">{activeBody.pressure} millibars</Badge>}
+                  {activeBody.moons && <Badge variant="destructive" className="">{activeBody.moons.length} moons</Badge>}
+                  {activeBody.modifier && <Badge variant="destructive" className="">{activeBody.modifier}</Badge>}
+                  {activeBody.isMoon && <Badge variant="destructive" className="">Moon</Badge>}
+                </div>
               </div>
-              : <div className="absolute top-[55px] left-[35px] flex flex-col text-sm">
+              : <div className="absolute top-[35px] flex flex-col text-xs pointer-events-none md:text-sm md:left-[35px] md:top-[65px] left-[18px]">
                 {(typeof activeBody.cloud === "number" && (activeBody.type === "terrestrial" || activeBody.type === "ice")) && <p variant="destructive" className="mt-2">{(1 - activeBody.cloud).toFixed(1)} cloud coverage %</p>}
                 {(typeof activeBody.hydrosphere === "number" && activeBody.type !== "ice") && <p className="mt-2">{activeBody.hydrosphere.toFixed(1)} hydrosphere %</p>}
                 {(typeof activeBody.hydrosphere === "number" && activeBody.type === "ice") && <p className="mt-2">{(1 - activeBody.ice).toFixed(1)} hydrosphere %</p>}

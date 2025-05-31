@@ -169,7 +169,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
   return (
     <div className="space-y-4 font-mono select-text">
       {popup.geometry.type === 'Point' && iconHTML && (
-        <div dangerouslySetInnerHTML={{ __html: iconHTML }} className="w-5 h-5 popup-preview"></div>
+        <div dangerouslySetInnerHTML={{ __html: iconHTML }} className="w-5 h-5 popup-preview overflow-hidden"></div>
       )}
       {popup.geometry.type === 'Polygon' && (
         <div className="popup-preview">
