@@ -48,27 +48,40 @@ export default function MenuComponent({ map, data, mobile, name, pan, locationGr
 
 
     // duplcate of what's in locationClick in map.jsx
-    // const clicked = e.features[0];
 
     // Find the group that the clicked location belongs to
     const group = locationGroups.find(g => g.members.includes(d.id))
 
-    if (!group) return
+
+
+    if (!group) {
+      pan(d, [], [], true)
+      return
+    }
 
     // Find nearby groups excluding the clicked group
     const nearbyGroups = locationGroups.filter(g => {
       if (g === group) return false; // Exclude the clicked group
       return turf.distance(group.center, g.center) <= (UNIT === "ly" ? 510 : 60);
     })
+    // console.log("pre nearbyGroups", nearbyGroups)
 
-    const nearby = nearbyGroups.map(g => (
-      g.members.map(id => data.features.find(f => f.id === id))
-    ))
+    const nearby = nearbyGroups.map(({ center, members }) => {
+      return members.map(id => {
+        return {
+          groupCenter: center,
+          ...data.features.find(f => f.id === id)
+        }
+      })
+    })
 
-    const myGroup = group.members.map(id => data.features.find(f => f.id === id))
+    // const myGroup = group.members.map(id => data.features.find(f => f.id === id))
+    const myGroup = group.members.map(id => ({
+      groupCenter: group.center,
+      ...data.features.find(f => f.id === id)
+    }))
 
-    // console.log("Clicked", clicked)
-    // console.log("my group", myGroup)
+    // console.log("click group", group)
     // console.log("Nearby groups (excluding clicked group)", nearby)
 
     pan(d, myGroup, nearby, true)

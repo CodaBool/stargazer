@@ -172,7 +172,9 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       setTimeout(() => mode.delete("zooming"), 801)
     }
 
-    setDrawerContent({ coordinates, selectedId: d.id, myGroup, nearbyGroups })
+    if (d.geometry.type === "Point") {
+      setDrawerContent({ coordinates, selectedId: d.id, myGroup, nearbyGroups })
+    }
   }
 
   function listeners({ target: map }) {
@@ -193,8 +195,6 @@ export default function Map({ width, height, data, name, mobile, params, locked,
           { hover: true }
         );
       }
-
-      console.log("popup 1")
 
       // popup
       if (e.features[0].properties.type === "text") return
@@ -296,11 +296,9 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       pan(clicked, myGroup, nearby)
 
       // remove popup
-      const popupElement = document.querySelector('.maplibregl-popup');
-      if (popupElement) {
-        popupElement.classList.remove('fade-in');
+      if (popup._container) {
+        popup.remove()
       }
-      popup.remove()
     }
 
     const ensureCheckbox = () => {

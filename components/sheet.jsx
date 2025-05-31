@@ -98,16 +98,20 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
         {nearby.length > 0 && (
           <>
             <h1 className="text-center text-2xl my-4">Nearby {GROUP_NAME}</h1>
-            {nearby.map((group, index) => (
-              <div key={index} className="flex flex-col">
-                <div className="mx-auto">
-                  <Crosshair onClick={() => panToGroup(group)} className="cursor-pointer inline" />
-                  <span className="ml-2 text-gray-400">{`${isGalaxy ? "Y" : "lat"}: ${Math.floor(group[0].groupCenter[1])}, ${isGalaxy ? "X" : "lng"}: ${Math.floor(group[0].groupCenter[0])}`}</span>
+            {nearby.map((group, index) => {
+              return (
+                <div key={index} className="flex flex-col">
+                  <div className="mx-auto">
+                    <Crosshair onClick={() => panToGroup(group)} className="cursor-pointer inline" />
+                    <span className="ml-2 text-gray-400">
+                      {`${isGalaxy ? "Y" : "lat"}: ${Math.floor(group[0].groupCenter[1])}, ${isGalaxy ? "X" : "lng"}: ${Math.floor(group[0].groupCenter[0])}`}
+                    </span>
+                  </div>
+                  <SolarSystemDiagram group={group} height={height} isGalaxy={isGalaxy} map={map} name={name} />
+                  {index + 1 !== nearby.length && <hr />}
                 </div>
-                <SolarSystemDiagram group={group} height={height} isGalaxy={isGalaxy} map={map} name={name} />
-                {index + 1 !== nearby.length && <hr />}
-              </div>
-            ))}
+              )
+            })}
           </>
         )}
       </SheetContent>

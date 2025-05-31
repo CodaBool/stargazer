@@ -193,19 +193,19 @@ export default function ClientMaps({ map, revalidate, cloudMaps, session }) {
                 <DialogContent className="max-h-[40em] overflow-auto">
                   <DialogHeader>
                     <DialogTitle>Upload to Cloud</DialogTitle>
-                    <DialogDescription>
-                      You can either overwrite an existing remote map, or create a new one
+                    <DialogDescription className="my-3 text-base">
+                      Upload <b>{data.name}</b> into the cloud.
                     </DialogDescription>
                   </DialogHeader>
                   <DialogClose asChild>
-                    <Button size="lg" className="cursor-pointer rounded" onClick={() => uploadMap(key, data.name)}><CloudUpload /> Upload as a New Map</Button>
+                    <Button size="lg" className="cursor-pointer rounded" onClick={() => uploadMap(key, data.name)}><CloudUpload /> Upload as a new Map</Button>
                   </DialogClose>
 
                   {remote.length > 0 &&
                     <>
                       <hr className="mt-2" />
                       <div className="flex justify-center"><Replace className="mr-2 mt-1" size={20} /> <span className="font-bold">Replace an existing Remote Map</span></div>
-                      <p className="text-gray-400">Available Cloud Maps for replacement are shown below. Click on one to replace the remote data with your local data. To prevent data loss, you can only replace remote maps of the same name</p>
+                      <p className="text-gray-400">Available Cloud Maps for replacement are shown below. Click on one to replace the remote data with your local data. To help prevent data loss, you can only replace remote maps of the same name</p>
                       {remote.map(cloudMap => (
                         <DialogClose asChild key={cloudMap.id} >
                           <Card onClick={() => replaceRemoteMap(cloudMap.id, data)} className="cursor-pointer hover-grow">
@@ -367,7 +367,10 @@ export function CloudMaps({ maps, revalidate, mapName }) {
               ? <>
                 <Check className="inline text-blue-300 relative top-[-3px] ms-1" />
                 {navigator.clipboard
-                  ? <Button size="sm" className="cursor-pointer rounded" variant="ghost" onClick={() => navigator.clipboard.writeText(`https://stargazer.vercel.app/${map.map}/${map.id}`)}><Copy />Share Code</Button>
+                  ? <>
+                    <Button size="sm" className="cursor-pointer rounded" variant="ghost" onClick={() => navigator.clipboard.writeText(map.id)}><Copy />Copy ID</Button>
+                    <Button size="sm" className="cursor-pointer rounded" variant="ghost" onClick={() => navigator.clipboard.writeText(`https://stargazer.vercel.app/${map.map}/${map.id}`)}><Copy />Copy URL</Button>
+                  </>
                   : <Input value={map.id} readOnly className="inline ms-2 w-20" />
                 }
               </>
