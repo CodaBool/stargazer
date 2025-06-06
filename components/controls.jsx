@@ -5,7 +5,7 @@ import MapboxDraw from "@hyvilo/maplibre-gl-draw"
 import { useEffect, useState } from 'react'
 import randomName from '@scaleway/random-name'
 import { useRouter } from 'next/navigation'
-import { getConsts, accent } from '@/lib/utils'
+import { getConsts } from '@/lib/utils'
 import { create } from 'zustand'
 
 export const useDraw = create(set => ({
@@ -22,7 +22,7 @@ export default function Controls({ name, params, setSize }) {
   const setDraw = useDraw(d => d.setDraw)
   const setRecreateListeners = useDraw(d => d.setRecreateListeners)
   const router = useRouter()
-  const { TYPES } = getConsts(name)
+  const { TYPES, STYLES } = getConsts(name)
 
   useEffect(() => {
     if (!draw || !mapId) return
@@ -43,11 +43,11 @@ export default function Controls({ name, params, setSize }) {
         draw.add(f)
       }
       if ((f.geometry.type === "Point" || f.geometry.type.includes("Poly")) && !f.properties.fill) {
-        f.properties.fill = accent(name, 1)
+        f.properties.fill = `rgb(${STYLES.accentRGB})`
         draw.add(f)
       }
       if ((f.geometry.type === "LineString" || f.geometry.type.includes("Poly")) && !f.properties.stroke) {
-        f.properties.stroke = accent(name, .5)
+        f.properties.stroke = `rgba(${STYLES.accentRGB}, 0.5)`
         draw.add(f)
       }
     })

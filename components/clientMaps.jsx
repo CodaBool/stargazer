@@ -1,7 +1,7 @@
 'use client'
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { Eye, Trash2, ArrowRightFromLine, Pencil, Save, Cloud, CloudDownload, Replace, CloudUpload, BookOpenCheck, Check, X, CloudOff, Copy, Download, RefreshCcw, EyeOff } from 'lucide-react'
+import { Eye, Trash2, ArrowRightFromLine, Pencil, Save, Cloud, CloudDownload, Replace, CloudUpload, BookOpenCheck, Check, X, CloudOff, Copy, Download, RefreshCcw, EyeOff, Settings } from 'lucide-react'
 import { Input } from "./ui/input"
 import { Button } from '@/components/ui/button'
 import {
@@ -252,6 +252,10 @@ export default function ClientMaps({ map, revalidate, cloudMaps, session }) {
                   </Button>
                 </PopoverContent>
               </Popover>
+
+              <div className="col-span-2 m-2">
+                <Button className="cursor-pointer rounded w-full" onClick={() => router.push(`/${map}/${dateId}/settings`)}><Settings /> Settings</Button>
+              </div>
             </div>
           </div>
         );

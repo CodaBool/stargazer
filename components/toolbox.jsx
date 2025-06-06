@@ -134,6 +134,7 @@ export default function Toolbox({ mode, map, width, height, mobile, name }) {
     text.className = 'textbox'
     text.style.position = 'absolute'
     text.style.left = '50%';
+    text.style.lineHeight = '1.4'
     text.style.zIndex = 2;
     text.style.transform = 'translateX(-50%)';
     text.style.top = mobile ? '70px' : '90px'

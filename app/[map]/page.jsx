@@ -2,7 +2,7 @@ export const dynamic = 'force-static'
 import fs from "fs"
 import path from "path"
 import Cartographer from "@/components/cartographer"
-import { combineAndDownload, important } from "@/lib/utils"
+import { combineAndDownload, getConsts } from "@/lib/utils"
 
 export default async function mapLobby({ params }) {
   const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");
@@ -10,6 +10,10 @@ export default async function mapLobby({ params }) {
   const { map } = await params
   const filePath = path.join(dataDir, `${map}.json`)
   if (map === "favicon.ico") return
+  if (map === "custom") {
+    return <Cartographer name={map} fid={0} data={{ type: "FeatureCollection", features: [] }} />
+  }
+
   const content = await fs.promises.readFile(filePath, 'utf8')
 
   // WARN: for some reason a path.resolve is needed here otherwise it cannot find the file
@@ -21,11 +25,12 @@ export default async function mapLobby({ params }) {
   const topojson = JSON.parse(content)
 
   const [noIdData, type] = combineAndDownload("geojson", topojson, {})
+  const { IMPORTANT } = getConsts(map)
 
   let fid = 0
   const data = JSON.parse(noIdData)
   data.features.forEach(f => {
-    if (important(map, f.properties)) {
+    if (IMPORTANT.includes(f.properties.type)) {
       f.properties.priority = 1
     } else {
       f.properties.priority = 9

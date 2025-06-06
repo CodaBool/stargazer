@@ -7,7 +7,7 @@ import CustomForm from "@/components/forms/custom"
 import db from "@/lib/db"
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3"
 import { redirect } from "next/navigation"
-import { combineAndDownload, important } from "@/lib/utils"
+import { combineAndDownload, getConsts } from "@/lib/utils"
 const s3 = new S3Client({
   region: "auto",
   endpoint: `https://${process.env.CF_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -81,13 +81,13 @@ export default async function mapLobby({ params }) {
   const content = await fs.promises.readFile(filePath, 'utf8')
 
   const topojson = JSON.parse(content)
-
   const [noIdData, type] = combineAndDownload("geojson", topojson, geojson)
+  const { IMPORTANT } = getConsts(map)
 
   let fid = 0
   const data = JSON.parse(noIdData)
   data.features.forEach(f => {
-    if (important(map, f.properties)) {
+    if (IMPORTANT.includes(f.properties.type)) {
       f.properties.priority = 1
     } else {
       f.properties.priority = 9

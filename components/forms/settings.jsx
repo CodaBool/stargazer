@@ -38,7 +38,9 @@ import Link from "next/link"
 
 const templates = ["xeno", "neuropunk", "mousewars", "postwar", "crusaiders"]
 
-export default function CreateLocation({ map }) {
+export default function CreateLocation({ map, id }) {
+  // https://github.com/zenoamaro/react-quill/issues/921
+  // const {  } = getConsts(map)
   const [submitting, setSubmitting] = useState()
   const router = useRouter()
   const form = useForm()
@@ -55,7 +57,9 @@ export default function CreateLocation({ map }) {
       window.alert("uploading files not supported at this time")
     }
     setSubmitting(true)
-    router.push(`/custom`)
+    window.alert("settings changes are not supported at this time")
+
+    router.push(`/${map}/export`)
   }
 
   return (
@@ -65,7 +69,7 @@ export default function CreateLocation({ map }) {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Create a new map</CardTitle>
-              <Link href="/custom/export">
+              <Link href={`/${map}/export`}>
                 <Button type="button" variant="ghost" className="cursor-pointer">
                   <X />
                 </Button>
@@ -91,8 +95,59 @@ export default function CreateLocation({ map }) {
             /> */}
             <FormField
               control={form.control}
+              rules={{ validate: v => !isNaN(v) || "Value must be a number" }}
+              name="zoom"
+              defaultValue={1}
+              render={({ field }) => (
+                <FormItem className="py-4">
+                  <FormLabel>Starting Zoom (optional)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder={1} {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Controls the initial zoom level when first viewing the map
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem >
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="start"
+              defaultValue=""
+              render={({ field }) => (
+                <FormItem className="py-4">
+                  <FormLabel>Starting Coordinates (optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="-24, 601" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Controls the initial x/Lat and y/Lng coordinate location when first viewing the map. Use a comma to separate the x/Lat and y/Lng values.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="bounds"
+              defaultValue=""
+              render={({ field }) => (
+                <FormItem className="py-4">
+                  <FormLabel>Bounds (optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="-24, 601" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Limits how far in any direction the map can be panned. Use this formatting "left, bottom, right, top"
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="file"
-              rules={{ required: false }}
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Upload Map Data (optional)</FormLabel>
@@ -126,7 +181,7 @@ export default function CreateLocation({ map }) {
             <Button disabled={submitting} type="submit" variant="outline" className="w-full cursor-pointer">
               {submitting
                 ? <LoaderCircle className="animate-spin" />
-                : "Get Started"
+                : "Submit"
               }
             </Button>
           </CardFooter>

@@ -5,8 +5,8 @@ import maplibregl, {
   LngLatBounds,
 } from 'maplibre-gl'
 import { useMap, Layer, Source, Popup } from 'react-map-gl/maplibre'
-import { useEffect, useState, useRef } from 'react'
-import { color, important, accent, getConsts, hashString, getColorExpression, createPopupHTML } from "@/lib/utils.js"
+import { useEffect, useState } from 'react'
+import { getConsts, getColorExpression, createPopupHTML } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import SearchBar from './searchbar'
 import * as SVG from './svg.js'
@@ -109,7 +109,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
   // const addedIcons = useRef(new Set());
 
   const recreateListeners = useDraw(s => s.recreateListeners)
-  const { CENTER, SCALE, CLICK_ZOOM, NO_PAN, LAYER_PRIO, LAYOUT_OVERIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER } = getConsts(name)
+  const { CENTER, SCALE, CLICK_ZOOM, NO_PAN, LAYER_PRIO, LAYOUT_OVERIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES } = getConsts(name)
   const locationGroups = getLocationGroups(data.features.filter(f => f.geometry.type === "Point" && f.properties.type !== "text"))
 
   async function pan(d, myGroup, nearbyGroups, fit) {
@@ -189,7 +189,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
             { hover: false }
           );
         }
-        hoveredStateId = e.features[0].id;
+        hoveredStateId = e.features[0].id
         map.setFeatureState(
           { source: 'source', id: hoveredStateId },
           { hover: true }
@@ -203,9 +203,9 @@ export default function Map({ width, height, data, name, mobile, params, locked,
         if (document.querySelector('#bottom-sheet')) return
       }
 
-      const featureCoordinates = e.features[0].geometry.coordinates.toString();
+      const featureCoordinates = e.features[0].geometry.coordinates.toString()
       if (currentFeatureCoordinates !== featureCoordinates) {
-        currentFeatureCoordinates = featureCoordinates;
+        currentFeatureCoordinates = featureCoordinates
 
         // Change the cursor style as a UI indicator.
         if (e.features[0].geometry.type === "Point") wrapper.getCanvas().style.cursor = 'pointer'
@@ -223,7 +223,6 @@ export default function Map({ width, height, data, name, mobile, params, locked,
           if (!e.lngLat) return
           coordinates = [e.lngLat.lng, e.lngLat.lat]
         }
-        // console.log("DEBUG:", coordinates)
         if (!coordinates) {
           console.error("failed to get coordinates", coordinates, e)
         }
@@ -232,7 +231,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
     }
 
     const mouseLeave = (e) => {
-      if (hoveredStateId) {
+      if (hoveredStateId !== null) {
         map.setFeatureState(
           { source: 'source', id: hoveredStateId },
           { hover: false }
@@ -491,7 +490,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
             "fill-color": [
               'case',
               ['boolean', ['feature-state', 'hover'], false],
-              accent(name, .1),
+              `rgba(${STYLES.accentRGB}, .1)`,
               getColorExpression(name, "fill", "Polygon")
             ],
             'fill-outline-color': getColorExpression(name, "stroke", "Polygon"),
@@ -555,7 +554,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
             "icon-color": [
               'case',
               ['boolean', ['feature-state', 'hover'], false],
-              accent(name, 1),
+              `rgb(${STYLES.accentRGB})`,
               getColorExpression(name, "fill", "Point")
             ],
           }}
@@ -568,7 +567,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
             "line-color": [
               'case',
               ['boolean', ['feature-state', 'hover'], false],
-              accent(name, 1),
+              `rgb(${STYLES.accentRGB})`,
               getColorExpression(name, "stroke", "LineString")
             ],
             "line-width": 2,

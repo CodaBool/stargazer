@@ -82,8 +82,6 @@ export default function Cartographer({ name, data, stargazer, fid }) {
               }
             }))
             //
-            // console.log("redirect to", `/${name}?id=${uuid}&hamburger=0&search=0&link=foundry&secret=${params.get("secret")}`)
-            // router.replace(`/${name}?id=${uuid}&hamburger=0&search=0&link=foundry&secret=${params.get("secret")}`)
             router.replace(`/${name}?secret=${params.get("secret")}&id=${uuid}&hamburger=0&search=0&zoom=0`)
           }
         })
