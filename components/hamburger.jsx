@@ -101,7 +101,7 @@ export default function Hamburger({ mode, name, params, map, stargazer, mobile, 
                 </DialogContent>
               </Dialog>
             }
-            <a href="https://github.com/codabool/stargazer.vercel.app" target="_blank">
+            <a href="https://github.com/codabool/stargazer" target="_blank">
               <DropdownMenuItem className="cursor-pointer">
                 <Github className="ml-[.6em]" /> <span className="ml-[5px]">GitHub</span>
               </DropdownMenuItem>
