@@ -4,15 +4,13 @@ import { useMap } from "react-map-gl/maplibre";
 import EditorForm from "./forms/editor";
 import randomName from "@scaleway/random-name";
 import { X } from "lucide-react";
-import { getConsts } from "@/lib/utils";
 import { useStore } from "./cartographer";
 import { useDraw } from "./controls";
 
-export default function Editor({ mapName, params }) {
+export default function Editor({ mapName, params, TYPES }) {
   const { map } = useMap()
   const draw = useDraw(s => s.draw)
   const [popup, setPopup] = useState()
-  const { TYPES } = getConsts(mapName)
   const { setEditorTable } = useStore()
 
   function handleClick(e) {
@@ -51,6 +49,7 @@ export default function Editor({ mapName, params }) {
         name: prev[mapId]?.name || randomName('', ' '),
         updated: Date.now(),
         map: mapName,
+        config: prev[mapId]?.config || {},
       }
     }))
   }, [popup, draw])
@@ -65,6 +64,7 @@ export default function Editor({ mapName, params }) {
           background: 'black',
           padding: '8px',
           zIndex: 10,
+          maxWidth: "90vw",
           transition: 'bottom 0.5s ease-in-out',
         }}
         className="editor-table border"
@@ -74,7 +74,7 @@ export default function Editor({ mapName, params }) {
             <X />
           </Button>
         </div>
-        <EditorForm feature={popup} mapName={mapName} draw={draw} setPopup={setPopup} popup={popup} params={params} />
+        <EditorForm feature={popup} mapName={mapName} draw={draw} setPopup={setPopup} popup={popup} params={params} TYPES={TYPES} />
       </div>
     );
   }

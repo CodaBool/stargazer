@@ -8,15 +8,14 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Sparkle, BookOpen, Bug, Pencil, Plus, MapPin, RectangleHorizontal, Map, ArrowRightFromLine, Hexagon, ListCollapse, User, LogOut, Ruler, CodeXml, Menu, Crosshair } from "lucide-react"
-import { getConsts } from "@/lib/utils.js"
+import { darkenColor } from "@/lib/utils.js"
 import * as turf from '@turf/turf'
 import { useEffect, useRef, useState } from "react"
 import { useStore } from "./cartographer"
 
-export default function MenuComponent({ map, data, mobile, name, pan, locationGroups }) {
+export default function MenuComponent({ map, data, mobile, name, pan, locationGroups, UNIT, STYLES }) {
   const [active, setActive] = useState()
   const [previousFeatureId, setPreviousFeatureId] = useState(null)
-  const { UNIT, STYLES } = getConsts(name)
   const { editorTable } = useStore()
   const cmd = useRef(null)
   const input = useRef(null)
@@ -119,9 +118,10 @@ export default function MenuComponent({ map, data, mobile, name, pan, locationGr
   }, [active])
 
   return (
-    <div className="flex mt-5 w-full justify-center absolute z-10 pointer-events-none">
-      <Command className="rounded-lg border shadow-md w-[75%] searchbar pointer-events-auto" style={{ backgroundColor: STYLES.searchbarBackground, borderColor: STYLES.searchbarBorder }}>
+    <div className="flex mt-5 w-full justify-center absolute z-10 pointer-events-none" >
+      <Command className="rounded-lg border shadow-md w-[75%] searchbar pointer-events-auto" style={{ borderColor: darkenColor(STYLES.MAIN_COLOR, 13), backgroundColor: darkenColor(STYLES.MAIN_COLOR, 19) }}>
         <CommandInput placeholder={mobile ? "Search for a location" : "press Space to search"} ref={input} onClick={() => setActive(true)} style={{ backgroundColor: STYLES.searchbarBackground }}
+          borderbottomcolor={darkenColor(STYLES.MAIN_COLOR, 13)}
         />
         {active &&
           <CommandList style={{ height: '351px', zIndex: 100 }}>

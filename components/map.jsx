@@ -6,7 +6,7 @@ import maplibregl, {
 } from 'maplibre-gl'
 import { useMap, Layer, Source, Popup } from 'react-map-gl/maplibre'
 import { useEffect, useState } from 'react'
-import { getConsts, getColorExpression, createPopupHTML } from "@/lib/utils.js"
+import { getColorExpression, createPopupHTML, hexToRgb } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import SearchBar from './searchbar'
 import * as SVG from './svg.js'
@@ -101,7 +101,7 @@ function getLocationGroups(features, maxDistance = 20) {
   return solarSystems;
 }
 
-export default function Map({ width, height, data, name, mobile, params, locked, stargazer, setCrashed }) {
+export default function Map({ width, height, data, name, mobile, params, locked, stargazer, setCrashed, CLICK_ZOOM, LAYOUT_OVERIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
 
@@ -109,7 +109,6 @@ export default function Map({ width, height, data, name, mobile, params, locked,
   // const addedIcons = useRef(new Set());
 
   const recreateListeners = useDraw(s => s.recreateListeners)
-  const { CENTER, SCALE, CLICK_ZOOM, NO_PAN, LAYER_PRIO, LAYOUT_OVERIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES } = getConsts(name)
   const locationGroups = getLocationGroups(data.features.filter(f => f.geometry.type === "Point" && f.properties.type !== "text"))
 
   async function pan(d, myGroup, nearbyGroups, fit) {
@@ -211,7 +210,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
         if (e.features[0].geometry.type === "Point") wrapper.getCanvas().style.cursor = 'pointer'
 
         let coordinates = e.features[0].geometry.coordinates.slice()
-        const popupContent = createPopupHTML(e, UNIT === "ly")
+        const popupContent = createPopupHTML(e, IS_GALAXY, name)
 
         // Ensure that if the map is zoomed out such that multiple
         // copies of the feature are visible, the popup appears
@@ -251,7 +250,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
     const territoryClick = (e) => {
       if (IGNORE_POLY?.includes(e.features[0].properties.type)) return
       const coordinates = e.lngLat;
-      const popupContent = createPopupHTML(e, UNIT === "ly")
+      const popupContent = createPopupHTML(e, IS_GALAXY, name)
       popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap());
     }
 
@@ -490,7 +489,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
             "fill-color": [
               'case',
               ['boolean', ['feature-state', 'hover'], false],
-              `rgba(${STYLES.accentRGB}, .1)`,
+              `rgba(${hexToRgb(STYLES.HIGHLIGHT_COLOR)}, .1)`,
               getColorExpression(name, "fill", "Polygon")
             ],
             'fill-outline-color': getColorExpression(name, "stroke", "Polygon"),
@@ -554,7 +553,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
             "icon-color": [
               'case',
               ['boolean', ['feature-state', 'hover'], false],
-              `rgb(${STYLES.accentRGB})`,
+              STYLES.HIGHLIGHT_COLOR,
               getColorExpression(name, "fill", "Point")
             ],
           }}
@@ -567,7 +566,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
             "line-color": [
               'case',
               ['boolean', ['feature-state', 'hover'], false],
-              `rgb(${STYLES.accentRGB})`,
+              STYLES.HIGHLIGHT_COLOR,
               getColorExpression(name, "stroke", "LineString")
             ],
             "line-width": 2,
@@ -590,21 +589,21 @@ export default function Map({ width, height, data, name, mobile, params, locked,
           filter={['==', ['get', 'type'], 'text']}
         />
       </Source>
-      {UNIT === "ly" && <Starfield width={width} height={height} />}
+      {IS_GALAXY && <Starfield width={width} height={height} />}
       {params.get("zoom") !== "0" && <div className="absolute mt-28 ml-11 mr-[.3em] cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" style={{ transition: 'bottom 0.5s ease-in-out' }}>
         <ZoomIn size={34} onClick={() => wrapper.zoomIn()} className='m-2 hover:stroke-blue-200' />
         <ZoomOut size={34} onClick={() => wrapper.zoomOut()} className='m-2 mt-4 hover:stroke-blue-200' />
       </div>}
-      {params.get("search") !== "0" && <SearchBar map={wrapper} name={name} data={data} pan={pan} mobile={mobile} locationGroups={locationGroups} />}
+      {params.get("search") !== "0" && <SearchBar map={wrapper} name={name} data={data} pan={pan} mobile={mobile} locationGroups={locationGroups} UNIT={UNIT} STYLES={STYLES} />}
 
       {/* FOUNDRY */}
       {params.get("secret") && <Link mode={mode} width={width} height={height} mobile={mobile} name={name} params={params} />}
-      {params.get("calibrate") && <Calibrate mode={mode} width={width} height={height} mobile={mobile} name={name} />}
+      {params.get("calibrate") && <Calibrate mode={mode} width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}
 
-      <Sheet {...drawerContent} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} isGalaxy={UNIT === "ly"} />
+      <Sheet {...drawerContent} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} isGalaxy={IS_GALAXY} />
 
-      <Toolbox mode={mode} width={width} height={height} mobile={mobile} name={name} map={wrapper} />
-      {params.get("hamburger") !== "0" && <Hamburger mode={mode} name={name} params={params} map={wrapper} stargazer={stargazer} mobile={mobile} />}
+      <Toolbox mode={mode} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} />
+      {params.get("hamburger") !== "0" && <Hamburger mode={mode} name={name} params={params} map={wrapper} stargazer={stargazer} mobile={mobile} IS_GALAXY={IS_GALAXY} />}
     </>
   )
 }

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import maplibregl from 'maplibre-gl'
 import { Layer, Source, useMap } from 'react-map-gl/maplibre'
 import * as turf from '@turf/turf'
-import { getConsts } from '@/lib/utils'
 
 const linestring = {
   'type': 'Feature',
@@ -16,7 +15,6 @@ let text, crosshairX, crosshairY
 
 // TODO: consider useMap
 export default function Toolbox({ mode, map, width, height, mobile, name }) {
-  const { UNIT, DISTANCE_CONVERTER } = getConsts(name)
 
   function handleClick(e) {
     if (!mode.has("measure")) return
@@ -85,7 +83,7 @@ export default function Toolbox({ mode, map, width, height, mobile, name }) {
       const { lng, lat } = map.getCenter()
       crosshairX.style.visibility = 'visible'
       crosshairY.style.visibility = 'visible'
-      if (UNIT === "ly") {
+      if (IS_GALAXY) {
         text.textContent = `Y: ${lat.toFixed(1)} | X: ${lng.toFixed(1)}`;
       } else {
         text.textContent = `Lat: ${lat.toFixed(3)}° | Lng: ${lng.toFixed(3)}°`;

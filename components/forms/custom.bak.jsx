@@ -32,7 +32,6 @@ import { useForm } from "react-hook-form"
 import { LoaderCircle, X } from "lucide-react"
 import { useMemo, useState } from "react"
 import 'react-quill-new/dist/quill.bubble.css'
-import { getConsts } from "@/lib/utils"
 import randomName from '@scaleway/random-name'
 import Link from "next/link"
 
@@ -40,7 +39,6 @@ const templates = ["xeno", "neuropunk", "mousewars", "postwar", "crusaiders"]
 
 export default function CreateLocation({ map }) {
   // https://github.com/zenoamaro/react-quill/issues/921
-  // const {  } = getConsts(map)
   const [submitting, setSubmitting] = useState()
   const router = useRouter()
   const form = useForm()

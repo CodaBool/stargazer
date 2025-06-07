@@ -19,11 +19,9 @@ import {
 } from "@/components/ui/dialog"
 import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Sparkle, BookOpen, Bug, Pencil, Plus, MapPin, RectangleHorizontal, Map, ArrowRightFromLine, Hexagon, ListCollapse, User, LogOut, Ruler, CodeXml, Menu, Crosshair, HeartHandshake, Eye, Gavel } from "lucide-react"
 import { useEffect, useState } from "react"
-import { getConsts } from "@/lib/utils"
 
-export default function Hamburger({ mode, name, params, map, stargazer, mobile }) {
+export default function Hamburger({ mode, name, params, map, stargazer, mobile, IS_GALAXY }) {
   const [check, setCheck] = useState()
-  const { UNIT } = getConsts(name)
 
   function toggle(newMode, skipnull) {
     if (mode.has(newMode)) {
@@ -49,7 +47,7 @@ export default function Hamburger({ mode, name, params, map, stargazer, mobile }
         console.log("turned on crosshair", lng)
         document.querySelectorAll('.crosshair').forEach(el => el.style.visibility = "visible")
         const text = document.querySelector('.textbox')
-        if (UNIT === "ly") {
+        if (IS_GALAXY) {
           text.textContent = `X: ${lng.toFixed(1)} | Y: ${lat.toFixed(1)}`;
         } else {
           text.textContent = `Lat: ${lat.toFixed(3)}° | Lng: ${lng.toFixed(3)}°`;

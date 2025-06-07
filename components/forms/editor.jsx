@@ -30,20 +30,19 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { CircleHelp, Image, Pencil, Plus, Save, Trash2, Link as Chain, Notebook, StickyNote, Code } from "lucide-react"
-import { AVAILABLE_PROPERTIES, getConsts } from "@/lib/utils"
+import { AVAILABLE_PROPERTIES } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { useStore } from "../cartographer"
 import { getIcon } from "../map"
 import IconSelector from "../iconSelector"
 
-export default function EditorForm({ feature, draw, setPopup, mapName, popup, params }) {
+export default function EditorForm({ feature, draw, setPopup, mapName, popup, params, TYPES }) {
   const { editorTable, setEditorTable } = useStore()
   const [isAddingRow, setIsAddingRow] = useState(false)
   const [errorStroke, setErrorStroke] = useState()
   const [errorFill, setErrorFill] = useState()
   const [iconHTML, setIconHTML] = useState(null);
 
-  const { TYPES } = getConsts(mapName)
   const [newRow, setNewRow] = useState({
     key: "",
     value: "",
@@ -196,6 +195,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
         <TableBody>
           {editorTable && (
             Object.entries(feature.properties).map((arr, i) => {
+              if (typeof arr[1] === "undefined" || arr[1] === null) return null;
               return (
                 <TableRow key={i}>
                   <TableCell className="font-medium">{arr[0]}</TableCell>
@@ -237,17 +237,19 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
 
           {!editorTable && (
             Object.entries(feature.properties).map((arr, i) => {
+              if (typeof arr[1] === "undefined" || arr[1] === null) return null
+              const isColor = arr[1]?.toString().startsWith("rgba") || (arr[1]?.toString().startsWith("#") && arr[1]?.length === 7)
               return (
                 <TableRow key={i} >
                   <TableCell className="font-medium">{arr[0]}</TableCell>
-                  {arr[1].startsWith("http") &&
+                  {arr[1]?.toString().startsWith("http") &&
                     <TableCell>
                       <svg width="20" height="20">
                         <image href={arr[1]} width="20" height="20" />
                       </svg>
                     </TableCell>
                   }
-                  {arr[1].startsWith("rgba") &&
+                  {isColor &&
                     <TableCell>
                       {arr[0] === "stroke"
                         ?
@@ -263,8 +265,10 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
                       }
                     </TableCell>
                   }
-                  {(!arr[1].startsWith("rgba") && !arr[1].startsWith("http")) && <TableCell>{arr[1]}</TableCell>}
-
+                  {(!isColor && !arr[1]?.toString().startsWith("http")) &&
+                    // <TableCell>{arr[1]}</TableCell>
+                    <TableCell>{arr[1]?.length > 40 ? `${arr[1]?.substring(0, 40)}...` : arr[1]}</TableCell>
+                  }
                   <TableCell>
                     <Dialog className="">
                       <DialogTrigger>

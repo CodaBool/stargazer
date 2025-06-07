@@ -5,14 +5,12 @@ import { useMap } from 'react-map-gl/maplibre'
 import distance from '@turf/distance'
 import { point as turfPoint } from '@turf/helpers'
 import maplibregl from 'maplibre-gl'
-import { getConsts } from '@/lib/utils'
 import { toast } from "sonner"
 
 let text, zText, crosshairX, crosshairY
 
-export function Calibrate({ mode, width, height, mobile, name }) {
+export function Calibrate({ mode, width, height, mobile, name, IS_GALAXY }) {
   const { map } = useMap()
-  const { UNIT } = getConsts(name)
 
   useEffect(() => {
     if (!map) return
@@ -98,7 +96,7 @@ export function Calibrate({ mode, width, height, mobile, name }) {
     // coordinate text
     const updateCenterCoordinates = () => {
       const { lat, lng } = map.getCenter()
-      if (UNIT === "ly") {
+      if (IS_GALAXY) {
         text.textContent = `Y: ${lat.toFixed(1)} | X: ${lng.toFixed(1)}`;
       } else {
         text.textContent = `Lat: ${lat.toFixed(3)}° | Lng: ${lng.toFixed(3)}°`;

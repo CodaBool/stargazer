@@ -34,13 +34,11 @@ import { LoaderCircle, X } from "lucide-react"
 import { useMemo, useState } from "react"
 import dynamic from "next/dynamic"
 import 'react-quill-new/dist/quill.bubble.css'
-import { getConsts } from "@/lib/utils"
 
 export default function CreateLocation({ map }) {
   // https://github.com/zenoamaro/react-quill/issues/921
   const Editor = useMemo(() => dynamic(() => import("react-quill-new"), { ssr: false }), [])
   const { data: session, status } = useSession()
-  // const {  } = getConsts(map)
   const [submitting, setSubmitting] = useState()
   const router = useRouter()
   const form = useForm()

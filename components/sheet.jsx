@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sheet"
 import { Badge } from '@/components/ui/badge.jsx'
 import Link from "next/link"
-import { genLink, getConsts } from "@/lib/utils.js"
+import { genLink } from "@/lib/utils.js"
 import * as SVG from './svg.js'
 import { useMap } from 'react-map-gl/maplibre'
 import { useEffect } from "react"

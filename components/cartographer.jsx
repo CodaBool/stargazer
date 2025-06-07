@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import MapComponent from './map'
-import { combineAndDownload, combineLayers, getConsts, isMobile } from '@/lib/utils'
+import { combineLayers, getConsts, isMobile } from '@/lib/utils'
 import Map from 'react-map-gl/maplibre'
 import Controls from './controls.jsx'
 import Editor from './editor'
@@ -15,7 +15,7 @@ export const useStore = create((set) => ({
 }))
 
 export default function Cartographer({ name, data, stargazer, fid }) {
-  const { SCALE, CENTER, STYLE, VIEW, MAX_ZOOM, MIN_ZOOM, BOUNDS, BG } = getConsts(name)
+  const CONST = getConsts(name)
 
   // crash reloading
   const [crashed, setCrashed] = useState()
@@ -23,9 +23,9 @@ export default function Cartographer({ name, data, stargazer, fid }) {
   const params = useSearchParams()
   const mobile = isMobile()
   const router = useRouter()
-  VIEW.zoom = params.get("z") || VIEW.zoom
-  VIEW.longitude = params.get("lng") || VIEW.longitude
-  VIEW.latitude = params.get("lat") || VIEW.latitude
+  CONST.VIEW.zoom = params.get("z") || CONST.VIEW.zoom
+  CONST.VIEW.longitude = params.get("lng") || CONST.VIEW.longitude
+  CONST.VIEW.latitude = params.get("lat") || CONST.VIEW.latitude
   const locked = params.get("locked") === "1"
   if (params.get("preview")) stargazer = true
   const showControls = params.get("controls") !== "0" && !mobile && !stargazer && !locked
@@ -79,6 +79,7 @@ export default function Cartographer({ name, data, stargazer, fid }) {
                 name: prev[mapKey]?.name || randomName('', ' '),
                 updated: Date.now(),
                 map: name,
+                config: prev[mapKey]?.config || {},
               }
             }))
             //
@@ -101,6 +102,15 @@ export default function Cartographer({ name, data, stargazer, fid }) {
         data = combineLayers([localGeojson.geojson, data])
       }
     }
+    const localGeojson = maps[name + "-" + params.get("id")]
+    if (localGeojson?.config) {
+      Object.keys(localGeojson.config).forEach(key => {
+        if (CONST.hasOwnProperty(key)) {
+          CONST[key] = localGeojson.config[key];
+        }
+      })
+      console.log("after ", CONST)
+    }
   }
 
   if (!size || params.get("waitForFetch")) {
@@ -121,18 +131,20 @@ export default function Cartographer({ name, data, stargazer, fid }) {
         dragPan={!locked}
         doubleClickZoom={!locked}
         attributionControl={false}
-        initialViewState={VIEW}
-        maxZoom={MAX_ZOOM}
-        minZoom={MIN_ZOOM}
+        initialViewState={CONST.VIEW}
+        maxZoom={CONST.MAX_ZOOM}
+        minZoom={CONST.MIN_ZOOM}
         style={{ width: size.width, height: size.height }}
-        mapStyle={STYLE}
+        mapStyle={CONST.STYLE}
         pixelRatio={2}
+      // good to view what kind of distortion is happening
+      // projection="globe"
       >
-        <MapComponent width={size.width} height={size.height} name={name} data={data} mobile={mobile} SCALE={SCALE} CENTER={CENTER} params={params} stargazer={stargazer} locked={locked} setCrashed={setCrashed} />
-        {showControls && <Controls name={name} params={params} setSize={setSize} />}
+        <MapComponent width={size.width} height={size.height} name={name} data={data} mobile={mobile} params={params} stargazer={stargazer} locked={locked} setCrashed={setCrashed} {...CONST} />
+        {showControls && <Controls name={name} params={params} setSize={setSize} TYPES={CONST.TYPES} STYLES={CONST.STYLES} />}
       </Map>
-      {showEditor && <Editor mapName={name} params={params} />}
-      <div style={{ width: size.width, height: size.height, background: `radial-gradient(${BG})`, zIndex: -1, top: 0, position: "absolute" }}></div>
+      {showEditor && <Editor mapName={name} params={params} TYPES={CONST.TYPES} />}
+      <div style={{ width: size.width, height: size.height, background: `radial-gradient(${CONST.BG})`, zIndex: -1, top: 0, position: "absolute" }}></div>
     </>
   )
 }

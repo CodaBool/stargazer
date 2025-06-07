@@ -5,7 +5,7 @@ import MapboxDraw from "@hyvilo/maplibre-gl-draw"
 import { useEffect, useState } from 'react'
 import randomName from '@scaleway/random-name'
 import { useRouter } from 'next/navigation'
-import { getConsts } from '@/lib/utils'
+import { hexToRgb } from '@/lib/utils'
 import { create } from 'zustand'
 
 export const useDraw = create(set => ({
@@ -15,14 +15,13 @@ export const useDraw = create(set => ({
   setRecreateListeners: () => set({ recreateListeners: Math.random() }),
 }))
 
-export default function Controls({ name, params, setSize }) {
+export default function Controls({ name, params, setSize, TYPES, STYLES }) {
   const [saveTrigger, setSaveTrigger] = useState()
   const [mapId, setMapId] = useState()
   const draw = useDraw(d => d.draw)
   const setDraw = useDraw(d => d.setDraw)
   const setRecreateListeners = useDraw(d => d.setRecreateListeners)
   const router = useRouter()
-  const { TYPES, STYLES } = getConsts(name)
 
   useEffect(() => {
     if (!draw || !mapId) return
@@ -43,11 +42,11 @@ export default function Controls({ name, params, setSize }) {
         draw.add(f)
       }
       if ((f.geometry.type === "Point" || f.geometry.type.includes("Poly")) && !f.properties.fill) {
-        f.properties.fill = `rgb(${STYLES.accentRGB})`
+        f.properties.fill = STYLES.MAIN_COLOR
         draw.add(f)
       }
       if ((f.geometry.type === "LineString" || f.geometry.type.includes("Poly")) && !f.properties.stroke) {
-        f.properties.stroke = `rgba(${STYLES.accentRGB}, 0.5)`
+        f.properties.stroke = `rgba(${hexToRgb(STYLES.HIGHLIGHT_COLOR)}, 0.5)`
         draw.add(f)
       }
     })
@@ -59,6 +58,7 @@ export default function Controls({ name, params, setSize }) {
         name: prev[mapId]?.name || randomName('', ' '),
         updated: Date.now(),
         map: name,
+        config: prev[mapId]?.config || {},
       }
     }))
   }, [saveTrigger, mapId])
