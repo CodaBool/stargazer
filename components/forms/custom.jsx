@@ -43,24 +43,41 @@ export default function CreateLocation({ map }) {
   const form = useForm()
 
   async function submit(body) {
-    // let template = ""
-    // templates.forEach(t => {
-    //   if (body.name.includes(t)) template = t
-    // })
-    // if (template) console.log("use template", template)
-    console.log("submit", body)
-    if (body.file) {
-      console.log("file content", JSON.parse(body.file))
-      window.alert("uploading files not supported at this time")
-    }
     setSubmitting(true)
-    router.push(`/custom`)
+    let template = ""
+    templates.forEach(t => {
+      if (body.name.includes(t)) template = t
+    })
+    if (template) {
+      if (template === "xeno") {
+        router.push(`https://map.weylandyutani.company`)
+      } else if (template === "neuropunk") {
+        router.push(`https://www.nightcity.io/red`)
+      } else if (template === "crusaiders") {
+        router.push(`https://jambonium.co.uk/40kmap`)
+      } else {
+        router.push(`/${template}/export`)
+      }
+    } else {
+      const prev = JSON.parse(localStorage.getItem('maps')) || {}
+      localStorage.setItem('maps', JSON.stringify({
+        ...prev,
+        [`custom-${Date.now()}`]: {
+          config: {},
+          name: body.name,
+          updated: Date.now(),
+          map: "custom",
+          geojson: { type: "FeatureCollection", features: [] },
+        },
+      }))
+      router.push(`/custom/export`)
+    }
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(submit)} className="space-y-8 md:container mx-auto my-8">
-        <Card className="mx-auto max-w-2xl">
+        <Card className="mx-auto max-w-2xl rounded">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Create a new map</CardTitle>
@@ -73,22 +90,22 @@ export default function CreateLocation({ map }) {
             {/* <CardDescription className="select-text"> <a className="text-blue-50" href="https://github.com/CodaBool/community-vtt-maps/issues" target="_blank">issues</a> page. Or DM <b>CodaBool</b> by searching in the <a href="https://discord.gg/foundryvtt" className="text-blue-50" target="_blank">FoundryVTT</a> Discord</CardDescription> */}
           </CardHeader>
           <CardContent>
-            {/* <FormField
+            <FormField
               control={form.control}
               rules={{ required: "Map name is required" }}
               name="name"
               defaultValue={randomName('', ' ')}
               render={({ field }) => (
                 <FormItem className="py-4">
-                  <FormLabel>Map Name *</FormLabel>
+                  <FormLabel>Map Name</FormLabel>
                   <FormControl>
                     <Input placeholder="Name" {...field} className="font-mono" />
                   </FormControl>
                   <FormMessage />
                 </FormItem >
               )}
-            /> */}
-            <FormField
+            />
+            {/* <FormField
               control={form.control}
               name="file"
               rules={{ required: false }}
@@ -119,7 +136,7 @@ export default function CreateLocation({ map }) {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
           </CardContent>
           <CardFooter>
             <Button disabled={submitting} type="submit" variant="outline" className="w-full cursor-pointer">

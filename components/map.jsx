@@ -101,7 +101,7 @@ function getLocationGroups(features, maxDistance = 20) {
   return solarSystems;
 }
 
-export default function Map({ width, height, data, name, mobile, params, locked, stargazer, setCrashed, CLICK_ZOOM, LAYOUT_OVERIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY }) {
+export default function Map({ width, height, data, name, mobile, params, locked, stargazer, setCrashed, CLICK_ZOOM, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
 
@@ -540,7 +540,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
             "text-max-width": 10,
             "text-line-height": 1.2,
             "text-optional": true,
-            ...LAYOUT_OVERIDE || {},
+            ...LAYOUT_OVERRIDE || {},
           }}
           paint={{
             "text-color": "#ffffff",

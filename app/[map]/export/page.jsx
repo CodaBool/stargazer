@@ -34,13 +34,12 @@ export default async function Export({ params }) {
 
   return (
     <div className='text-white mx-auto md:container p-4 mt-2'>
-      <Link href={`/${map === "custom" ? "/" : map}`} className="w-[50px] block">
-        <div className="w-[40px] h-[40px] rounded-2xl border border-[#1E293B]" style={{ background: "#070a0d" }}>
-          <ArrowLeft size={32} className="relative left-[3px] top-[3px]" />
-        </div>
-      </Link>
-
       <div className='flex flex-col md:flex-row'>
+        <Link href={`/${map === "custom" ? "/" : map}`} className="w-[50px] block">
+          <div className="w-[40px] h-[40px] rounded-2xl border border-[#1E293B] mt-[.65em]" style={{ background: "#070a0d" }}>
+            <ArrowLeft size={32} className="relative left-[3px] top-[3px]" />
+          </div>
+        </Link>
         <h1 className='md:text-6xl text-4xl inline md:me-4'>{map.charAt(0).toUpperCase() + map.slice(1)}</h1>
         <div className='flex flex-col md:flex-row mt-4 justify-start'>
           <Link href={`/${map}/${map === "custom" ? "form" : "?new=1"}`} className='md:mx-4'>
@@ -53,7 +52,7 @@ export default async function Export({ params }) {
                 <Button className="cursor-pointer rounded relative top-[-8px] md:mx-4" variant="secondary"><Download /> Download</Button>
               </PopoverTrigger>
               <PopoverContent className="flex flex-col">
-                <p className='mb-3 text-gray-200'>This is the base core data. Without any user submitted geography data</p>
+                <p className='mb-3 text-gray-200'>Download the base {map} map features. Your added locations will not be included.</p>
                 <hr className='border my-2 border-gray-500' />
                 <p className='my-2 text-gray-300'>Topojson is a newer version of Geojson, and the recommended format for Stargazer</p>
                 <Link href={`/api/download/${map}`}>
@@ -61,7 +60,7 @@ export default async function Export({ params }) {
                     <ArrowRightFromLine className="ml-[.6em] inline" /> Topojson
                   </Button>
                 </Link>
-                <p className='my-2 text-gray-300'>Geojson is an extremely common spec for geography data</p>
+                <p className='my-2 text-gray-300'>Geojson is a common spec for geography data</p>
                 <Link href={`/api/download/${map}?format=geo`}>
                   <Button className="cursor-pointer w-full my-2" variant="secondary">
                     <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">Geojson</span>

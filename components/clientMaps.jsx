@@ -27,10 +27,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { combineAndDownload, isMobile } from "@/lib/utils"
+import { combineAndDownload, combineLayers, combineLayersForTopoJSON, isMobile } from "@/lib/utils"
+import { topology } from "topojson-server"
 import { toast } from "sonner"
 import { create } from 'zustand'
 import { useRouter } from 'next/navigation'
+import { toKML } from "@placemarkio/tokml"
 
 const useMaps = create(set => ({
   maps: {},
@@ -123,13 +125,30 @@ export default function ClientMaps({ map, revalidate, cloudMaps, session }) {
 
   async function download(type, key) {
     try {
-      const response = await fetch(`/api/download/${map}`)
-      const data = await response.json()
-      const localGeojson = maps[key].geojson
-      const [finalData, fileType] = combineAndDownload(type, data, localGeojson)
+      let downloadData, finalFileType = "application/json"
+      if (map === "custom") {
+        const localGeojson = maps[key].geojson
+        if (type === "geojson") {
+          downloadData = JSON.stringify(localGeojson)
+        } else if (type === "kml") {
+          const combinedGeojson = combineLayers([localGeojson]);
+          downloadData = toKML(combinedGeojson)
+          finalFileType = "application/vnd.google-earth.kml+xml"
+        } else if (type === "topojson") {
+          downloadData = JSON.stringify(topology(combineLayersForTopoJSON([localGeojson])))
+        }
+
+      } else {
+        const response = await fetch(`/api/download/${map}`)
+        const data = await response.json()
+        const localGeojson = maps[key].geojson
+        const [finalData, fileType] = combineAndDownload(type, data, localGeojson)
+        downloadData = finalData
+        finalFileType = fileType
+      }
 
       // Create and trigger file download
-      const blob = new Blob([finalData], { type: fileType });
+      const blob = new Blob([downloadData], { type: finalFileType });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
