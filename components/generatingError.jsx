@@ -33,7 +33,7 @@ export default function NotFoundPage({ map, error, mapdId }) {
             <a href="https://discord.gg/foundryvtt" target="_blank" className='flex items-center text-black w-full'>
               <span className='w-full text-sm'><MessageCircle className='mr-2 inline' />search for and DM <span className="mx-1 font-bold">CodaBool</span> in FoundryVTT Discord</span>
             </a>
-            <a href="https://github.com/codabool/stargazer.vercel.app/issues" target="_blank" className='flex items-center text-black w-full'>
+            <a href="https://github.com/codabool/stargazer/issues" target="_blank" className='flex items-center text-black w-full'>
               <Github className='mr-2' /> open an issue
             </a>
           </div>
@@ -82,7 +82,7 @@ export default function NotFoundPage({ map, error, mapdId }) {
             <a href="https://discord.gg/foundryvtt" target="_blank" className='flex items-center text-black w-full'>
               <span className='w-full text-sm'><MessageCircle className='mr-2 inline' />search for and DM <span className="mx-1 font-bold">CodaBool</span> in FoundryVTT Discord</span>
             </a>
-            <a href="https://github.com/codabool/stargazer.vercel.app/issues" target="_blank" className='flex items-center text-black w-full'>
+            <a href="https://github.com/codabool/stargazer/issues" target="_blank" className='flex items-center text-black w-full'>
               <Github className='mr-2' /> open an issue
             </a>
           </div>
@@ -135,7 +135,7 @@ export default function NotFoundPage({ map, error, mapdId }) {
           <a href="https://discord.gg/foundryvtt" target="_blank" className='flex items-center text-black w-full'>
             <span className='w-full text-sm'><MessageCircle className='mr-2 inline' />search for and DM <span className="mx-1 font-bold">CodaBool</span> in FoundryVTT Discord</span>
           </a>
-          <a href="https://github.com/codabool/stargazer.vercel.app/issues" target="_blank" className='flex items-center text-black w-full'>
+          <a href="https://github.com/codabool/stargazer/issues" target="_blank" className='flex items-center text-black w-full'>
             <Github className='mr-2' /> open an issue
           </a>
         </div>

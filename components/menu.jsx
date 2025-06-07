@@ -109,7 +109,7 @@ export default function Menu({ path, params }) {
             </MenubarSub>
           } */}
 
-          <a href="https://github.com/codabool/stargazer.vercel.app/issues" target="_blank">
+          <a href="https://github.com/codabool/stargazer/issues" target="_blank">
             <MenubarItem inset className="cursor-pointer pl-2"><Bug size={16} className="inline mr-1" /> Issues</MenubarItem>
           </a>
 
