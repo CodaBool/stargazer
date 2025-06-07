@@ -14,7 +14,7 @@ const linestring = {
 let text, crosshairX, crosshairY
 
 // TODO: consider useMap
-export default function Toolbox({ mode, map, width, height, mobile, name }) {
+export default function Toolbox({ mode, map, width, height, mobile, name, IS_GALAXY, DISTANCE_CONVERTER }) {
 
   function handleClick(e) {
     if (!mode.has("measure")) return
