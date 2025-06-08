@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import MapComponent from './map'
-import { combineLayers, getConsts, isMobile } from '@/lib/utils'
+import { combineLayers, getConsts, isMobile, localSet } from '@/lib/utils'
 import Map from 'react-map-gl/maplibre'
 import Controls from './controls.jsx'
 import Editor from './editor'
@@ -73,6 +73,8 @@ export default function Cartographer({ name, data, stargazer, fid }) {
             }
             const prev = JSON.parse(localStorage.getItem('maps')) || {}
             const mapKey = name + "-" + uuid
+
+            // localSet("maps", value)
             localStorage.setItem('maps', JSON.stringify({
               ...prev, [mapKey]: {
                 geojson: res,

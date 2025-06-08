@@ -50,7 +50,6 @@ import Link from "next/link"
 import { Textarea } from "../ui/textarea"
 
 let preAlertData
-const templates = ["xeno", "neuropunk", "mousewars", "postwar", "crusaiders"]
 export default function MapSettings({ map, id }) {
   // https://github.com/zenoamaro/react-quill/issues/921
   const { VIEW, DISTANCE_CONVERTER, MAX_ZOOM, MIN_ZOOM, UNIT, BG, TYPES, STYLES, IS_GALAXY } = getConsts(map)
@@ -66,14 +65,13 @@ export default function MapSettings({ map, id }) {
       updated: Date.now(),
       map,
     }
-    // let template = ""
-    // templates.forEach(t => {
-    //   if (data.name.includes(t)) template = t
-    // })
-    // if (template) console.log("use template", template)
     body.TYPES = JSON.parse(body.TYPES)
     body.LAYOUT_OVERRIDE = JSON.parse(body.LAYOUT_OVERRIDE)
     setSubmitting(true)
+
+    if (typeof body.STYLE === "undefined") {
+      delete body.STYLE
+    }
 
     if (body.file) {
       if (approved) {
@@ -113,19 +111,27 @@ export default function MapSettings({ map, id }) {
       delete body.ZOOM
     }
 
-    // console.log("fixed body", body)
-
     setSubmitting(false)
     delete body.file
     const prev = JSON.parse(localStorage.getItem('maps')) || {}
-    localStorage.setItem('maps', JSON.stringify({
-      ...prev,
-      [`${map}-${id}`]: {
-        ...newObj,
-        config: body,
-      },
-    }))
-    console.log("I set right", JSON.parse(localStorage.getItem('maps')))
+    const currentConfig = prev[`${map}-${id}`].config
+    try {
+      localStorage.setItem('maps', JSON.stringify({
+        ...prev,
+        [`${map}-${id}`]: {
+          ...newObj,
+          config: {
+            ...currentConfig,
+            ...body,
+          },
+        },
+      }))
+    } catch (error) {
+      console.log(error)
+      if (error.name === 'QuotaExceededError') {
+        toast.warning("10Mb limit for local storage reached. Failed to save settings")
+      }
+    }
     router.push(`/${map}/export`)
   }
 
@@ -137,14 +143,6 @@ export default function MapSettings({ map, id }) {
       router.push(`/${map}/export`)
     }
   }, [])
-
-  // debug
-  useEffect(() => {
-    if (data) console.log(data)
-  }, [data])
-  // useEffect(() => {
-  //   if (form) console.log("form looking for geojson", form.getValues("file"))
-  // }, [form])
 
   if (!data) {
     return (
@@ -542,6 +540,40 @@ export default function MapSettings({ map, id }) {
                     Upload a GeoJSON or TopoJSON file to fill the map with data. If uploading a topojson the layers must be named as follows: "location" for points, "territory" for polygons, "guide" for lines
                   </FormDescription>
                   {form.formState.errors.invalidJson && <p className="text-sm text-red-500">Invalid format</p>}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="STYLE"
+              render={({ field }) => (
+                <FormItem className="py-4">
+                  <FormLabel>Maplibre Style</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept=".json"
+                      onChange={async (e) => {
+                        const file = e.target.files[0]
+                        if (file) {
+                          const content = await file.text();
+                          try {
+                            let fileData = JSON.parse(content)
+                            form.setValue('STYLE', fileData)
+                            form.clearErrors('invalidStyle')
+                          } catch (error) {
+                            console.error(error)
+                            form.setError("invalidStyle")
+                          }
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Define a style for non-galaxy maps. Must be a valid Maplibre style (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-style-spec/">spec</a>). I recommend using <a target="_blank" className="text-blue-300" href="https://maplibre.org/maputnik">Maputnik</a> for creating and editing the style.
+                  </FormDescription>
+                  {form.formState.errors.invalidStyle && <p className="text-sm text-red-500">Invalid format</p>}
                   <FormMessage />
                 </FormItem>
               )}

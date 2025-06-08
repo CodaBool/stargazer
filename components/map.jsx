@@ -101,13 +101,9 @@ function getLocationGroups(features, maxDistance = 20) {
   return solarSystems;
 }
 
-export default function Map({ width, height, data, name, mobile, params, locked, stargazer, setCrashed, CLICK_ZOOM, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY }) {
+export default function Map({ width, height, data, name, mobile, params, locked, stargazer, setCrashed, CLICK_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
-
-  // an optional performance thing that chatgpt suggested
-  // const addedIcons = useRef(new Set());
-
   const recreateListeners = useDraw(s => s.recreateListeners)
   const locationGroups = getLocationGroups(data.features.filter(f => f.geometry.type === "Point" && f.properties.type !== "text"))
 
@@ -513,7 +509,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
             "icon-overlap": "always",
             // "icon-optional": true, // default false
             "icon-overlap": "cooperative",
-            "icon-size": .6,
+            "icon-size": 1,
             // "text-anchor": "top",
             "text-offset": [0, 1.3],
             "icon-padding": 0, // default 2
@@ -600,7 +596,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       {params.get("secret") && <Link mode={mode} width={width} height={height} mobile={mobile} name={name} params={params} />}
       {params.get("calibrate") && <Calibrate mode={mode} width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}
 
-      <Sheet {...drawerContent} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} isGalaxy={IS_GALAXY} />
+      <Sheet {...drawerContent} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GENERATE_LOCATIONS={GENERATE_LOCATIONS} />
 
       <Toolbox mode={mode} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} />
       {params.get("hamburger") !== "0" && <Hamburger mode={mode} name={name} params={params} map={wrapper} stargazer={stargazer} mobile={mobile} IS_GALAXY={IS_GALAXY} />}

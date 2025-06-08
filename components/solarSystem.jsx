@@ -42,6 +42,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
   }
 
   function handleMouseOver(d) {
+    console.log("hover", d)
     if (!d) return
     map.setFeatureState(
       { source: 'source', id: d.id },
@@ -62,16 +63,15 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
       <div className="w-full overflow-x-auto overflow-y-visible py-2">
         <div className="flex items-baseline h-full space-x-6 px-4 justify-evenly">
           {group.map((body, index) => {
-            const source = body.source?.id === selectedId ? body.source : undefined
-            // if (source) console.log("source", source)
+            // const source = body.source?.id === selectedId ? body.source : undefined
             return (
               <div key={index} className="flex flex-col items-center relative min-w-[40px]">
                 <img
                   src={`${isGalaxy ? svgBase + "lancer/" + (body.ringed ? "ringed_planet" : body.type) + ".svg" : svgBase + "lancer/moon.svg"}`}
                   alt={body.name}
                   onClick={() => setActiveBody(body)}
-                  onMouseOver={() => handleMouseOver(source)}
-                  onMouseOut={() => handleMouseOut(source)}
+                  onMouseOver={() => handleMouseOver(body.source)}
+                  onMouseOut={() => handleMouseOut(body.source)}
                   className="hover-grow-xl cursor-pointer"
                   style={{
                     width: 40 + "px",
@@ -101,12 +101,12 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
                 <div className="text-xs mt-2 text-center text-white md:text-sm">
                   {body.name}
                 </div>
-                {source && (
+                {body.source && (
                   <div className="text-xs mt-2 text-center text-white opacity-80">
-                    {source.properties.unofficial && <Badge variant="destructive" className="mx-auto">unofficial</Badge>}
-                    {source.properties.faction && <Badge className="mx-auto">{source.properties.faction}</Badge>}
-                    {source.properties.destroyed && <Badge className="mx-auto">destroyed</Badge>}
-                    {source.properties.capital && <Badge variant="destructive" className="mx-auto">capital</Badge>}
+                    {body.source.properties.unofficial && <Badge variant="destructive" className="mx-auto">unofficial</Badge>}
+                    {body.source.properties.faction && <Badge className="mx-auto">{body.source.properties.faction}</Badge>}
+                    {body.source.properties.destroyed && <Badge className="mx-auto">destroyed</Badge>}
+                    {body.source.properties.capital && <Badge variant="destructive" className="mx-auto">capital</Badge>}
                   </div>
                 )}
               </div>

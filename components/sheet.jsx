@@ -16,14 +16,15 @@ import * as SVG from './svg.js'
 import { useMap } from 'react-map-gl/maplibre'
 import { useEffect } from "react"
 import SolarSystemDiagram from "./solarSystem.jsx"
+import LocationSystem from "./locationSystem.jsx"
 import seedrandom from 'seedrandom'
 import { Crosshair } from "lucide-react"
 
 const MAX_GEN_LOCATIONS = 8
 
-export default function SheetComponent({ drawerContent, setDrawerContent, myGroup, nearbyGroups, coordinates, name, selectedId, height, isGalaxy }) {
+export default function SheetComponent({ drawerContent, setDrawerContent, myGroup, nearbyGroups, coordinates, name, selectedId, height, IS_GALAXY, GENERATE_LOCATIONS }) {
   const { map } = useMap()
-  const GROUP_NAME = isGalaxy ? "Solar Systems" : "Locations"
+  const GROUP_NAME = IS_GALAXY ? "Solar Systems" : "Locations"
 
   useEffect(() => {
     // move editor table
@@ -56,8 +57,13 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
   }, [drawerContent])
 
   if (!coordinates) return null
-  const local = generateLocations(myGroup)
-  const nearby = nearbyGroups.map(g => generateLocations(g))
+
+  let local = myGroup
+  let nearby = nearbyGroups
+  if (GENERATE_LOCATIONS) {
+    local = generateLocations(myGroup)
+    nearby = nearbyGroups.map(g => generateLocations(g))
+  }
 
   function panToGroup(group) {
     // duplicate code to map pan()
@@ -89,11 +95,14 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
         <SheetHeader >
           <SheetTitle className="text-center ">
             <Crosshair onClick={() => panToGroup(local)} className="inline mr-2 mb-1 cursor-pointer" />
-            <span className="text-gray-400">{coordinates ? `${isGalaxy ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${isGalaxy ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}</span>
+            <span className="text-gray-400">{coordinates ? `${IS_GALAXY ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${IS_GALAXY ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}</span>
           </SheetTitle>
           {nearby.length > 1 && <SheetDescription className="text-center" >{nearby.length} Nearby {GROUP_NAME}</SheetDescription>}
         </SheetHeader >
-        <SolarSystemDiagram group={local} height={height} isGalaxy={isGalaxy} map={map} selectedId={selectedId} name={name} />
+        {IS_GALAXY
+          ? <SolarSystemDiagram group={local} height={height} isGalaxy={IS_GALAXY} map={map} selectedId={selectedId} name={name} />
+          : <LocationSystem group={local} map={map} selectedId={selectedId} name={name} />
+        }
         <hr />
         {nearby.length > 0 && (
           <>
@@ -104,10 +113,13 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
                   <div className="mx-auto">
                     <Crosshair onClick={() => panToGroup(group)} className="cursor-pointer inline" />
                     <span className="ml-2 text-gray-400">
-                      {`${isGalaxy ? "Y" : "lat"}: ${Math.floor(group[0].groupCenter[1])}, ${isGalaxy ? "X" : "lng"}: ${Math.floor(group[0].groupCenter[0])}`}
+                      {`${IS_GALAXY ? "Y" : "lat"}: ${Math.floor(group[0].groupCenter[1])}, ${IS_GALAXY ? "X" : "lng"}: ${Math.floor(group[0].groupCenter[0])}`}
                     </span>
                   </div>
-                  <SolarSystemDiagram group={group} height={height} isGalaxy={isGalaxy} map={map} name={name} />
+                  {IS_GALAXY
+                    ? <SolarSystemDiagram group={group} height={height} isGalaxy={IS_GALAXY} map={map} name={name} />
+                    : <LocationSystem group={group} map={map} selectedId={selectedId} name={name} />
+                  }
                   {index + 1 !== nearby.length && <hr />}
                 </div>
               )
