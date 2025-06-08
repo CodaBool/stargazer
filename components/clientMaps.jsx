@@ -27,7 +27,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { combineAndDownload, combineLayers, combineLayersForTopoJSON, isMobile } from "@/lib/utils"
+import { combineAndDownload, combineLayers, combineLayersForTopoJSON, isMobile, localGet, localSet } from "@/lib/utils"
 import { topology } from "topojson-server"
 import { toast } from "sonner"
 import { create } from 'zustand'
@@ -47,14 +47,14 @@ export default function ClientMaps({ map, revalidate, cloudMaps, session }) {
   const router = useRouter()
 
   useEffect(() => {
-    setMaps(JSON.parse(localStorage.getItem('maps')))
+    localGet('maps').then(r => r.onsuccess = () => setMaps(r.result))
   }, [])
 
   function deleteMap(key) {
     if (window.confirm('Are you sure you want to delete this map?')) {
       const updatedMaps = { ...maps }
       delete updatedMaps[key]
-      localStorage.setItem('maps', JSON.stringify(updatedMaps))
+      localSet("maps", updatedMaps)
       setMaps(updatedMaps)
     }
   }
@@ -117,7 +117,7 @@ export default function ClientMaps({ map, revalidate, cloudMaps, session }) {
 
   function saveName(key) {
     const updatedMaps = { ...maps, [key]: { ...maps[key], name: nameInput } }
-    localStorage.setItem('maps', JSON.stringify(updatedMaps))
+    localSet("maps", updatedMaps)
     setMaps(updatedMaps)
     setShowNameInput(false)
     setNameInput(null)
@@ -340,18 +340,22 @@ export function CloudMaps({ maps, revalidate, mapName }) {
     const response = await fetch(`/api/map?id=${id}`)
     const data = await response.json()
     const key = `${mapName}-${Date.now()}`
-    const prev = JSON.parse(localStorage.getItem('maps')) || {}
-    const newMaps = {
-      ...prev, [key]: {
-        geojson: JSON.parse(data.geojson),
-        name: data.name,
-        updated: Date.now(),
-        map: mapName,
+
+    localGet('maps').then(r => {
+      r.onsuccess = () => {
+        const newMaps = {
+          ...r.result, [key]: {
+            geojson: JSON.parse(data.geojson),
+            name: data.name,
+            updated: Date.now(),
+            map: mapName,
+          }
+        }
+        localSet("maps", newMaps)
+        setMaps(newMaps)
+        toast.success("Map saved locally")
       }
-    }
-    localStorage.setItem('maps', JSON.stringify(newMaps))
-    setMaps(newMaps)
-    toast.success("Map saved locally")
+    })
   }
 
   return (

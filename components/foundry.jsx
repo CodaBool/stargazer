@@ -6,6 +6,7 @@ import distance from '@turf/distance'
 import { point as turfPoint } from '@turf/helpers'
 import maplibregl from 'maplibre-gl'
 import { toast } from "sonner"
+import { localGet } from "@/lib/utils"
 
 let text, zText, crosshairX, crosshairY
 
@@ -151,8 +152,8 @@ export function Link({ mobile, name, params }) {
     zoomText.style.visibility = 'visible'
     mapContainer.appendChild(zoomText)
 
-    const handleSubmit = () => {
-      const maps = JSON.parse(localStorage.getItem('maps') || '{}')
+    const handleSubmit = async () => {
+      const maps = await localGet('maps') || {}
       console.log('submitting', maps, params.get("id"), params.get("secret"), maps[params.get("id")])
 
       const id = params.get("id")

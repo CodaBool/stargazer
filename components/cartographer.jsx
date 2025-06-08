@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import MapComponent from './map'
-import { combineLayers, getConsts, isMobile, localSet } from '@/lib/utils'
+import { combineLayers, deepArrayCheck, getConsts, isMobile, localGet, localSet } from '@/lib/utils'
 import Map from 'react-map-gl/maplibre'
 import Controls from './controls.jsx'
 import Editor from './editor'
@@ -14,11 +14,14 @@ export const useStore = create((set) => ({
   setEditorTable: editorTable => set({ editorTable }),
 }))
 
+let CONST_FINAL = {}
 export default function Cartographer({ name, data, stargazer, fid }) {
   const CONST = getConsts(name)
 
   // crash reloading
   const [crashed, setCrashed] = useState()
+  const [previewData, setPreviewData] = useState()
+  const [configRead, setConfigRead] = useState()
   const [size, setSize] = useState()
   const params = useSearchParams()
   const mobile = isMobile()
@@ -43,79 +46,90 @@ export default function Cartographer({ name, data, stargazer, fid }) {
   }, [])
 
   if (params.get("id")) {
-    if (typeof localStorage === 'undefined') {
-      return (
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent text-indigo-900 rounded-full" />
-        </div>
-      )
-    }
-    const maps = JSON.parse(localStorage.getItem('maps')) || {}
-    if (params.get("id") === "foundry") {
-      const uuid = params.get("uuid")
-      // console.log("get map geojson using secret", params.get("secret"), uuid)
-      fetch(`/api/v1/map/${uuid}`)
-        .then(res => res.json())
-        .then(res => {
-          // console.log("res", res)
-          if (res.error) {
-            window.parent.postMessage({
-              type: 'error',
-              message: res.error,
-            }, '*')
-          } else {
-            if (res.type !== "FeatureCollection") {
+    localGet('maps').then(r => {
+      r.onerror = e => console.error("db error", e, r)
+      r.onsuccess = () => {
+        if (params.get("id") === "foundry") {
+          const uuid = params.get("uuid")
+          // console.log("get map geojson using secret", params.get("secret"), uuid)
+          fetch(`/api/v1/map/${uuid}`)
+            .then(res => res.json())
+            .then(res => {
+              // console.log("res", res)
+              if (res.error) {
+                window.parent.postMessage({
+                  type: 'error',
+                  message: res.error,
+                }, '*')
+              } else {
+                if (res.type !== "FeatureCollection") {
+                  window.parent.postMessage({
+                    type: 'error',
+                    message: res.error,
+                  }, '*')
+                  return
+                }
+                localGet('maps').then(r => {
+                  r.onsuccess = () => {
+                    const mapKey = name + "-" + uuid
+
+                    localSet("maps", {
+                      ...r.result, [mapKey]: {
+                        geojson: res,
+                        name: r.result[mapKey]?.name || randomName('', ' '),
+                        updated: Date.now(),
+                        map: name,
+                        config: r.result[mapKey]?.config || {},
+                      }
+                    })
+                    router.replace(`/${name}?secret=${params.get("secret")}&id=${uuid}&hamburger=0&search=0&zoom=0`)
+                  }
+                })
+              }
+            })
+            .catch(message => {
               window.parent.postMessage({
                 type: 'error',
-                message: res.error,
-              }, '*')
-              return
+                message,
+              }, '*');
+            })
+        } else if (params.get("preview")) {
+          const localGeojson = r.result[name + "-" + params.get("id")]
+          if (localGeojson?.geojson) {
+            localGeojson.geojson.features.forEach(f => {
+              f.properties.userCreated = true
+              f.id = fid++
+            })
+            // ensure that the local data changes get passed to the preview state
+            const userData = previewData?.features.filter(f => f.properties.userCreated)
+            const localUserData = localGeojson.geojson.features.filter(f => f.properties.userCreated)
+            const preview = combineLayers([localGeojson.geojson, data])
+            if (!previewData) setPreviewData(preview)
+            if (deepArrayCheck(userData, localUserData)) {
+              setPreviewData(preview)
             }
-            const prev = JSON.parse(localStorage.getItem('maps')) || {}
-            const mapKey = name + "-" + uuid
-
-            // localSet("maps", value)
-            localStorage.setItem('maps', JSON.stringify({
-              ...prev, [mapKey]: {
-                geojson: res,
-                name: prev[mapKey]?.name || randomName('', ' '),
-                updated: Date.now(),
-                map: name,
-                config: prev[mapKey]?.config || {},
-              }
-            }))
-            //
-            router.replace(`/${name}?secret=${params.get("secret")}&id=${uuid}&hamburger=0&search=0&zoom=0`)
           }
-        })
-        .catch(message => {
-          window.parent.postMessage({
-            type: 'error',
-            message,
-          }, '*');
-        })
-    } else if (params.get("preview")) {
-      const localGeojson = maps[name + "-" + params.get("id")]
-      if (localGeojson?.geojson) {
-        localGeojson.geojson.features.forEach(f => {
-          f.properties.userCreated = true
-          f.id = fid++
-        })
-        data = combineLayers([localGeojson.geojson, data])
-      }
-    }
-    const localGeojson = maps[name + "-" + params.get("id")]
-    if (localGeojson?.config) {
-      Object.keys(localGeojson.config).forEach(key => {
-        if (CONST.hasOwnProperty(key)) {
-          CONST[key] = localGeojson.config[key];
         }
-      })
-      console.log("after ", CONST)
-    }
+
+        // override config
+        const localGeojson = r.result[name + "-" + params.get("id")]
+        if (localGeojson?.config) {
+          Object.keys(localGeojson.config).forEach(key => {
+            if (CONST.hasOwnProperty(key)) {
+              CONST[key] = localGeojson.config[key];
+            }
+          })
+        }
+        CONST_FINAL = JSON.parse(JSON.stringify(CONST));
+        if (!configRead) setConfigRead(true)
+      }
+    })
+  } else {
+    CONST_FINAL = JSON.parse(JSON.stringify(CONST));
+    if (!configRead) setConfigRead(true)
   }
 
-  if (!size || params.get("waitForFetch")) {
+  if ((!size || params.get("waitForFetch")) || (params.get("preview") && !previewData) || !configRead) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent text-indigo-900 rounded-full" />
@@ -133,20 +147,20 @@ export default function Cartographer({ name, data, stargazer, fid }) {
         dragPan={!locked}
         doubleClickZoom={!locked}
         attributionControl={false}
-        initialViewState={CONST.VIEW}
-        maxZoom={CONST.MAX_ZOOM}
-        minZoom={CONST.MIN_ZOOM}
+        initialViewState={CONST_FINAL.VIEW}
+        maxZoom={CONST_FINAL.MAX_ZOOM}
+        minZoom={CONST_FINAL.MIN_ZOOM}
         style={{ width: size.width, height: size.height }}
-        mapStyle={CONST.STYLE}
+        mapStyle={CONST_FINAL.STYLE}
         pixelRatio={2}
       // good to view what kind of distortion is happening
       // projection="globe"
       >
-        <MapComponent width={size.width} height={size.height} name={name} data={data} mobile={mobile} params={params} stargazer={stargazer} locked={locked} setCrashed={setCrashed} {...CONST} />
-        {showControls && <Controls name={name} params={params} setSize={setSize} TYPES={CONST.TYPES} STYLES={CONST.STYLES} />}
+        <MapComponent width={size.width} height={size.height} name={name} data={params.get("preview") ? (previewData || data) : data} mobile={mobile} params={params} stargazer={stargazer} locked={locked} setCrashed={setCrashed} {...CONST_FINAL} />
+        {showControls && <Controls name={name} params={params} setSize={setSize} TYPES={CONST_FINAL.TYPES} STYLES={CONST_FINAL.STYLES} />}
       </Map>
-      {showEditor && <Editor mapName={name} params={params} TYPES={CONST.TYPES} />}
-      <div style={{ width: size.width, height: size.height, background: `radial-gradient(${CONST.BG})`, zIndex: -1, top: 0, position: "absolute" }}></div>
+      {showEditor && <Editor mapName={name} params={params} TYPES={CONST_FINAL.TYPES} />}
+      <div style={{ width: size.width, height: size.height, background: `radial-gradient(${CONST_FINAL.BG})`, zIndex: -1, top: 0, position: "absolute" }}></div>
     </>
   )
 }

@@ -34,6 +34,7 @@ import { useMemo, useState } from "react"
 import 'react-quill-new/dist/quill.bubble.css'
 import randomName from '@scaleway/random-name'
 import Link from "next/link"
+import { localGet, localSet } from "@/lib/utils"
 
 const templates = ["xeno", "neuropunk", "mousewars", "postwar", "crusaiders"]
 
@@ -59,18 +60,21 @@ export default function CreateLocation({ map }) {
         router.push(`/${template}/export`)
       }
     } else {
-      const prev = JSON.parse(localStorage.getItem('maps')) || {}
-      localStorage.setItem('maps', JSON.stringify({
-        ...prev,
-        [`custom-${Date.now()}`]: {
-          config: {},
-          name: body.name,
-          updated: Date.now(),
-          map: "custom",
-          geojson: { type: "FeatureCollection", features: [] },
-        },
-      }))
-      router.push(`/custom/export`)
+      localGet('maps').then(r => {
+        r.onsuccess = () => {
+          localSet("maps", {
+            ...r.result,
+            [`custom-${Date.now()}`]: {
+              config: {},
+              name: body.name,
+              updated: Date.now(),
+              map: "custom",
+              geojson: { type: "FeatureCollection", features: [] },
+            },
+          })
+          router.push(`/custom/export`)
+        }
+      })
     }
   }
 

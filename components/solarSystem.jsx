@@ -42,7 +42,6 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
   }
 
   function handleMouseOver(d) {
-    console.log("hover", d)
     if (!d) return
     map.setFeatureState(
       { source: 'source', id: d.id },

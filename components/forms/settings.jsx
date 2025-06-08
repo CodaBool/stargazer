@@ -44,7 +44,7 @@ import { useForm } from "react-hook-form"
 import { ArrowLeft, LoaderCircle, Settings, X } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import 'react-quill-new/dist/quill.bubble.css'
-import { combineAndDownload, combineLayers, getConsts, hexToRgb } from "@/lib/utils"
+import { combineAndDownload, combineLayers, getConsts, hexToRgb, localGet, localSet } from "@/lib/utils"
 import randomName from '@scaleway/random-name'
 import Link from "next/link"
 import { Textarea } from "../ui/textarea"
@@ -113,36 +113,36 @@ export default function MapSettings({ map, id }) {
 
     setSubmitting(false)
     delete body.file
-    const prev = JSON.parse(localStorage.getItem('maps')) || {}
-    const currentConfig = prev[`${map}-${id}`].config
-    try {
-      localStorage.setItem('maps', JSON.stringify({
-        ...prev,
-        [`${map}-${id}`]: {
-          ...newObj,
-          config: {
-            ...currentConfig,
-            ...body,
+    localGet('maps').then(r => {
+      r.onsuccess = () => {
+        const currentConfig = r.result[`${map}-${id}`].config
+        localSet("maps", {
+          ...r.result,
+          [`${map}-${id}`]: {
+            ...newObj,
+            config: {
+              ...currentConfig,
+              ...body,
+            },
           },
-        },
-      }))
-    } catch (error) {
-      console.log(error)
-      if (error.name === 'QuotaExceededError') {
-        toast.warning("10Mb limit for local storage reached. Failed to save settings")
+        })
+        router.push(`/${map}/export`)
       }
-    }
-    router.push(`/${map}/export`)
+    })
   }
 
   useEffect(() => {
-    const json = JSON.parse(localStorage.getItem('maps')) || {}
-    if (json.hasOwnProperty(`${map}-${id}`)) {
-      setData(json[`${map}-${id}`])
-    } else {
-      router.push(`/${map}/export`)
-    }
+    localGet('maps').then(r => {
+      r.onsuccess = () => {
+        if (r.result.hasOwnProperty(`${map}-${id}`)) {
+          setData(r.result[`${map}-${id}`])
+        } else {
+          router.push(`/${map}/export`)
+        }
+      }
+    })
   }, [])
+
 
   if (!data) {
     return (
@@ -151,6 +151,7 @@ export default function MapSettings({ map, id }) {
       </div>
     )
   }
+  console.log("data", data)
 
   return (
     <Form {...form}>
