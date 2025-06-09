@@ -115,9 +115,10 @@ export default function MapSettings({ map, id }) {
     delete body.file
     localGet('maps').then(r => {
       r.onsuccess = () => {
-        const currentConfig = r.result[`${map}-${id}`].config
+        const localMaps = r.result || {}
+        const currentConfig = localMaps[`${map}-${id}`]?.config
         localSet("maps", {
-          ...r.result,
+          ...localMaps,
           [`${map}-${id}`]: {
             ...newObj,
             config: {
@@ -134,7 +135,7 @@ export default function MapSettings({ map, id }) {
   useEffect(() => {
     localGet('maps').then(r => {
       r.onsuccess = () => {
-        if (r.result.hasOwnProperty(`${map}-${id}`)) {
+        if (r.result?.hasOwnProperty(`${map}-${id}`)) {
           setData(r.result[`${map}-${id}`])
         } else {
           router.push(`/${map}/export`)

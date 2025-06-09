@@ -1,6 +1,6 @@
 // can write embed rules here for platforms like twitter
 export const metadata = {
-  title: 'Maps',
+  title: 'Stargazer',
   description: 'RPG maps with customizable content',
 }
 
@@ -12,7 +12,16 @@ export const viewport = {
 import './global.css'
 import "maplibre-gl/dist/maplibre-gl.css"
 import '@hyvilo/maplibre-gl-draw/dist/maplibre-gl-draw.css'
+import { Press_Start_2P } from 'next/font/google'
 import Provider from '@/components/provider'
+
+const _ = Press_Start_2P({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-pixel',
+  display: 'swap',
+})
+
 
 export default function RootLayout({ children }) {
   return (

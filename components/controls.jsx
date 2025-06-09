@@ -53,13 +53,15 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
 
     localGet('maps').then(r => {
       r.onsuccess = () => {
+        const localMaps = r.result || {}
         localSet("maps", {
-          ...r.result, [mapId]: {
+          ...localMaps, [mapId]: {
             geojson,
-            name: r.result[mapId]?.name || randomName('', ' '),
+            name: localMaps[mapId]?.name || randomName('', ' '),
             updated: Date.now(),
+            id: Number(mapId.split("-")[1]),
             map: name,
-            config: r.result[mapId]?.config || {},
+            config: localMaps[mapId]?.config || {},
           }
         })
       }
@@ -74,13 +76,13 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
 
     localGet('maps').then(r => {
       r.onsuccess = () => {
-
-        const mapsWithData = Object.keys(r.result).filter(id => id.split('-')[0] === name)
+        const localMaps = r.result || {}
+        const mapsWithData = Object.keys(localMaps).filter(id => id.split('-')[0] === name)
 
         // if no data exists set an id and save
         if (!mapsWithData.length || params.get("new")) {
 
-          console.log("no data exists, or given create param", params.get("new"), "maps =", r.result)
+          console.log("no data exists, or given create param", params.get("new"), "maps =", localMaps)
           // TODO: consider const uuid = crypto.randomUUID()
           const id = Date.now()
           setMapId(`${name}-${id}`)
@@ -110,11 +112,11 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
           // TODO: toast system, show a message "restored local map"
           // console.log("chose map from URL param")
           const mId = `${name}-${params.get("id")}`
-          const geojson = r.result[mId]?.geojson
+          const geojson = localMaps[mId]?.geojson
 
           if (geojson) {
             setMapId(mId)
-            draw.add(r.result[mId].geojson || {})
+            draw.add(geojson)
             return
           } else {
             // TODO: give toast message "map not found locally"
@@ -122,7 +124,7 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
           }
         }
 
-        for (const [key, data] of Object.entries(r.result)) {
+        for (const [key, data] of Object.entries(localMaps)) {
           // console.log("storage", data)
           const mapName = key.split('-')[0]
           if (mapName !== name) continue

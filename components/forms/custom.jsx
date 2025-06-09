@@ -62,12 +62,14 @@ export default function CreateLocation({ map }) {
     } else {
       localGet('maps').then(r => {
         r.onsuccess = () => {
+          const time = Date.now()
           localSet("maps", {
-            ...r.result,
-            [`custom-${Date.now()}`]: {
+            ...r.result || {},
+            [`custom-${time}`]: {
               config: {},
               name: body.name,
               updated: Date.now(),
+              id: time,
               map: "custom",
               geojson: { type: "FeatureCollection", features: [] },
             },

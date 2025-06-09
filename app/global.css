@@ -226,3 +226,30 @@ body {
 .fade-in {
   animation: fadeIn 0.3s cubic-bezier(0.3, 0, 1, 1);
 }
+
+/* making a new main menu */
+.neon-border {
+  border: 2px solid #0ff;
+  box-shadow:
+    0 0 8px #0ff,
+    0 0 16px #0ff inset;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* globals.css or a relevant stylesheet */
+.neon-scifi {
+  border: 2px solid #0ff;
+  border-radius: 1rem;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 255, 255, 0.1) 0%,
+    rgba(0, 0, 0, 0.9) 100%
+  );
+  box-shadow:
+    0 0 2px #0ff,
+    0 0 10px #0ff,
+    inset 0 0 2px #0ff,
+    inset 0 0 10px #0ff;
+  font-family: "Press Start 2P", monospace;
+  text-shadow: 0 0 1px #0ff;
+}

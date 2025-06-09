@@ -39,7 +39,66 @@ const useMaps = create(set => ({
   setMaps: maps => set({ maps }),
 }))
 
-export default function ClientMaps({ map, revalidate, cloudMaps, session }) {
+export function MapOverview() {
+  const router = useRouter()
+  const maps = useMaps((state) => state.maps)
+  const setMaps = useMaps((state) => state.setMaps)
+  useEffect(() => {
+    localGet('maps').then(r => r.onsuccess = () => {
+      console.log("local maps found", r.result)
+
+      Object.entries(r.result || {}).forEach(([key, data]) => {
+        const [map, dateId] = key.split('-')
+        setMaps(prevMaps => ({ ...prevMaps, [key]: { ...data, name } }))
+      })
+      // r.result.split("-")
+      // setMaps(r.result)
+    })
+  }, [])
+  if (!Object.entries(maps || {}).length) return (
+    <p>You have no maps saved locally. <Link href="/" className="text-blue-300">Select a map</Link></p>
+  )
+
+  return (
+    <div className="flex items-center my-2 flex-wrap">
+      {Object.entries(maps || {}).map(([key, data]) => {
+        const [name, dateId] = key.split('-')
+
+        return (
+          <div key={key} className="bg-gray-800 p-4 m-2 rounded w-full md:w-[440px]">
+            <h2 className="text-2xl font-bold mb-4">{data.name}</h2>
+            <p className="text-gray-400 ">Created: {new Date(parseInt(dateId)).toLocaleDateString("en-US", {
+              hour: "numeric",
+              minute: "numeric",
+              month: "long",
+              day: "numeric",
+            })}</p>
+            <p className="text-gray-400 ">Updated: {new Date(data.updated).toLocaleDateString("en-US", {
+              hour: "numeric",
+              minute: "numeric",
+              month: "long",
+              day: "numeric",
+            })}</p>
+            <p className="text-gray-400 ">Locations: {data.geojson?.features.filter(f => f.geometry.type === "Point").length}</p>
+            <p className="text-gray-400 ">Territories: {data.geojson?.features.filter(f => f.geometry.type.includes("Poly")).length}</p>
+            <p className="text-gray-400">Guides: {data.geojson?.features.filter(f => f.geometry.type === "LineString").length}</p>
+            <div className="grid grid-cols-2 gap-2">
+              {/* <div className="flex justify-between items-center mt-4"> */}
+              <Button className="cursor-pointer rounded m-2" onClick={() => router.push(`/${map}?id=${dateId}`)} variant="outline"><Eye /> View</Button>
+              <Button className="text-red-500 cursor-pointer rounded m-2" variant="destructive" onClick={() => deleteMap(key)}><Trash2 /> Delete</Button>
+
+
+              <div className="col-span-2 m-2">
+                <Button className="cursor-pointer rounded w-full" onClick={() => router.push(`/${map}/${dateId}/settings`)}><Settings /> Settings</Button>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  )
+}
+export default function ClientMaps({ map, revalidate, cloudMaps, session, showAll }) {
   const [nameInput, setNameInput] = useState()
   const [showNameInput, setShowNameInput] = useState()
   const maps = useMaps((state) => state.maps)
@@ -47,7 +106,7 @@ export default function ClientMaps({ map, revalidate, cloudMaps, session }) {
   const router = useRouter()
 
   useEffect(() => {
-    localGet('maps').then(r => r.onsuccess = () => setMaps(r.result))
+    localGet('maps').then(r => r.onsuccess = () => setMaps(r.result || {}))
   }, [])
 
   function deleteMap(key) {
@@ -339,15 +398,17 @@ export function CloudMaps({ maps, revalidate, mapName }) {
   async function saveLocally(id) {
     const response = await fetch(`/api/map?id=${id}`)
     const data = await response.json()
-    const key = `${mapName}-${Date.now()}`
+    const time = Date.now()
+    const key = `${mapName}-${time}`
 
     localGet('maps').then(r => {
       r.onsuccess = () => {
         const newMaps = {
-          ...r.result, [key]: {
+          ...r.result || {}, [key]: {
             geojson: JSON.parse(data.geojson),
             name: data.name,
-            updated: Date.now(),
+            id: time,
+            updated: time,
             map: mapName,
           }
         }

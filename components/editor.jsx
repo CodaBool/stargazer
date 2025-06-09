@@ -45,13 +45,15 @@ export default function Editor({ mapName, params, TYPES }) {
     if (!geojson.features.length) return
     localGet('maps').then(r => {
       r.onsuccess = () => {
+        const localMaps = r.result || {}
         localSet("maps", {
-          ...r.result, [mapId]: {
+          ...localMaps, [mapId]: {
             geojson,
-            name: r.result[mapId]?.name || randomName('', ' '),
+            name: localMaps[mapId]?.name || randomName('', ' '),
             updated: Date.now(),
+            id: Number(params.get('id')),
             map: mapName,
-            config: r.result[mapId]?.config || {},
+            config: localMaps[mapId]?.config || {},
           }
         })
       }

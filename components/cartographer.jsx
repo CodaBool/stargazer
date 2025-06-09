@@ -49,6 +49,7 @@ export default function Cartographer({ name, data, stargazer, fid }) {
     localGet('maps').then(r => {
       r.onerror = e => console.error("db error", e, r)
       r.onsuccess = () => {
+        const localMaps = r.result || {}
         if (params.get("id") === "foundry") {
           const uuid = params.get("uuid")
           // console.log("get map geojson using secret", params.get("secret"), uuid)
@@ -74,12 +75,13 @@ export default function Cartographer({ name, data, stargazer, fid }) {
                     const mapKey = name + "-" + uuid
 
                     localSet("maps", {
-                      ...r.result, [mapKey]: {
+                      ...localMaps, [mapKey]: {
                         geojson: res,
-                        name: r.result[mapKey]?.name || randomName('', ' '),
+                        name: localMaps[mapKey]?.name || randomName('', ' '),
                         updated: Date.now(),
+                        id: Number(uuid),
                         map: name,
-                        config: r.result[mapKey]?.config || {},
+                        config: localMaps[mapKey]?.config || {},
                       }
                     })
                     router.replace(`/${name}?secret=${params.get("secret")}&id=${uuid}&hamburger=0&search=0&zoom=0`)
@@ -94,7 +96,7 @@ export default function Cartographer({ name, data, stargazer, fid }) {
               }, '*');
             })
         } else if (params.get("preview")) {
-          const localGeojson = r.result[name + "-" + params.get("id")]
+          const localGeojson = localMaps[name + "-" + params.get("id")]
           if (localGeojson?.geojson) {
             localGeojson.geojson.features.forEach(f => {
               f.properties.userCreated = true
@@ -112,7 +114,7 @@ export default function Cartographer({ name, data, stargazer, fid }) {
         }
 
         // override config
-        const localGeojson = r.result[name + "-" + params.get("id")]
+        const localGeojson = localMaps[name + "-" + params.get("id")]
         if (localGeojson?.config) {
           Object.keys(localGeojson.config).forEach(key => {
             if (CONST.hasOwnProperty(key)) {

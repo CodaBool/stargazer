@@ -474,7 +474,6 @@ export default function Map({ width, height, data, name, mobile, params, locked,
   - star wars has its own coordinate system
   - do a webgl check https://maplibre.org/maplibre-gl-js/docs/examples/check-for-support/
   */
-  console.log("galaxy", IS_GALAXY)
   return (
     <>
       <Source id="source" type="geojson" data={data}>
