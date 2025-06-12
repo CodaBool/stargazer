@@ -43,35 +43,16 @@ export default function Menu({ path, params }) {
                 </MenubarSubContent>
               </MenubarSub>
               <MenubarItem asChild>
-                <a href="/custom/export"><UserRoundPen size={16} className="inline mr-1" /> Custom</a>
+                <a href="/#custom"><UserRoundPen size={16} className="inline mr-1" /> Custom</a>
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
 
 
           <MenubarSub>
-            <MenubarSubTrigger className="cursor-pointer"><ArrowRightFromLine size={16} className="mr-1" /> Export</MenubarSubTrigger >
-            <MenubarSubContent>
-              <MenubarSub>
-                <MenubarSubTrigger className="cursor-pointer"><Hexagon size={16} className="inline mr-1" /> Lancer</MenubarSubTrigger>
-                <MenubarSubContent>
-                  <MenubarItem className="cursor-pointer" asChild>
-                    <a href="/lancer/export">
-                      <UserRound size={16} className="inline mr-1" /> Janederscore
-                    </a>
-                  </MenubarItem>
-
-                  <MenubarItem className="cursor-pointer" asChild>
-                    <a href="/lancer_starwall/export">
-                      <UserRound size={16} className="inline mr-1" /> Starwall
-                    </a>
-                  </MenubarItem>
-                </MenubarSubContent>
-              </MenubarSub>
-              <MenubarItem asChild>
-                <a href="/custom/export"><UserRoundPen size={16} className="inline mr-1" /> Custom</a>
-              </MenubarItem>
-            </MenubarSubContent>
+            <MenubarItem asChild>
+              <Link href="/" className="cursor-pointer"><ArrowRightFromLine size={16} className="inline mr-1" /> Home</Link>
+            </MenubarItem>
           </MenubarSub>
 
           <MenubarSub>

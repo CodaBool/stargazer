@@ -129,7 +129,7 @@ export default function Hamburger({ mode, name, params, map, stargazer, mobile, 
                 </DropdownMenuItem>
               </Link>
             }
-            {!mobile && <Link href={`/${name}/export`}>
+            {!mobile && <Link href={`/#${name}_local`}>
               <DropdownMenuItem className="cursor-pointer">
                 <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">Export</span>
               </DropdownMenuItem>

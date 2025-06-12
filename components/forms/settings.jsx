@@ -127,7 +127,7 @@ export default function MapSettings({ map, id }) {
             },
           },
         })
-        router.push(`/${map}/export`)
+        router.push(`/#${map}_local`)
       }
     })
   }
@@ -138,7 +138,7 @@ export default function MapSettings({ map, id }) {
         if (r.result?.hasOwnProperty(`${map}-${id}`)) {
           setData(r.result[`${map}-${id}`])
         } else {
-          router.push(`/${map}/export`)
+          router.push(`/#${map}_local_${id}`)
         }
       }
     })
@@ -162,7 +162,7 @@ export default function MapSettings({ map, id }) {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle><Settings className="inline mb-1" /> Settings {data.name}</CardTitle>
-              <Link href={`/${map}/export`}>
+              <Link href={`/#${map}_local_${id}`}>
                 <Button type="button" variant="ghost" className="cursor-pointer">
                   <X />
                 </Button>

@@ -57,7 +57,7 @@ export default function CreateLocation({ map }) {
       } else if (template === "crusaiders") {
         router.push(`https://jambonium.co.uk/40kmap`)
       } else {
-        router.push(`/${template}/export`)
+        router.push(`/#${template}_local`)
       }
     } else {
       localGet('maps').then(r => {
@@ -74,7 +74,7 @@ export default function CreateLocation({ map }) {
               geojson: { type: "FeatureCollection", features: [] },
             },
           })
-          router.push(`/custom/export`)
+          router.push(`/#custom_local_${time}`)
         }
       })
     }
@@ -87,7 +87,7 @@ export default function CreateLocation({ map }) {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Create a new map</CardTitle>
-              <Link href="/custom/export">
+              <Link href={`/#custom_local`}>
                 <Button type="button" variant="ghost" className="cursor-pointer">
                   <X />
                 </Button>

@@ -146,9 +146,9 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
               draw.add(data.geojson)
               return
             } else {
-              console.log(`need to redirect to /${name}/export page since there are multiple`, key)
+              console.log(`need to redirect to /#${name} page since there are multiple`, key)
               setSize(null)
-              router.push(`/${name}/export`)
+              router.push(`/#${name}_local`)
               return
             }
           } else {

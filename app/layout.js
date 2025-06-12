@@ -14,6 +14,7 @@ import "maplibre-gl/dist/maplibre-gl.css"
 import '@hyvilo/maplibre-gl-draw/dist/maplibre-gl-draw.css'
 import { Press_Start_2P } from 'next/font/google'
 import Provider from '@/components/provider'
+import { Toaster } from "@/components/ui/sonner"
 
 const _ = Press_Start_2P({
   weight: '400',
@@ -22,12 +23,12 @@ const _ = Press_Start_2P({
   display: 'swap',
 })
 
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="dark">
       <body>
         <Provider>
+          <Toaster />
           {children}
         </Provider>
       </body>

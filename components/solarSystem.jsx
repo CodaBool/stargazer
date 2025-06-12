@@ -120,7 +120,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
             className="p-3 md:p-6"
             style={{
               minWidth: `${squareSize}px`,
-              minHeight: `${squareSize + 40}px`,
+              minHeight: `${squareSize + 80}px`,
               width: `${squareSize}px`,
               height: `${squareSize}px`,
               maxWidth: "95vw",
@@ -158,7 +158,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
             className="p-3 md:p-6"
             style={{
               minWidth: `${squareSize}px`,
-              minHeight: `${squareSize + 40}px`,
+              minHeight: `${squareSize + 80}px`,
               width: `${squareSize}px`,
               height: `${squareSize}px`,
               maxWidth: "95vw",

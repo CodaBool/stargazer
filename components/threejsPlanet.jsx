@@ -14,29 +14,48 @@ import { createIcePlanet } from "./planets/icePlanet.js";
 import { createLavaPlanet } from "./planets/lavaPlanet.js";
 import { createNoAtmospherePlanet } from "./planets/noAtmosphere.js";
 import { createStarPlanet } from "./planets/starPlanet.js";
-import { isMobile } from '@/lib/utils';
 
-function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, baseColors, featureColors, layerColors, schemeColor, atmosphere, clouds, cloudCover, size, land, ringWidth, lakes, rivers, seed, planetSize }) {
-  const containerRef = useRef(null)
+function ThreejsPlanet({
+  sharedCanvas,
+  sharedRenderer,
+  height,
+  width,
+  type,
+  pixels,
+  baseColors,
+  featureColors,
+  layerColors,
+  schemeColor,
+  atmosphere,
+  clouds,
+  cloudCover,
+  size,
+  land,
+  ringWidth,
+  lakes,
+  rivers,
+  seed,
+  planetSize,
+  disableListeners
+}) {
+  const containerRef = useRef(null);
 
   useEffect(() => {
-    const mobile = isMobile()
+    const container = containerRef.current;
+    if (!container) return;
 
-    const container = containerRef.current
-    if (!container) return
-
-    // Initialize shared renderer + canvas once
+    // Set up renderer if not shared
     if (!sharedRenderer) {
       sharedRenderer = new WebGLRenderer({ antialias: true });
       sharedRenderer.setPixelRatio(window.devicePixelRatio);
-      sharedCanvas = sharedRenderer.domElement
+      sharedCanvas = sharedRenderer.domElement;
     }
 
-    // Prevent duplicate canvas
     if (!container.contains(sharedCanvas)) {
-      sharedRenderer.setSize(container.clientWidth, container.clientHeight);
       container.appendChild(sharedCanvas);
     }
+
+    sharedRenderer.setSize(width || container.clientWidth, height || container.clientHeight);
 
     const scene = new Scene()
     // fov, default 50
@@ -72,15 +91,16 @@ function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, bas
       rivers: rivers ? Number(rivers) : undefined,
       seed: seed ? Number(seed) : undefined,
     }));
-    scene.add(planetGroup)
+    scene.add(planetGroup);
 
-    const starGroup = createStars(200)
-    starGroup.position.z = -0.5
-    scene.add(starGroup)
-    if (!container.contains(sharedCanvas)) {
-      sharedCanvas.style.display = 'block';
-      container.appendChild(sharedCanvas);
+    let starGroup;
+    if (!disableListeners) {
+      starGroup = createStars(200);
+      starGroup.position.z = -0.5;
+      scene.add(starGroup);
     }
+
+    sharedCanvas.style.display = 'block';
 
     let animationId;
     let totalX = 0;
@@ -95,91 +115,85 @@ function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, bas
 
     const animate = () => {
       animationId = requestAnimationFrame(animate);
-      function animate() {
-        requestAnimationFrame(animate);
 
-        planetGroup.children.forEach(planet => {
-          planet.children.forEach(layer => {
-            const u = layer.material.uniforms;
-            if (!u?.time || !u?.time_speed) return;
+      planetGroup.children.forEach(planet => {
+        planet.children.forEach(layer => {
+          const u = layer.material.uniforms;
+          if (!u?.time || !u?.time_speed) return;
 
-            const elapsed = clock.getElapsedTime() % 10000;
-            u.time.value = elapsed;
+          const elapsed = clock.getElapsedTime() % 10000;
+          u.time.value = elapsed;
 
-            if (holding && notLava) {
-              const rawDelta = moveX * 0.01;
-              const limitedDelta = Math.max(-maxAccel, Math.min(maxAccel, rawDelta));
-              u.time_speed.value += limitedDelta;
-            } else {
-              u.time_speed.value = baseSpeed + (u.time_speed.value - baseSpeed) * timeFriction;
-            }
+          if (holding && notLava) {
+            const rawDelta = moveX * 0.01;
+            const limitedDelta = Math.max(-maxAccel, Math.min(maxAccel, rawDelta));
+            u.time_speed.value += limitedDelta;
+          } else {
+            u.time_speed.value = baseSpeed + (u.time_speed.value - baseSpeed) * timeFriction;
+          }
 
-            u.time_speed.value = Math.max(-maxTimeSpeed, Math.min(maxTimeSpeed, u.time_speed.value));
-          });
+          u.time_speed.value = Math.max(-maxTimeSpeed, Math.min(maxTimeSpeed, u.time_speed.value));
         });
+      });
 
-        camera.updateProjectionMatrix();
-
+      if (starGroup) {
         starGroup.rotateY(skySpeed);
         starGroup.rotateX(skySpeed);
         starGroup.rotateZ(skySpeed);
-
-        sharedRenderer.render(scene, camera);
-        moveX = totalX = 0;
       }
-    };
-    animate()
 
-    const handleMouseDown = () => {
-      holding = true
-      document.body.style.cursor = 'grabbing'
-      document.body.style.userSelect = 'none';
+      sharedRenderer.render(scene, camera);
+      moveX = totalX = 0;
     };
-    const handleMouseUp = () => {
-      holding = false;
+
+    animate();
+
+    if (!disableListeners) {
+      const handleMouseDown = () => {
+        holding = true;
+        document.body.style.cursor = 'grabbing';
+        document.body.style.userSelect = 'none';
+      };
+      const handleMouseUp = () => {
+        holding = false;
+        document.body.style.cursor = 'grab';
+        document.body.style.userSelect = 'auto';
+      };
+      const handleMouseMove = (e) => {
+        totalX += Math.abs(e.movementX);
+        moveX += e.movementX;
+      };
+
+      container.addEventListener("pointerdown", handleMouseDown, false);
+      container.addEventListener("pointerup", handleMouseUp, false);
+      container.addEventListener("pointermove", handleMouseMove, false);
       document.body.style.cursor = 'grab';
-      document.body.style.userSelect = 'auto';
-    };
-    const handleMouseMove = (e) => {
-      totalX += Math.abs(e.movementX);
-      moveX += e.movementX;
-    };
+    }
 
-    container.addEventListener("pointerdown", handleMouseDown, false);
-    container.addEventListener("pointerup", handleMouseUp, false);
-    container.addEventListener("pointermove", handleMouseMove, false);
-
-    document.body.style.cursor = 'grab';
-    document.body.style.userSelect = 'auto';
     return () => {
-
       cancelAnimationFrame(animationId);
       scene.traverse(obj => {
         if (obj.geometry) obj.geometry.dispose();
         if (obj.material) {
-          if (Array.isArray(obj.material)) {
-            obj.material.forEach(m => m.dispose());
-          } else {
-            obj.material.dispose();
-          }
+          if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+          else obj.material.dispose();
         }
       });
       scene.clear();
-      sharedRenderer.renderLists.dispose()
+      sharedRenderer.renderLists.dispose();
       sharedRenderer.info.reset();
 
-      container.removeEventListener("pointerdown", handleMouseDown);
-      container.removeEventListener("pointerup", handleMouseUp);
-      container.removeEventListener("pointermove", handleMouseMove);
+      if (typeof handleMouseDown === "function") {
+        container.removeEventListener("pointerdown", handleMouseDown);
+        container.removeEventListener("pointerup", handleMouseUp);
+        container.removeEventListener("pointermove", handleMouseMove);
+      }
 
-      // Don't remove sharedCanvas from DOM — just hide it
-      // sharedCanvas.style.display = 'none'
       if (container.contains(sharedCanvas)) {
         container.removeChild(sharedCanvas);
       }
     };
   }, []);
-
 
   return (
     <div
@@ -188,6 +202,7 @@ function ThreejsPlanet({ sharedCanvas, sharedRenderer, height, type, pixels, bas
         width: "100%",
         aspectRatio: "1 / 1",
         height: "auto",
+        // position: "relative",
       }}
     />
   );
