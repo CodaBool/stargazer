@@ -51,11 +51,15 @@ function ThreejsPlanet({
       sharedCanvas = sharedRenderer.domElement;
     }
 
+    if (disableListeners) {
+      sharedRenderer.setSize(width || container.clientWidth, height || container.clientHeight)
+    } else {
+      sharedRenderer.setSize(container.clientWidth - 10, container.clientHeight - 10)
+    }
     if (!container.contains(sharedCanvas)) {
       container.appendChild(sharedCanvas);
     }
 
-    sharedRenderer.setSize(width || container.clientWidth, height || container.clientHeight);
 
     const scene = new Scene()
     // fov, default 50
@@ -202,7 +206,8 @@ function ThreejsPlanet({
         width: "100%",
         aspectRatio: "1 / 1",
         height: "auto",
-        // position: "relative",
+        display: "flex",
+        justifyContent: disableListeners ? "center" : "normal",
       }}
     />
   );

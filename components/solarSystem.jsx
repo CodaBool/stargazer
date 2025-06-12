@@ -25,7 +25,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
   useEffect(() => {
     const updateSize = () => {
       const vmin = Math.min(window.innerWidth, window.innerHeight);
-      setSquareSize(Math.min(900, vmin * 0.95));
+      setSquareSize(Math.min(900, vmin * 0.99));
     };
     updateSize();
     window.addEventListener("resize", updateSize);
@@ -117,7 +117,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
       <Dialog open={!!moonBodies} onOpenChange={open => !open && closeDialog(setMoonBodies)}>
         {moonBodies && (
           <DialogContent
-            className="p-3 md:p-6"
+            className="p-4 m-0 md:p-8"
             style={{
               minWidth: `${squareSize}px`,
               minHeight: `${squareSize + 80}px`,
@@ -155,14 +155,14 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
       <Dialog open={!!activeBody} onOpenChange={(open) => !open && closeDialog(setActiveBody)}>
         {activeBody && (
           <DialogContent
-            className="p-3 md:p-6"
+            className="p-2 m-0 md:p-4"
             style={{
               minWidth: `${squareSize}px`,
-              minHeight: `${squareSize + 80}px`,
+              minHeight: `${squareSize + 50}px`,
               width: `${squareSize}px`,
               height: `${squareSize}px`,
-              maxWidth: "95vw",
-              maxHeight: "95vh",
+              maxWidth: "98vw",
+              maxHeight: "98vh",
             }}
           >
             <DialogTitle>{activeBody.name || activeBody.type + `${activeBody.variant ? ` (${activeBody.variant})` : ""}`}</DialogTitle>
@@ -171,6 +171,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
                 sharedCanvas={sharedCanvas}
                 sharedRenderer={sharedRenderer}
                 height={squareSize}
+                width={squareSize}
                 type={activeBody.ringed ? "ring" : activeBody.type}
                 pixels={800}
                 // 4 comma separated hexes

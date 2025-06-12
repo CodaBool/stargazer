@@ -2,11 +2,11 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import StarsBackground from './starbackground'
 import dynamic from 'next/dynamic'
+import { debounce } from '@/lib/utils'
 
-// Dynamically import ThreejsPlanet without SSR, since it's WebGL
 const LazyThreejsPlanet = dynamic(() => import('../threejsPlanet'), {
   ssr: false,
-  loading: () => <div className="w-full h-full animate-pulse bg-black/30 rounded-lg" />,
+  loading: () => <div className="w-full h-full bg-black rounded" />,
 })
 
 const PLANET_TYPES = [
@@ -24,26 +24,28 @@ const randomIndex = Math.floor(Math.random() * PLANET_TYPES.length)
 const type = PLANET_TYPES[randomIndex]
 
 export default function PlanetBackground() {
-  const [planetSize, setPlanetSize] = useState(300)
+  const [planetSize, setPlanetSize] = useState()
 
   useEffect(() => {
-    const computeSize = () => {
+    const computeSize = debounce(() => {
       const vw = window.innerWidth
       const vh = window.innerHeight
       const size = Math.floor(Math.min(vw, vh) * 0.9)
       setPlanetSize(size)
-    }
+    }, 200)
 
     computeSize()
     window.addEventListener('resize', computeSize)
     return () => window.removeEventListener('resize', computeSize)
   }, [])
 
+  if (!planetSize) return null
+
   return (
     <StarsBackground>
-      <div className="flex items-center justify-center w-full h-screen">
+      <div className="fixed inset-0 flex items-center justify-center">
         <div style={{ width: planetSize, height: planetSize }}>
-          <Suspense fallback={<div className="w-full h-full animate-pulse bg-black/20 rounded" />}>
+          <Suspense fallback={<div className="w-full h-full bg-black rounded" />}>
             <LazyThreejsPlanet
               type={type}
               pixels={700}

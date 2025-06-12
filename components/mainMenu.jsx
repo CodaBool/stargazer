@@ -122,7 +122,7 @@ export default function Home({ revalidate, cloudMaps, user }) {
   }, [])
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div className="fixed inset-0 overflow-hidden w-screen h-screen max-h-screen max-w-screen">
       <PlanetBackground />
 
       {/* Settings Cog Dialog */}
@@ -139,7 +139,6 @@ export default function Home({ revalidate, cloudMaps, user }) {
               <DialogTitle className="text-cyan-400">Stargazer</DialogTitle>
             </DialogHeader>
             <div className="space-y-2 mt-6">
-              {/* <p className="hover:text-cyan-300 cursor-pointer">About</p> */}
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="scifi" className="w-full"><Chain /> Foundry</Button>
@@ -156,8 +155,11 @@ export default function Home({ revalidate, cloudMaps, user }) {
                   }
                 </PopoverContent>
               </Popover>
-              <Link href="/legal" passHref>
+              <Link href="/legal">
                 <Button variant="scifi" className="w-full"><Gavel className="w-4 h-4" /> Legal</Button>
+              </Link>
+              <Link href="/profile">
+                <Button variant="scifi" className="w-full mt-2"><User className="w-4 h-4" /> Account</Button>
               </Link>
             </div>
           </DialogContent>
@@ -167,7 +169,7 @@ export default function Home({ revalidate, cloudMaps, user }) {
       {/* Stargazer Title */}
       <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-40">
         <h1
-          className={`text-4xl md:text-6xl font-extrabold text-white drop-shadow-lg opacity-0 animate-[fade-in-down_1.2s_ease-out_forwards]`}
+          className={`text-4xl md:text-6xl font-extrabold text-white drop-shadow-lg opacity-0 animate-[fade-in-down_3s_ease-out_forwards]`}
           style={{ fontFamily: '"Press Start 2P", monospace' }}
         >
           Stargazer
@@ -305,15 +307,13 @@ function uploadMap(mapData, revalidate,) {
     });
 }
 
-async function saveLocally(map) {
+async function saveLocally(map, setLocalMaps) {
   const response = await fetch(`/api/map?id=${map.id}`)
-  console.log("init", map)
   const data = await response.json()
   const time = Date.now()
   const key = `${map.map}-${time}`
   localGet('maps').then(r => {
     r.onsuccess = () => {
-      console.log("local", r.result)
       const newMaps = {
         ...r.result || {}, [key]: {
           geojson: JSON.parse(data.geojson),
@@ -323,8 +323,8 @@ async function saveLocally(map) {
           map: map.map,
         }
       }
-      // console.log("saving ", JSON.parse(data.geojson), data.name)
       localSet("maps", newMaps)
+      setLocalMaps(newMaps)
       toast.success(data.name + " saved locally")
     }
   })
@@ -380,7 +380,6 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
 
   useEffect(() => {
     if (!cloudMaps || !selectedMap) return
-    // console.log("got a change in cloud maps, might need to update selectedMap", cloudMaps)
     if (selectedMap.hash) {
       const newCloudMap = cloudMaps.find(m => m.id === selectedMap.id)
       if (newCloudMap) setSelectedMap(newCloudMap)
@@ -468,7 +467,7 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
 
       {/* Buttons for selected map */}
       {selectedSystem && selectedMap && (
-        <DetailedView data={selectedMap} revalidate={revalidate} user={user} setSelectedMap={setSelectedMap} setLocalMaps={setLocalMaps} localMaps={localMaps} />
+        <DetailedView data={selectedMap} revalidate={revalidate} user={user} setSelectedMap={setSelectedMap} setLocalMaps={setLocalMaps} localMaps={localMaps} cloudMaps={cloudMaps} />
       )}
 
       {/* Local and Cloud tabs */}
@@ -565,7 +564,6 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
 
 function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLocalMaps, localMaps }) {
   const [alert, setAlert] = useState()
-  const router = useRouter()
   const isRemote = data.hash
 
   if (!data) return null
@@ -573,7 +571,6 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
 
   if (isRemote) {
     return (
-      // <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black"></div>
       <div className="bg-[radial-gradient(ellipse_80%_50%_at_center,_black_30%,_transparent_100%)] w-full p-4 text-sm mt-12">
         <div className="flex flex-col md:flex-row justify-between gap-4">
           {/* Left: Info Block */}
@@ -623,11 +620,11 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
             <Button className="w-full md:w-full" variant="scifiDestructive" onClick={() => setAlert(data.name)} title="Delete">
               <Trash2 className="mr-2" /> Delete
             </Button>
-            <Button className="w-full md:w-full" variant="scifi" onClick={() => saveLocally(data,)} title="Copy to a local map">
+            <Button className="w-full md:w-full" variant="scifi" onClick={() => saveLocally(data, setLocalMaps)} title="Copy to a local map">
               <CloudDownload className="mr-2" /> To Local
             </Button>
             <Link href={`/${data.map}/${data.id}`} passHref className='w-full'>
-              <Button className="w-full" variant="scifi" disabled={!data.published} title={data.published ? "View" : "Map must be published first"}>
+              <Button className="w-full" variant="scifi" title="View">
                 <Eye className="mr-2" /> View
               </Button>
             </Link>
@@ -791,10 +788,10 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
                             day: "numeric",
                           })}</CardDescription>
                         </CardHeader>
-                        <CardContent>
-                          <p className="text-gray-400"><MapPin size={14} className="inline mr-1" /> {cloudMap.locations}</p>
-                          <p className="text-gray-400"><Hexagon size={14} className="inline mr-1" /> {cloudMap.territories}</p>
-                          <p className="text-gray-400"><Spline size={14} className="inline mr-1" /> {cloudMap.guides}</p>
+                        <CardContent className="flex gap-4">
+                          <span className="flex items-center gap-1" title="Locations/Points"><MapPin size={16} /> {cloudMap.locations}</span>
+                          <span className="flex items-center gap-1" title="Territories/Polygons"><Hexagon size={16} /> {cloudMap.territories}</span>
+                          <span className="flex items-center gap-1" title="Guides/Lines"><Spline size={16} /> {cloudMap.guides}</span>
                         </CardContent>
                       </Card>
                     </DialogClose>

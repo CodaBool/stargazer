@@ -144,6 +144,7 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
               // console.log("restore session, only one found", key)
               setMapId(key)
               draw.add(data.geojson)
+              router.replace(new URL(window.location).toString() + `?id=${key.split("-")[1]}`)
               return
             } else {
               console.log(`need to redirect to /#${name} page since there are multiple`, key)
