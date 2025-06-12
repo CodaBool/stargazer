@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Settings, ArrowLeft, Heart, Map, Terminal, Plus, WifiOff, Cloud, ArrowRightFromLine, LogIn, Download, Link as Chain, Eye, Trash2, CloudUpload, Replace, X, CloudDownload, BookOpenCheck, Copy, Check, CloudOff, RefreshCcw, EyeOff } from 'lucide-react'
+import { Settings, ArrowLeft, Heart, Map, Terminal, Plus, WifiOff, Cloud, ArrowRightFromLine, LogIn, Download, Link as Chain, Eye, Trash2, CloudUpload, Replace, X, CloudDownload, BookOpenCheck, Copy, Check, CloudOff, RefreshCcw, EyeOff, MapPin, Route, Landmark, Hexagon, Spline, Gavel } from 'lucide-react'
 import { topology } from "topojson-server"
 import { toKML } from "@placemarkio/tokml"
 import ThreejsPlanet from '@/components/threejsPlanet'
@@ -58,7 +58,6 @@ import { useRouter } from 'next/navigation'
 import { combineAndDownload, combineLayers, combineLayersForTopoJSON, isMobile, localGet, localSet } from "@/lib/utils"
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
-import Legal from "@/components/legal"
 import PlanetBackground from '@/components/ui/PlanetBackground';
 
 function FoundryLink({ secret }) {
@@ -134,16 +133,16 @@ export default function Home({ revalidate, cloudMaps, user }) {
               <Settings className='md:w-16 md:h-16 h-8 w-[4em]' />
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-black/80 border border-cyan-400 text-white max-w-md">
+          <DialogContent scifi={true} >
             <DialogTitle></DialogTitle>
             <DialogHeader>
               <DialogTitle className="text-cyan-400">Stargazer</DialogTitle>
             </DialogHeader>
-            <div className="space-y-2">
+            <div className="space-y-2 mt-6">
               {/* <p className="hover:text-cyan-300 cursor-pointer">About</p> */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="scifi"><Chain /> Foundry</Button>
+                  <Button variant="scifi" className="w-full"><Chain /> Foundry</Button>
                 </PopoverTrigger>
                 <PopoverContent className="flex flex-col w-[385px]">
                   {user
@@ -153,13 +152,13 @@ export default function Home({ revalidate, cloudMaps, user }) {
                       <p className='text-sm text-gray-400'>Warning: this exposes your Stargazer account to some risk. All connected players and enabled modules in Foundry can read this value once entered. Local maps are always safe, this risk only applies to Cloud maps.</p>
                       <FoundryLink secret={user?.secret} />
                     </>
-                    : <h3 className='text-gray-300 text-center'>Provide an <Link href={`/api/auth/signin?callbackUrl=${process.env.NEXTAUTH_URL}/testing`} className='text-blue-300'>email address</Link> to link to Foundry <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
+                    : <h3 className='text-gray-300 text-center'>Provide an <Link href={`/api/auth/signin?callbackUrl=${process.env.NEXTAUTH_URL}`} className='text-blue-300'>email address</Link> to link to Foundry <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
                   }
                 </PopoverContent>
               </Popover>
-              <Legal />
-
-              {/* <p className="hover:text-cyan-300 cursor-pointer">Credits</p> */}
+              <Link href="/legal" className='' asChild>
+                <Button variant="scifi" className="w-full"><Gavel className="w-4 h-4" /> Legal</Button>
+              </Link>
             </div>
           </DialogContent>
         </Dialog>
@@ -252,7 +251,7 @@ function deleteMapRemote(id, revalidate) {
       if (data.error) {
         toast.warning(data.error)
       } else {
-        revalidate(`/testing`)
+        revalidate(`/`)
         toast.success(`${data.map.name} deleted`)
         // Optionally, you can add code here to update the UI after deletion
       }
@@ -276,8 +275,8 @@ function replaceRemoteMap(localMap, revalidate) {
       if (data.error) {
         toast.warning(data.error)
       } else {
-        revalidate(`/testing`)
-        toast.success(`Remote map for ${map.map} updated successfully`)
+        revalidate(`/`)
+        toast.success(`Cloud map for ${localMap.map} updated successfully`)
       }
     })
     .catch(error => {
@@ -301,7 +300,7 @@ function uploadMap(mapData, revalidate,) {
         toast.warning(data.error)
       } else {
         toast.success(`${data.map.map} map, ${data.map.name}, successfully uploaded`)
-        revalidate(`/testing`)
+        revalidate(`/`)
       }
     })
     .catch(error => {
@@ -310,25 +309,35 @@ function uploadMap(mapData, revalidate,) {
     });
 }
 
+function editName(key, name) {
+  setNameInput(name)
+  setShowNameInput(key)
+  setTimeout(() => {
+    document.getElementById(`local-map-${key}`)?.focus()
+  }, 200)
+}
+
 async function saveLocally(map) {
   const response = await fetch(`/api/map?id=${map.id}`)
+  console.log("init", map)
   const data = await response.json()
   const time = Date.now()
-  const key = `${map.name}-${time}`
+  const key = `${map.map}-${time}`
   localGet('maps').then(r => {
     r.onsuccess = () => {
+      console.log("local", r.result)
       const newMaps = {
         ...r.result || {}, [key]: {
           geojson: JSON.parse(data.geojson),
-          name: data.name,
+          name: map.name,
           id: time,
           updated: time,
-          map: mapName,
+          map: map.map,
         }
       }
+      // console.log("saving ", JSON.parse(data.geojson), data.name)
       localSet("maps", newMaps)
-      setMaps(newMaps)
-      toast.success("Map saved locally")
+      toast.success(data.name + " saved locally")
     }
   })
 }
@@ -347,7 +356,7 @@ function putMap(body, revalidate) {
       if (data.error) {
         toast.warning(data.error)
       } else {
-        revalidate(`/testing`)
+        revalidate(`/`)
         toast.success(`"${data.map.name}" successfully updated. Changes do not take effect immediately`)
       }
     })
@@ -474,12 +483,12 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
         <DetailedView data={selectedMap} revalidate={revalidate} user={user} setSelectedMap={setSelectedMap} setLocalMaps={setLocalMaps} localMaps={localMaps} />
       )}
 
-      {/* Local and Remote tabs */}
+      {/* Local and Cloud tabs */}
       {selectedSystem && !selectedMap && (
         <Tabs defaultValue={tab} className="w-full h-[300px] mt-12" scifi={true} onValueChange={tab => setTab(tab)}>
           <TabsList className="w-full" scifi={true}>
             <TabsTrigger value="local" scifi={true}>Local</TabsTrigger>
-            <TabsTrigger value="remote" scifi={true}>Remote</TabsTrigger>
+            <TabsTrigger value="cloud" scifi={true}>Cloud</TabsTrigger>
           </TabsList>
           <TabsContent value="local" scifi={true}>
 
@@ -493,7 +502,7 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
                   if (system !== selectedSystem) return null
                   // console.log("text size", getSize(data.name))
                   return (
-                    <Button variant="scifi" className="w-full m-0 p-0" onClick={() => setSelectedMap(data)} key={key}>
+                    <Button variant="scifi" className="w-full m-0 p-0 my-1" onClick={() => setSelectedMap(data)} key={key}>
                       {data.name}
                     </Button>
                   )
@@ -502,12 +511,12 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
             }
 
           </TabsContent>
-          <TabsContent value="remote" scifi={true}>
+          <TabsContent value="cloud" scifi={true}>
             {!user &&
               <h3 className='text-gray-300'>Provide an <Link href={`/api/auth/signin`} className='text-blue-300'>email address</Link> to publish a map <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
             }
             {Object.values(cloudMaps || {}).filter(m => m.map === selectedSystem).length === 0 &&
-              <p>No remote {selectedSystem} maps found</p>
+              <p>No cloud {selectedSystem} maps found</p>
             }
             {cloudMaps &&
               <div className='flex flex-wrap justify-evenly max-h-[205px] overflow-auto'>
@@ -515,7 +524,7 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
                   // console.log("data", data)
                   if (data.map !== selectedSystem) return null
                   return (
-                    <Button variant="scifi" className="w-full m-0 p-0" onClick={() => setSelectedMap(data)} key={data.id}>
+                    <Button variant="scifi" className="w-full m-0 p-0 my-1" onClick={() => setSelectedMap(data)} key={data.id}>
                       {data.name}
                     </Button>
                   )
@@ -577,49 +586,80 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
   if (isRemote) {
     return (
       <div className="bg-gray-800 w-full p-4 text-sm mt-12">
-        <h1><Cloud className='inline relative top-[-4px]' size={34} /> Cloud</h1>
-        <span></span>
-        <p className="text-gray-400 mb-6">{new Date(data.updatedAt).toLocaleDateString("en-US", {
-          hour: "numeric",
-          minute: "numeric",
-          month: "long",
-          day: "numeric",
-        })}</p>
-        <p className="text-gray-400 ">Locations: {data.locations}</p>
-        <p className="text-gray-400 ">Territories: {data.territories}</p>
-        <p className="text-gray-400">Guides: {data.guides}</p>
-        <p className="text-gray-400">Published:
-          {data.published
-            ? <>
-              <Check className="inline text-blue-300 relative top-[-3px] ms-1" />
-              {navigator.clipboard
-                ? <>
-                  <Button size="sm" variant="scifi" onClick={() => navigator.clipboard.writeText(data.id)}><Copy />Copy ID</Button>
-                  <Button size="sm" variant="scifi" onClick={() => navigator.clipboard.writeText(`https://stargazer.vercel.app/${data.map}/${data.id}`)}><Copy />Copy URL</Button>
+        <div className="flex flex-col md:flex-row justify-between gap-4">
+          {/* Left: Info Block */}
+          <div className="md:w-1/2">
+            <h1 className="text-lg font-bold text-white">
+              <Cloud className="inline relative top-[-4px]" size={34} /> Cloud
+            </h1>
+            <p className="text-gray-400 text-xs md:text-md mb-2">
+              {new Date(data.updatedAt).toLocaleDateString("en-US", {
+                hour: "numeric",
+                minute: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </p>
+            <div className="flex gap-4 text-gray-400 text-sm">
+              <span className="flex items-center gap-1" title="Locations/Points"><MapPin size={16} /> {data.locations}</span>
+              <span className="flex items-center gap-1" title="Territories/Polygons"><Hexagon size={16} /> {data.territories}</span>
+              <span className="flex items-center gap-1" title="Guides/Lines"><Spline size={16} /> {data.guides}</span>
+            </div>
+            <div className="text-gray-400 mt-[.25em] text-xs md:text-md">
+              Published:
+              {data.published ? (
+                <>
+                  <Check className="inline text-blue-300 relative top-[-3px] ms-1" />
+                  {navigator.clipboard ? (
+                    <div className="flex gap-2 m-0 flex-wrap">
+                      <Button variant="scifi" className="w-full" onClick={() => navigator.clipboard.writeText(data.id)}>
+                        <Copy className="mr-2" /> Copy ID
+                      </Button>
+                      <Button variant="scifi" className="w-full mt-[.25em]" onClick={() => navigator.clipboard.writeText(`https://stargazer.vercel.app/${data.map}/${data.id}`)}>
+                        <Copy className="mr-2" /> Copy URL
+                      </Button>
+                    </div>
+                  ) : (
+                    <Input value={data.id} readOnly className="w-full text-xs" />
+                  )}
                 </>
-                : <Input value={data.id} readOnly className="inline ms-2 w-full" />
-              }
-            </>
-            : <X className="inline text-red-200 relative top-[-3px] ms-1" />
-          }
-        </p>
-        <div className='flex flex-wrap justify-evenly mt-6'>
-          <Button variant="scifiDestructive" onClick={() => setAlert(data.name)} title="Delete"><Trash2 /></Button>
-          <Button variant="scifi" onClick={() => saveLocally(data)} title="Download"><CloudDownload /></Button>
-          <Button variant="scifi" disabled={!data.published} onClick={() => router.push(`/${data.map}/${data.id}`)} title="View"><Eye /></Button>
+              ) : (
+                <X className="inline text-red-200 relative top-[-3px] ms-1" />
+              )}
+            </div>
+          </div>
 
-          {data.published
-            ? <Button variant="scifi" title="Unpublish" onClick={() => putMap({ ...data, published: !data.published }, revalidate)}><CloudOff /></Button>
-            : <Button variant="scifi" title="Publish" onClick={() => putMap({ ...data, published: !data.published }, revalidate)}><BookOpenCheck /></Button>
-          }
+          {/* Right: Button Panel */}
+          <div className="md:w-1/2 flex flex-wrap gap-3 md:justify-end justify-center mt-4 md:mt-0">
+            <Button className="w-full md:w-full" variant="scifiDestructive" onClick={() => setAlert(data.name)} title="Delete">
+              <Trash2 className="mr-2" /> Delete
+            </Button>
+            <Button className="w-full md:w-full" variant="scifi" onClick={() => saveLocally(data,)} title="Copy to a local map">
+              <CloudDownload className="mr-2" /> To Local
+            </Button>
+            <Button className="w-full md:w-full" variant="scifi" disabled={!data.published} onClick={() => router.push(`/${data.map}/${data.id}`)} title="View">
+              <Eye className="mr-2" /> View
+            </Button>
+            {data.published ? (
+              <Button className="w-full md:w-full" variant="scifi" title="Unpublish" onClick={() => putMap({ ...data, published: false }, revalidate)}>
+                <CloudOff className="mr-2" /> Unpublish
+              </Button>
+            ) : (
+              <Button className="w-full md:w-full" variant="scifi" title="Publish" onClick={() => putMap({ ...data, published: true }, revalidate)}>
+                <BookOpenCheck className="mr-2" /> Publish
+              </Button>
+            )}
+          </div>
         </div>
-        <AlertDialog open={!!alert} onOpenChange={open => !open && setAlert(null)}>
+
+        {/* Delete Alert */}
+        <AlertDialog open={!!alert} onOpenChange={(open) => !open && setAlert(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete <b>{alert}</b> </AlertDialogTitle>
+              <AlertDialogTitle>Delete <b>{alert}</b></AlertDialogTitle>
               <AlertDialogDescription asChild>
                 <div>
-                  Are you sure you want to permanently delete {alert}?
+                  Are you sure you want to permanently delete <b>{alert}</b>?
                   You may want to download a backup.
                 </div>
               </AlertDialogDescription>
@@ -627,8 +667,8 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
             <AlertDialogFooter>
               <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
               <AlertDialogAction className="cursor-pointer" onClick={() => {
-                deleteMapRemote(data.id, revalidate)
-                setSelectedMap(null)
+                deleteMapRemote(data.id, revalidate);
+                setSelectedMap(null);
               }}>
                 Delete
               </AlertDialogAction>
@@ -640,69 +680,99 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
   }
   return (
     <div className="bg-gray-800 w-full p-4 text-sm mt-12">
-      <h1 className=''><WifiOff className='inline relative top-[-4px]' size={30} /> Local</h1>
-      <p className="text-gray-400 mb-6">{new Date(data.updated).toLocaleDateString("en-US", {
-        hour: "numeric",
-        minute: "numeric",
-        month: "long",
-        day: "numeric",
-      })}</p>
-      <p className="text-gray-400 ">Locations: {data.geojson?.features.filter(f => f.geometry.type === "Point").length}</p>
-      <p className="text-gray-400 ">Territories: {data.geojson?.features.filter(f => f.geometry.type.includes("Poly")).length}</p>
-      <p className="text-gray-400">Guides: {data.geojson?.features.filter(f => f.geometry.type === "LineString").length}</p>
-      <div className='flex flex-wrap justify-evenly mt-6'>
-        <Button variant="scifiDestructive" onClick={() => setAlert(data.name)} title="Delete"><Trash2 /></Button>
-        <Button variant="scifi" onClick={() => router.push(`/${data.map}?id=${data.id}`)} title="View"><Eye /></Button>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="scifi" title="Download"><Download /></Button>
-          </PopoverTrigger>
-          <PopoverContent className="flex flex-col text-sm">
-            {data.map !== "custom" &&
-              <>
-                <p className='mb-3 text-gray-200'>This is your map data combined with the core map data</p>
-                <hr className='border my-2 border-gray-500' />
-              </>
-            }
-            <p className='my-2 text-gray-300'>Topojson is a newer version of Geojson, and the recommended format for Stargazer</p>
-            <Button className="cursor-pointer w-full" variant="secondary" onClick={() => download("topojson", data)}>
-              <ArrowRightFromLine className="ml-[.6em] inline" /> Topojson
-            </Button>
-            <p className='my-2 text-gray-300'>Geojson is an extremely common spec for geography data</p>
-            <Button className="cursor-pointer w-full my-2" variant="secondary" onClick={() => download("geojson", data)}>
-              <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">Geojson</span>
-            </Button>
-            <p className='my-2 text-gray-300'>KML can be imported into a <a href="https://www.google.com/maps/d/u/0/?hl=en" className='text-blue-300' target="_blank">Google Maps</a> layer. Which can be easily distributed publicly for free.</p>
-            <Button className="cursor-pointer w-full" variant="secondary" onClick={() => download("kml", data)}>
-              <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">KML</span>
-            </Button>
-          </PopoverContent>
-        </Popover>
-        <Button variant="scifi" onClick={() => router.push(`/${data.map}/${data.id}/settings`)} title="Settings"><Settings /></Button>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="scifi" disabled={!user} title="Upload"><Cloud /></Button>
-          </DialogTrigger>
-          <DialogContent className="max-h-[40em] overflow-auto">
-            <DialogHeader>
-              <DialogTitle>Upload to Cloud</DialogTitle>
-              <DialogDescription className="my-3 text-base">
-                Upload <b>{data.name}</b> into the cloud.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogClose asChild>
-              <Button size="lg" className="cursor-pointer rounded" onClick={() => uploadMap(data, revalidate)}><CloudUpload /> Upload as a new Map</Button>
-            </DialogClose>
+      <div className="flex flex-col md:flex-row justify-between gap-4">
+        {/* Left: Info Block */}
+        <div className="md:w-1/2">
+          <h1 className="text-lg font-bold text-white">
+            <WifiOff className="inline relative top-[-4px]" size={30} /> Local
+          </h1>
+          <p className="text-gray-400 text-xs md:text-md mb-2">
+            {new Date(data.updated).toLocaleDateString("en-US", {
+              hour: "numeric",
+              minute: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
+          <div className="flex gap-4 text-gray-400 text-sm">
+            <span className="flex items-center gap-1" title="Locations/Points">
+              <MapPin size={16} /> {data.geojson?.features.filter(f => f.geometry.type === "Point").length}
+            </span>
+            <span className="flex items-center gap-1" title="Territories/Polygons">
+              <Hexagon size={16} /> {data.geojson?.features.filter(f => f.geometry.type.includes("Poly")).length}
+            </span>
+            <span className="flex items-center gap-1" title="Guides/Lines">
+              <Spline size={16} /> {data.geojson?.features.filter(f => f.geometry.type === "LineString").length}
+            </span>
+          </div>
+        </div>
 
-            {remoteCopies?.length > 0 &&
-              <>
-                <hr className="mt-2" />
-                <div className="flex justify-center"><Replace className="mr-2 mt-1" size={20} /> <span className="font-bold">Replace an existing Remote Map</span></div>
-                <p className="text-gray-400">Available Cloud Maps for replacement are shown below. Click on one to replace the remote data with your local data. To help prevent data loss, you can only replace remote maps of the same name</p>
-                {remoteCopies?.map(cloudMap => {
-                  // console.log("iterate  over remote copies", cloudMap)
-                  return (
-                    <DialogClose asChild key={cloudMap.id} >
+        {/* Right: Button Panel */}
+        <div className="md:w-1/2 flex flex-wrap gap-3 md:justify-end justify-center mt-4 md:mt-0">
+          <Button className="w-full md:w-full" variant="scifiDestructive" onClick={() => setAlert(data.name)} title="Delete">
+            <Trash2 className="mr-2" /> Delete
+          </Button>
+          <Button className="w-full md:w-full" variant="scifi" onClick={() => router.push(`/${data.map}?id=${data.id}`)} title="View">
+            <Eye className="mr-2" /> View
+          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button className="w-full md:w-full" variant="scifi" title="Download">
+                <Download className="mr-2" /> Download
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="flex flex-col text-sm">
+              {data.map !== "custom" &&
+                <>
+                  <p className="mb-3 text-gray-200">This is your map data combined with the core map data</p>
+                  <hr className="border my-2 border-gray-500" />
+                </>
+              }
+              <p className="my-2 text-gray-300">Topojson is a newer version of Geojson, and the recommended format for Stargazer</p>
+              <Button className="cursor-pointer w-full" variant="secondary" onClick={() => download("topojson", data)}>
+                <ArrowRightFromLine className="mr-2" /> Topojson
+              </Button>
+              <p className="my-2 text-gray-300">Geojson is an extremely common spec for geography data</p>
+              <Button className="cursor-pointer w-full my-2" variant="secondary" onClick={() => download("geojson", data)}>
+                <ArrowRightFromLine className="mr-2" /> Geojson
+              </Button>
+              <p className="my-2 text-gray-300">KML can be imported into a <a href="https://www.google.com/maps/d/u/0/?hl=en" className="text-blue-300" target="_blank" rel="noopener noreferrer">Google Maps</a> layer.</p>
+              <Button className="cursor-pointer w-full" variant="secondary" onClick={() => download("kml", data)}>
+                <ArrowRightFromLine className="mr-2" /> KML
+              </Button>
+            </PopoverContent>
+          </Popover>
+          <Button className="w-full md:w-full" variant="scifi" onClick={() => router.push(`/${data.map}/${data.id}/settings`)} title="Settings">
+            <Settings className="mr-2" /> Settings
+          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="w-full md:w-full" variant="scifi" disabled={!user} title="Upload">
+                <Cloud className="mr-2" /> Upload
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-h-[40em] overflow-auto">
+              <DialogHeader>
+                <DialogTitle>Upload to Cloud</DialogTitle>
+                <DialogDescription className="my-3 text-base">
+                  Upload <b>{data.name}</b> into the cloud.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogClose asChild>
+                <Button size="lg" className="cursor-pointer rounded" onClick={() => uploadMap(data, revalidate)}>
+                  <CloudUpload className="mr-2" /> Upload as a new Map
+                </Button>
+              </DialogClose>
+
+              {remoteCopies?.length > 0 &&
+                <>
+                  <hr className="mt-2" />
+                  <div className="flex justify-center items-center font-bold">
+                    <Replace className="mr-2 mt-1" size={20} /> Replace an existing Cloud Map
+                  </div>
+                  <p className="text-gray-400">Click below to replace cloud data with your local data (names must match):</p>
+                  {remoteCopies.map(cloudMap => (
+                    <DialogClose asChild key={cloudMap.id}>
                       <Card onClick={() => replaceRemoteMap(data, revalidate)} className="cursor-pointer hover-grow">
                         <CardHeader>
                           <CardTitle>{cloudMap.name}</CardTitle>
@@ -714,27 +784,28 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
                           })}</CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-gray-400 ">Locations: {cloudMap.locations}</p>
-                          <p className="text-gray-400 ">Territories: {cloudMap.territories}</p>
-                          <p className="text-gray-400">Guides: {cloudMap.guides}</p>
+                          <p className="text-gray-400"><MapPin size={14} className="inline mr-1" /> {cloudMap.locations}</p>
+                          <p className="text-gray-400"><Hexagon size={14} className="inline mr-1" /> {cloudMap.territories}</p>
+                          <p className="text-gray-400"><Spline size={14} className="inline mr-1" /> {cloudMap.guides}</p>
                         </CardContent>
                       </Card>
                     </DialogClose>
-                  )
-                })}
-              </>
-            }
-          </DialogContent>
-        </Dialog>
+                  ))}
+                </>
+              }
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
-      {/* Are you sure you want to delete alert */}
+
+      {/* Delete Alert */}
       <AlertDialog open={!!alert} onOpenChange={open => !open && setAlert(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete <b>{alert}</b> </AlertDialogTitle>
+            <AlertDialogTitle>Delete <b>{alert}</b></AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div>
-                Are you sure you want to permanently delete {alert}?
+                Are you sure you want to permanently delete <b>{alert}</b>?
                 You may want to download a backup.
               </div>
             </AlertDialogDescription>
@@ -742,8 +813,8 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
           <AlertDialogFooter>
             <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
             <AlertDialogAction className="cursor-pointer" onClick={() => {
-              deleteMapLocal(localMaps, data, setLocalMaps)
-              setSelectedMap(null)
+              deleteMapLocal(localMaps, data, setLocalMaps);
+              setSelectedMap(null);
             }}>
               Delete
             </AlertDialogAction>
@@ -751,5 +822,6 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
         </AlertDialogContent>
       </AlertDialog>
     </div>
+
   )
 }

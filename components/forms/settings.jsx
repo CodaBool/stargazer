@@ -61,7 +61,7 @@ export default function MapSettings({ map, id }) {
 
   async function submit(body, _, approved) {
     const newObj = {
-      name: data.name,
+      name: body.name,
       updated: Date.now(),
       map,
     }
@@ -171,21 +171,21 @@ export default function MapSettings({ map, id }) {
             {/* <CardDescription className="select-text"> <a className="text-blue-50" href="https://github.com/CodaBool/community-vtt-maps/issues" target="_blank">issues</a> page. Or DM <b>CodaBool</b> by searching in the <a href="https://discord.gg/foundryvtt" className="text-blue-50" target="_blank">FoundryVTT</a> Discord</CardDescription> */}
           </CardHeader>
           <CardContent>
-            {/* <FormField
+            <FormField
               control={form.control}
               rules={{ required: "Map name is required" }}
               name="name"
-              defaultValue={randomName('', ' ')}
+              defaultValue={data.name}
               render={({ field }) => (
                 <FormItem className="py-4">
-                  <FormLabel>Map Name *</FormLabel>
+                  <FormLabel>Map Name</FormLabel>
                   <FormControl>
                     <Input placeholder="Name" {...field} className="font-mono" />
                   </FormControl>
                   <FormMessage />
                 </FormItem >
               )}
-            /> */}
+            />
 
             <FormField
               control={form.control}
