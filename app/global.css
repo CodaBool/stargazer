@@ -235,6 +235,26 @@ body {
     0 0 16px #0ff inset;
   background-color: rgba(0, 0, 0, 0.3);
 }
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 /* globals.css or a relevant stylesheet */
 .neon-scifi {

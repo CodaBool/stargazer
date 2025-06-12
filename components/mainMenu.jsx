@@ -2,10 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Settings, ArrowLeft, Heart, Map, Terminal, Plus, WifiOff, Cloud, ArrowRightFromLine, LogIn, Download, Link as Chain, Eye, Trash2, CloudUpload, Replace, X, CloudDownload, BookOpenCheck, Copy, Check, CloudOff, RefreshCcw, EyeOff, MapPin, Route, Landmark, Hexagon, Spline, Gavel } from 'lucide-react'
+import { Settings, ArrowLeft, Heart, Map, Terminal, Plus, WifiOff, Cloud, ArrowRightFromLine, LogIn, Download, Link as Chain, Eye, Trash2, CloudUpload, Replace, X, CloudDownload, BookOpenCheck, Copy, Check, CloudOff, RefreshCcw, EyeOff, MapPin, Route, Landmark, Hexagon, Spline, Gavel, User } from 'lucide-react'
 import { topology } from "topojson-server"
 import { toKML } from "@placemarkio/tokml"
-import ThreejsPlanet from '@/components/threejsPlanet'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Toggle } from "@/components/ui/toggle"
 import {
@@ -105,14 +109,10 @@ function FoundryLink({ secret }) {
 }
 
 export default function Home({ revalidate, cloudMaps, user }) {
-  const [showUI, setShowUI] = useState()
-  const [showTitle, setShowTitle] = useState()
   const [hashParts, setHashParts] = useState()
   const [dialog, setDialog] = useState()
 
   useEffect(() => {
-    setTimeout(() => setShowTitle(true), 400)
-    setTimeout(() => setShowUI(true), 100)
     // restore menu state
     const hash = window.location.hash
     if (hash) {
@@ -156,7 +156,7 @@ export default function Home({ revalidate, cloudMaps, user }) {
                   }
                 </PopoverContent>
               </Popover>
-              <Link href="/legal" className='' asChild>
+              <Link href="/legal" passHref>
                 <Button variant="scifi" className="w-full"><Gavel className="w-4 h-4" /> Legal</Button>
               </Link>
             </div>
@@ -167,8 +167,7 @@ export default function Home({ revalidate, cloudMaps, user }) {
       {/* Stargazer Title */}
       <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-40">
         <h1
-          className={`text-4xl md:text-6xl font-extrabold text-white drop-shadow-lg transition-transform duration-1200 ${showTitle ? 'translate-y-0 opacity-100' : '-translate-y-38 opacity-0'
-            }`}
+          className={`text-4xl md:text-6xl font-extrabold text-white drop-shadow-lg opacity-0 animate-[fade-in-down_1.2s_ease-out_forwards]`}
           style={{ fontFamily: '"Press Start 2P", monospace' }}
         >
           Stargazer
@@ -176,13 +175,10 @@ export default function Home({ revalidate, cloudMaps, user }) {
       </div>
 
       {/* Lancer Dialog */}
-      <div className="absolute md:bottom-20 bottom-45 left-1/2 transform -translate-x-1/2 z-40 space-y-4 text-center">
+      <div className="absolute md:bottom-20 bottom-45 left-1/2 transform -translate-x-1/2 z-40 space-y-4 text-center opacity-0 animate-[fade-in-up_1.2s_ease-out_forwards]">
         <Dialog open={!!dialog} onOpenChange={(open) => !open && setDialog(null)}>
           <DialogTrigger asChild>
-            <Button variant="scifi" onClick={() => setDialog(true)}
-              className={`transition-opacity duration-1000 ${showUI ? 'opacity-100' : 'opacity-0'
-                }`}
-            >
+            <Button variant="scifi" onClick={() => setDialog(true)}>
               P1 Start
             </Button>
           </DialogTrigger>
@@ -307,14 +303,6 @@ function uploadMap(mapData, revalidate,) {
       console.log(error)
       toast.warning("A server error occurred")
     });
-}
-
-function editName(key, name) {
-  setNameInput(name)
-  setShowNameInput(key)
-  setTimeout(() => {
-    document.getElementById(`local-map-${key}`)?.focus()
-  }, 200)
 }
 
 async function saveLocally(map) {
@@ -495,7 +483,7 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
             {localMaps &&
               <div className='flex flex-wrap justify-evenly max-h-[205px] overflow-auto'>
                 {Object.keys(localMaps).filter(i => i.split('-')[0] === selectedSystem).length === 0 &&
-                  <p>No local {selectedSystem} maps found. <Link href={`/${selectedSystem}?new=1`} className="text-blue-300">Create a new map.</Link></p>
+                  <p>No local {selectedSystem} maps found. <Link href={`/${selectedSystem}?new=1`} className="text-blue-300">Create a new one.</Link></p>
                 }
                 {Object.entries(localMaps).map(([key, data]) => {
                   const [system, dateId] = key.split('-')
@@ -515,7 +503,7 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
             {!user &&
               <h3 className='text-gray-300'>Provide an <Link href={`/api/auth/signin`} className='text-blue-300'>email address</Link> to publish a map <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
             }
-            {Object.values(cloudMaps || {}).filter(m => m.map === selectedSystem).length === 0 &&
+            {(Object.values(cloudMaps || {}).filter(m => m.map === selectedSystem).length === 0) && user &&
               <p>No cloud {selectedSystem} maps found</p>
             }
             {cloudMaps &&
@@ -585,7 +573,8 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
 
   if (isRemote) {
     return (
-      <div className="bg-gray-800 w-full p-4 text-sm mt-12">
+      // <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black"></div>
+      <div className="bg-[radial-gradient(ellipse_80%_50%_at_center,_black_30%,_transparent_100%)] w-full p-4 text-sm mt-12">
         <div className="flex flex-col md:flex-row justify-between gap-4">
           {/* Left: Info Block */}
           <div className="md:w-1/2">
@@ -637,9 +626,11 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
             <Button className="w-full md:w-full" variant="scifi" onClick={() => saveLocally(data,)} title="Copy to a local map">
               <CloudDownload className="mr-2" /> To Local
             </Button>
-            <Button className="w-full md:w-full" variant="scifi" disabled={!data.published} onClick={() => router.push(`/${data.map}/${data.id}`)} title="View">
-              <Eye className="mr-2" /> View
-            </Button>
+            <Link href={`/${data.map}/${data.id}`} passHref className='w-full'>
+              <Button className="w-full" variant="scifi" disabled={!data.published} title={data.published ? "View" : "Map must be published first"}>
+                <Eye className="mr-2" /> View
+              </Button>
+            </Link>
             {data.published ? (
               <Button className="w-full md:w-full" variant="scifi" title="Unpublish" onClick={() => putMap({ ...data, published: false }, revalidate)}>
                 <CloudOff className="mr-2" /> Unpublish
@@ -679,10 +670,10 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
     )
   }
   return (
-    <div className="bg-gray-800 w-full p-4 text-sm mt-12">
+    <div className="bg-[radial-gradient(ellipse_80%_50%_at_center,_black_30%,_transparent_100%)] w-full p-4 text-sm mt-12">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         {/* Left: Info Block */}
-        <div className="md:w-1/2">
+        <div className="md:w-1/2 flex flex-col justify-center">
           <h1 className="text-lg font-bold text-white">
             <WifiOff className="inline relative top-[-4px]" size={30} /> Local
           </h1>
@@ -709,15 +700,17 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
 
         {/* Right: Button Panel */}
         <div className="md:w-1/2 flex flex-wrap gap-3 md:justify-end justify-center mt-4 md:mt-0">
-          <Button className="w-full md:w-full" variant="scifiDestructive" onClick={() => setAlert(data.name)} title="Delete">
+          <Button className="w-full" variant="scifiDestructive" onClick={() => setAlert(data.name)} title="Delete">
             <Trash2 className="mr-2" /> Delete
           </Button>
-          <Button className="w-full md:w-full" variant="scifi" onClick={() => router.push(`/${data.map}?id=${data.id}`)} title="View">
-            <Eye className="mr-2" /> View
-          </Button>
+          <Link href={`/${data.map}?id=${data.id}`} passHref className='w-full'>
+            <Button className="w-full" variant="scifi" title="View">
+              <Eye className="mr-2" /> View
+            </Button>
+          </Link>
           <Popover>
             <PopoverTrigger asChild>
-              <Button className="w-full md:w-full" variant="scifi" title="Download">
+              <Button className="w-full" variant="scifi" title="Download">
                 <Download className="mr-2" /> Download
               </Button>
             </PopoverTrigger>
@@ -742,28 +735,43 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
               </Button>
             </PopoverContent>
           </Popover>
-          <Button className="w-full md:w-full" variant="scifi" onClick={() => router.push(`/${data.map}/${data.id}/settings`)} title="Settings">
-            <Settings className="mr-2" /> Settings
-          </Button>
+          <Link href={`/${data.map}/${data.id}/settings`} passHref className='w-full'>
+            <Button className="w-full" variant="scifi" title="Settings">
+              <Settings className="mr-2" /> Settings
+            </Button>
+          </Link>
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="w-full md:w-full" variant="scifi" disabled={!user} title="Upload">
+              <Button className="w-full" variant="scifi" title="Upload">
                 <Cloud className="mr-2" /> Upload
               </Button>
             </DialogTrigger>
             <DialogContent className="max-h-[40em] overflow-auto">
               <DialogHeader>
-                <DialogTitle>Upload to Cloud</DialogTitle>
+                <DialogTitle>{user ? "Upload to Cloud" : "Login"}</DialogTitle>
                 <DialogDescription className="my-3 text-base">
-                  Upload <b>{data.name}</b> into the cloud.
+                  {user
+                    ? `Upload ${data.name} into the cloud.`
+                    : "Please login to upload your map."
+                  }
                 </DialogDescription>
               </DialogHeader>
-              <DialogClose asChild>
-                <Button size="lg" className="cursor-pointer rounded" onClick={() => uploadMap(data, revalidate)}>
-                  <CloudUpload className="mr-2" /> Upload as a new Map
-                </Button>
-              </DialogClose>
-
+              {user &&
+                <DialogClose asChild>
+                  <Button size="lg" className="cursor-pointer rounded" onClick={() => uploadMap(data, revalidate)}>
+                    <CloudUpload className="mr-2" /> Upload as a new Map
+                  </Button>
+                </DialogClose>
+              }
+              {!user &&
+                <DialogClose asChild>
+                  <Link href={`/api/auth/signin`} className='text-blue-300'>
+                    <Button size="lg" className="rounded w-full" >
+                      <User className="mr-2" /> Login
+                    </Button>
+                  </Link>
+                </DialogClose>
+              }
               {remoteCopies?.length > 0 &&
                 <>
                   <hr className="mt-2" />

@@ -233,9 +233,9 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
                 </div>
               </div>
               : <div className="absolute top-[35px] flex flex-col text-xs pointer-events-none md:text-sm md:left-[35px] md:top-[65px] left-[18px]">
-                {(typeof activeBody.cloud === "number" && (activeBody.type === "terrestrial" || activeBody.type === "ice")) && <p variant="destructive" className="mt-2">{(1 - activeBody.cloud).toFixed(1)} cloud coverage %</p>}
-                {(typeof activeBody.hydrosphere === "number" && activeBody.type !== "ice") && <p className="mt-2">{activeBody.hydrosphere.toFixed(1)} hydrosphere %</p>}
-                {(typeof activeBody.hydrosphere === "number" && activeBody.type === "ice") && <p className="mt-2">{(1 - activeBody.ice).toFixed(1)} hydrosphere %</p>}
+                {(typeof activeBody.cloud === "number" && (activeBody.type === "terrestrial" || activeBody.type === "ice")) && <p variant="destructive" className="mt-2">{(1 - activeBody.cloud).toFixed(1) * 100} cloud coverage %</p>}
+                {(typeof activeBody.hydrosphere === "number" && activeBody.type !== "ice") && <p className="mt-2">{activeBody.hydrosphere.toFixed(1) * 100} hydrosphere %</p>}
+                {(typeof activeBody.hydrosphere === "number" && activeBody.type === "ice") && <p className="mt-2">{(1 - activeBody.ice).toFixed(1) * 100} hydrosphere %</p>}
                 {typeof activeBody.ice === "number" && activeBody.type === "ice" && <p variant="destructive" className="mt-2">{activeBody.ice.toFixed(1)} ice coverage %</p>}
                 {typeof activeBody.radius === "number" && <p variant="destructive" className="mt-2">{activeBody.radius.toFixed(2)} {activeBody.type === "star" ? "solar radii" : "km radius"}</p>}
                 {typeof activeBody.temperature === "number" && <p variant="destructive" className="mt-2">{activeBody.temperature}°C</p>}
