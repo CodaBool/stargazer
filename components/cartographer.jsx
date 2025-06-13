@@ -15,7 +15,7 @@ export const useStore = create((set) => ({
 }))
 
 let CONST_FINAL = {}
-export default function Cartographer({ name, data, stargazer, fid }) {
+export default function Cartographer({ name, data, stargazer, fid, config }) {
   const CONST = getConsts(name)
 
   // crash reloading
@@ -63,7 +63,7 @@ export default function Cartographer({ name, data, stargazer, fid }) {
                   message: res.error,
                 }, '*')
               } else {
-                if (res.type !== "FeatureCollection") {
+                if (res?.geojson?.type !== "FeatureCollection") {
                   window.parent.postMessage({
                     type: 'error',
                     message: res.error,
@@ -76,7 +76,7 @@ export default function Cartographer({ name, data, stargazer, fid }) {
 
                     localSet("maps", {
                       ...localMaps, [mapKey]: {
-                        geojson: res,
+                        geojson: res.geojson,
                         name: localMaps[mapKey]?.name || randomName('', ' '),
                         updated: Date.now(),
                         id: Number(uuid),
@@ -127,7 +127,12 @@ export default function Cartographer({ name, data, stargazer, fid }) {
       }
     })
   } else {
-    CONST_FINAL = JSON.parse(JSON.stringify(CONST));
+    CONST_FINAL = JSON.parse(JSON.stringify(CONST))
+    Object.keys(config || {}).forEach(key => {
+      if (CONST_FINAL.hasOwnProperty(key)) {
+        CONST_FINAL[key] = config[key]
+      }
+    })
     if (!configRead) setConfigRead(true)
   }
 

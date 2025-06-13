@@ -10,9 +10,9 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-slate-900 text-slate-50 hover:bg-slate-900/90 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-50/90",
-        scifi: "border-2 border-cyan-400 font-bold rounded-lg bg-black/20 hover:bg-cyan-400/10 shadow-[0_0_6px_#0ff,0_0_12px_#0ff,inset_0_0_4px_#0ff] font-['Press_Start_2P'] tracking-widest text-white",
+        scifi: "border-2 border-cyan-400 font-bold rounded-lg bg-black/20 hover:bg-cyan-400/10 shadow-[0_0_2px_#0ff,0_0_4px_#0ff,inset_0_0_2px_#0ff] font-['Press_Start_2P'] tracking-widest text-white",
         scifiDestructive:
-          "border-2 border-rose-500 font-bold rounded-lg bg-black/20 hover:bg-rose-500/10 shadow-[0_0_6px_#f43f5e,0_0_12px_#f43f5e,inset_0_0_4px_#f43f5e] font-['Press_Start_2P'] tracking-widest text-white",
+          "border-2 border-rose-500 font-bold rounded-lg bg-black/20 hover:bg-rose-500/10 shadow-[0_0_2px_#f43f5e,0_0_4px_#f43f5e,inset_0_0_2px_#f43f5e] font-['Press_Start_2P'] tracking-widest text-white",
         destructive:
           "bg-red-500 text-slate-50 hover:bg-red-500/90 dark:bg-red-900 dark:text-slate-50 dark:hover:bg-red-900/90",
         outline:

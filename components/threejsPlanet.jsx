@@ -171,7 +171,7 @@ function ThreejsPlanet({
       container.addEventListener("pointerdown", handleMouseDown, false);
       container.addEventListener("pointerup", handleMouseUp, false);
       container.addEventListener("pointermove", handleMouseMove, false);
-      document.body.style.cursor = 'grab';
+      // document.body.style.cursor = 'grab';
     }
 
     return () => {

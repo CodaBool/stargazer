@@ -64,50 +64,6 @@ import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import PlanetBackground from '@/components/ui/PlanetBackground';
 
-function FoundryLink({ secret }) {
-  const [submitting, setSubmitting] = useState()
-  const [showSecret, setShowSecret] = useState()
-  const [secretValue, setSecretValue] = useState(secret)
-
-  async function refreshSecret() {
-    if (!window.confirm('Create a new secret? Only do this if your current secret was leaked. This will make any application using your current secret invalid.')) return
-    setSubmitting(true)
-    const res = await fetch('/api/profile', {
-      method: 'PUT',
-      body: JSON.stringify({
-        refreshSecret: true,
-      })
-    })
-    const response = await res.json()
-    setSubmitting(false)
-    if (response.secret) {
-      toast.success("Successfully refreshed secret")
-      setSecretValue(response.secret)
-      setShowSecret(true)
-    } else {
-      console.error(response.error)
-      toast.warning("Could not refresh secret at this time")
-    }
-  }
-
-  return (
-    <>
-      {navigator.clipboard
-        ? <Button size="sm" className="cursor-pointer rounded my-4" variant="ghost" onClick={() => navigator.clipboard.writeText(secretValue)}><Copy />API Key</Button>
-        : <div className="flex items-center">
-          <Input value={secretValue} readOnly className="my-4 mx-0 flex-grow" type={showSecret ? 'text' : 'password'} />
-          <Button size="sm" className="cursor-pointer rounded ml-2" variant="outline" onClick={() => setShowSecret(!showSecret)}>
-            {showSecret ? <EyeOff /> : <Eye />}
-          </Button>
-        </div>
-      }
-      <Button size="sm" className="cursor-pointer rounded" variant="destructive" onClick={refreshSecret} disabled={submitting}>
-        <RefreshCcw />Request New Secret
-      </Button>
-    </>
-  )
-}
-
 export default function Home({ revalidate, cloudMaps, user }) {
   const [hashParts, setHashParts] = useState()
   const [dialog, setDialog] = useState()
@@ -119,6 +75,7 @@ export default function Home({ revalidate, cloudMaps, user }) {
       setHashParts(hash.substring(1).split("_"))
       setDialog(true)
     }
+    // console.log("cloud maps", cloudMaps)
   }, [])
 
   return (
@@ -234,9 +191,11 @@ async function download(type, data) {
 
 function deleteMapLocal(localMaps, map, setLocalMaps) {
   const updatedMaps = { ...localMaps }
+  console.log("old", localMaps, "key", `${map.map}-${map.id}`)
   delete updatedMaps[`${map.map}-${map.id}`]
   localSet("maps", updatedMaps)
   setLocalMaps(updatedMaps)
+  console.log("new", updatedMaps)
 }
 
 function deleteMapRemote(id, revalidate) {
@@ -310,13 +269,15 @@ function uploadMap(mapData, revalidate,) {
 async function saveLocally(map, setLocalMaps) {
   const response = await fetch(`/api/map?id=${map.id}`)
   const data = await response.json()
+  const parsed = JSON.parse(data)
   const time = Date.now()
   const key = `${map.map}-${time}`
   localGet('maps').then(r => {
     r.onsuccess = () => {
       const newMaps = {
         ...r.result || {}, [key]: {
-          geojson: JSON.parse(data.geojson),
+          geojson: parsed.geojson,
+          config: parsed.config || {},
           name: map.name,
           id: time,
           updated: time,
@@ -330,8 +291,7 @@ async function saveLocally(map, setLocalMaps) {
   })
 }
 
-function putMap(body, revalidate) {
-  console.log("put with", body, revalidate)
+function putMap(body, revalidate, setSelectedMap) {
   fetch('/api/map', {
     method: 'PUT',
     headers: {
@@ -345,7 +305,8 @@ function putMap(body, revalidate) {
         toast.warning(data.error)
       } else {
         revalidate(`/`)
-        toast.success(`"${data.map.name}" successfully updated. Changes do not take effect immediately`)
+        setSelectedMap(data.map)
+        toast.success(`"${data.map.name}" successfully updated. Changes may not take effect immediately`)
       }
     })
     .catch(error => {
@@ -564,7 +525,7 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
 
 function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLocalMaps, localMaps }) {
   const [alert, setAlert] = useState()
-  const isRemote = data.hash
+  const isRemote = typeof data.published === "boolean"
 
   if (!data) return null
   const remoteCopies = cloudMaps?.filter(m => m.name.trim().toLowerCase() === data.name.trim().toLowerCase())
@@ -623,17 +584,29 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
             <Button className="w-full md:w-full" variant="scifi" onClick={() => saveLocally(data, setLocalMaps)} title="Copy to a local map">
               <CloudDownload className="mr-2" /> To Local
             </Button>
-            <Link href={`/${data.map}/${data.id}`} passHref className='w-full'>
-              <Button className="w-full" variant="scifi" title="View">
+            {/* TODO: should be possible to have a remote map viewable before publishing */}
+            {data.published ? (
+              <Link href={`/${data.map}/${data.id}`} className='w-full'>
+                <Button className="w-full" variant="scifi" title="View">
+                  <Eye className="mr-2" /> View
+                </Button>
+              </Link>
+            ) : (
+              <Button className="w-full" variant="scifi" title="View" disabled>
                 <Eye className="mr-2" /> View
+              </Button>
+            )}
+            <Link href={`/${data.map}/${data.id}/settings`} className='w-full'>
+              <Button className="w-full" variant="scifi" title="Settings">
+                <Settings className="mr-2" /> Settings
               </Button>
             </Link>
             {data.published ? (
-              <Button className="w-full md:w-full" variant="scifi" title="Unpublish" onClick={() => putMap({ ...data, published: false }, revalidate)}>
+              <Button className="w-full md:w-full" variant="scifi" title="Unpublish" onClick={() => putMap({ ...data, published: false }, revalidate, setSelectedMap)}>
                 <CloudOff className="mr-2" /> Unpublish
               </Button>
             ) : (
-              <Button className="w-full md:w-full" variant="scifi" title="Publish" onClick={() => putMap({ ...data, published: true }, revalidate)}>
+              <Button className="w-full md:w-full" variant="scifi" title="Publish" onClick={() => putMap({ ...data, published: true }, revalidate, setSelectedMap)}>
                 <BookOpenCheck className="mr-2" /> Publish
               </Button>
             )}
@@ -775,7 +748,7 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
                   <div className="flex justify-center items-center font-bold">
                     <Replace className="mr-2 mt-1" size={20} /> Replace an existing Cloud Map
                   </div>
-                  <p className="text-gray-400">Click below to replace cloud data with your local data (names must match):</p>
+                  <p className="text-gray-400">Click below to replace cloud data with your local data (names must match, remote settings have priority):</p>
                   {remoteCopies.map(cloudMap => (
                     <DialogClose asChild key={cloudMap.id}>
                       <Card onClick={() => replaceRemoteMap(data, revalidate)} className="cursor-pointer hover-grow">
@@ -828,5 +801,51 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
       </AlertDialog>
     </div>
 
+  )
+}
+
+
+
+function FoundryLink({ secret }) {
+  const [submitting, setSubmitting] = useState()
+  const [showSecret, setShowSecret] = useState()
+  const [secretValue, setSecretValue] = useState(secret)
+
+  async function refreshSecret() {
+    if (!window.confirm('Create a new secret? Only do this if your current secret was leaked. This will make any application using your current secret invalid.')) return
+    setSubmitting(true)
+    const res = await fetch('/api/profile', {
+      method: 'PUT',
+      body: JSON.stringify({
+        refreshSecret: true,
+      })
+    })
+    const response = await res.json()
+    setSubmitting(false)
+    if (response.secret) {
+      toast.success("Successfully refreshed secret")
+      setSecretValue(response.secret)
+      setShowSecret(true)
+    } else {
+      console.error(response.error)
+      toast.warning("Could not refresh secret at this time")
+    }
+  }
+
+  return (
+    <>
+      {navigator.clipboard
+        ? <Button size="sm" className="cursor-pointer rounded my-4" variant="ghost" onClick={() => navigator.clipboard.writeText(secretValue)}><Copy />API Key</Button>
+        : <div className="flex items-center">
+          <Input value={secretValue} readOnly className="my-4 mx-0 flex-grow" type={showSecret ? 'text' : 'password'} />
+          <Button size="sm" className="cursor-pointer rounded ml-2" variant="outline" onClick={() => setShowSecret(!showSecret)}>
+            {showSecret ? <EyeOff /> : <Eye />}
+          </Button>
+        </div>
+      }
+      <Button size="sm" className="cursor-pointer rounded" variant="destructive" onClick={refreshSecret} disabled={submitting}>
+        <RefreshCcw />Request New Secret
+      </Button>
+    </>
   )
 }

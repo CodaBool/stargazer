@@ -35,11 +35,13 @@ export async function GET(req) {
     const response = await s3.send(command)
 
     // Read stream to buffer
-    const geojson = await response.Body?.transformToString();
+    const data = await response.Body?.transformToString();
 
-    if (!geojson) throw 'file not found'
+    if (!data) throw 'file not found'
+    const parsed = JSON.parse(data)
+    console.log("GET", parsed)
 
-    return Response.json({ name: map.name, geojson })
+    return Response.json({ name: map.name, ...parsed })
   } catch (error) {
     console.error(error)
     if (typeof error === 'string') {
@@ -56,7 +58,8 @@ export async function PUT(req) {
     const session = await getServerSession(authOptions)
     const body = await req.json()
     let user
-    console.log("put with", body)
+
+    // auth
     if (body.secret) {
       user = await db.user.findUnique({ where: { secret: body.secret } })
       if (!user) throw "unauthorized"
@@ -74,19 +77,21 @@ export async function PUT(req) {
     console.log("authorized")
 
     const updates = { ...map }
-    let geojsonChange = false
+    // let geojsonChange = false
+
     if (body.geojson) {
+
       if (!validGeojson(body.geojson)) throw "invalid geojson"
       const { locations, territories, guides } = getFeatureData(body.geojson)
       updates.locations = locations
       updates.territories = territories
       updates.guides = guides
-      const newHash = crypto.createHash('sha256').update(JSON.stringify(body.geojson)).digest('hex')
-      geojsonChange = map.hash !== newHash
+      // const newHash = crypto.createHash('sha256').update(JSON.stringify(body.geojson)).digest('hex')
+      // geojsonChange = map.hash !== newHash
 
-      // WARN: it might be possible that stale geojson is bundled with legit PUT data
-      if (!geojsonChange) throw "this map is already in sync"
-      updates.hash = newHash
+      // // WARN: it might be possible that stale geojson is bundled with legit PUT data
+      // if (!geojsonChange) throw "this map is already in sync"
+      // updates.hash = newHash
     }
     if (body.name) {
       updates.name = body.name
@@ -95,29 +100,45 @@ export async function PUT(req) {
       updates.published = body.published
     }
 
-    console.log("updating postgres", {
+    // get current Object
+    const command = new GetObjectCommand({
+      Bucket: "maps",
+      Key: map.id,
+      ResponseContentType: "application/json",
+    })
+    const response = await s3.send(command)
+
+    // Read stream to buffer
+    const r2ObjRaw = await response.Body?.transformToString();
+    if (!r2ObjRaw) throw 'file not found'
+    const r2Obj = JSON.parse(r2ObjRaw)
+
+    // update postgres
+    const newMap = {
+      ...map,
       name: updates.name,
       published: updates.published,
       guides: updates.guides,
       locations: updates.locations,
       territories: updates.territories,
-      hash: updates.hash,
-    })
-
+    }
     await db.map.update({
       where: { id: body.id },
-      data: {
-        name: updates.name,
-        published: updates.published,
-        guides: updates.guides,
-        locations: updates.locations,
-        territories: updates.territories,
-        hash: updates.hash,
-      }
+      data: newMap,
     })
 
-    console.log("updating R2", {
-      Body: JSON.stringify(body.geojson),
+    if (body.geojson) {
+      r2Obj.geojson = body.geojson
+    }
+    if (body.config) {
+      r2Obj.config = {
+        ...r2Obj.config,
+        ...body.config,
+      }
+    }
+
+    const putCommand = new PutObjectCommand({
+      Body: JSON.stringify(r2Obj),
       Bucket: "maps",
       Key: map.id,
       // CacheControl: "STRING_VALUE",
@@ -125,34 +146,16 @@ export async function PUT(req) {
       // Expires: new Date("TIMESTAMP"),
       Metadata: {
         "user": `${user.id}`,
+        "version": `0`,
         "map": `${map.map}`,
         "alias": `${user.alias}`,
         "email": `${user.email}`,
         "published": `${map.published}`,
       },
     })
+    const finalResponse = await s3.send(putCommand)
 
-    // only put R2 if the geojson has changed
-    if (geojsonChange) {
-      const command = new PutObjectCommand({
-        Body: JSON.stringify(body.geojson),
-        Bucket: "maps",
-        Key: map.id,
-        // CacheControl: "STRING_VALUE",
-        ContentType: "application/json",
-        // Expires: new Date("TIMESTAMP"),
-        Metadata: {
-          "user": `${user.id}`,
-          "map": `${map.map}`,
-          "alias": `${user.alias}`,
-          "email": `${user.email}`,
-          "published": `${map.published}`,
-        },
-      })
-      const response = await s3.send(command)
-    }
-
-    return Response.json({ msg: "success", map })
+    return Response.json({ msg: "success", map: newMap })
   } catch (error) {
     console.error(error)
     if (typeof error === 'string') {
@@ -220,8 +223,8 @@ export async function POST(req) {
 
     const { locations, territories, guides } = getFeatureData(body.geojson)
 
-    const hash = crypto.createHash('sha256').update(JSON.stringify(body.geojson)).digest('hex')
-    console.log("uploading map with hash", hash)
+    // const hash = crypto.createHash('sha256').update(JSON.stringify(body.geojson)).digest('hex')
+    // console.log("uploading map with hash", hash)
 
     const map = await db.map.create({
       data: {
@@ -230,7 +233,7 @@ export async function POST(req) {
         locations,
         territories,
         guides,
-        hash,
+        // hash,
         map: body.map
       }
     })
@@ -238,21 +241,23 @@ export async function POST(req) {
     if (!map?.id) throw "failed to upload map"
 
     const command = new PutObjectCommand({
-      Body: JSON.stringify(body.geojson),
+      Body: JSON.stringify({
+        geojson: body.geojson,
+        config: body.config || {},
+      }),
       Bucket: "maps",
       Key: map.id,
       // CacheControl: "STRING_VALUE",
       ContentType: "application/json",
       // Expires: new Date("TIMESTAMP"),
-      // Metadata values must be a string
       Metadata: {
         "user": `${user.id}`,
         "map": `${body.map}`,
+        "version": `0`,
         "alias": `${user.alias}`,
         "email": `${user.email}`,
         "published": `${map.published}`,
       },
-      // Tagging: "STRING_VALUE",
     })
 
     const response = await s3.send(command)

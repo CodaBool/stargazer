@@ -21,9 +21,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { useForm } from "react-hook-form"
-import { LoaderCircle, User, X } from "lucide-react"
+import { ArrowLeft, LoaderCircle, User, X } from "lucide-react"
 import { useState } from "react"
 import Avatar from 'boring-avatars'
+import Link from "next/link"
 
 export default function CreateLocation({ user }) {
   const [submitting, setSubmitting] = useState()
@@ -61,27 +62,35 @@ export default function CreateLocation({ user }) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(submit)} className="container mx-auto mt-4">
-        <Card className="mx-auto max-w-2xl">
+        <Card className="max-w-2xl md:mx-auto m-4">
           <CardHeader>
-            <div className="flex items-center">
-              <Avatar
-                // https://boringavatars.com/
-                size={80}
-                name={name}
-                variant="beam"
-                colors={[
-                  '#DBD9B7',
-                  '#C1C9C8',
-                  '#A5B5AB',
-                  '#949A8E',
-                  '#615566',
-                ]}
-              />
-              <CardTitle className="mx-8">Profile</CardTitle >
-              <CardDescription>Let's keep things simple</CardDescription>
+            <div className="flex items-center justify-between">
+              <CardTitle>Profile</CardTitle>
+              <Link href="/">
+                <Button variant="ghost">
+                  <ArrowLeft />
+                </Button>
+              </Link>
             </div>
+            <CardDescription>Let's keep things simple</CardDescription>
+
           </CardHeader>
+
           <CardContent>
+            <Avatar
+              // https://boringavatars.com/
+              size={80}
+              name={name}
+              className="mx-auto"
+              variant="beam"
+              colors={[
+                '#DBD9B7',
+                '#C1C9C8',
+                '#A5B5AB',
+                '#949A8E',
+                '#615566',
+              ]}
+            />
             <FormField
               control={form.control}
               name="alias"

@@ -51,7 +51,7 @@ model Map {
   lastUsed    DateTime @default(now()) @db.Timestamp(6)
   updatedAt   DateTime @updatedAt
   userId      String
-  hash        String
+  // hash        String
   published   Boolean  @default(false)
   locations   Int      @default(0)
   territories Int      @default(0)

@@ -3,7 +3,6 @@ import fs from "fs"
 import path from "path"
 import Cartographer from "@/components/cartographer"
 import GeneratingError from "@/components/generatingError"
-import CustomForm from "@/components/forms/custom"
 import db from "@/lib/db"
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3"
 import { redirect } from "next/navigation"
@@ -26,11 +25,6 @@ const s3 = new S3Client({
 // TODO: should do some sort of try catch here
 export default async function mapLobby({ params }) {
   const { map, id } = await params
-
-  if (map === "custom" && id === "form") {
-    return <CustomForm />
-  }
-
   const isUUID = id.length === 36
 
   if (!isUUID) {
@@ -45,6 +39,8 @@ export default async function mapLobby({ params }) {
     // probably a new map that's not in the cache yet
 
   }
+
+  // TODO: should there be a way to see unpublished maps?
   if (!mapDB?.published) {
     return redirect(`/${map}`)
   }
@@ -58,14 +54,14 @@ export default async function mapLobby({ params }) {
 
 
   // Read stream to buffer
-  const clientGeojson = await response.Body?.transformToString();
-  if (!clientGeojson) {
+  const r2Obj = await response.Body?.transformToString();
+  if (!r2Obj) {
     return <GeneratingError map={map} error="file not found" />
   }
-  let geojson = JSON.parse(clientGeojson)
+  let obj = JSON.parse(r2Obj)
 
   // add a userCreated prop for better contribute links
-  geojson.features = geojson.features.map(feature => {
+  obj.geojson.features = obj.geojson.features.map(feature => {
     feature.properties.userCreated = true;
     return feature;
   })
@@ -78,15 +74,20 @@ export default async function mapLobby({ params }) {
   path.resolve(`app/[map]/topojson/postwar.json`)
   path.resolve(`app/[map]/topojson/lancer.json`)
   path.resolve(`app/[map]/topojson/lancer_starwall.json`)
-  const content = await fs.promises.readFile(filePath, 'utf8')
+  let geojson
+  if (map === "custom") {
+    geojson = obj.geojson
+  } else {
+    const content = await fs.promises.readFile(filePath, 'utf8')
+    const topojson = JSON.parse(content)
+    const [noIdData, type] = combineAndDownload("geojson", topojson, obj.geojson)
+    geojson = JSON.parse(noIdData)
+  }
 
-  const topojson = JSON.parse(content)
-  const [noIdData, type] = combineAndDownload("geojson", topojson, geojson)
   const { IMPORTANT } = getConsts(map)
 
   let fid = 0
-  const data = JSON.parse(noIdData)
-  data.features.forEach(f => {
+  geojson.features.forEach(f => {
     if (IMPORTANT.includes(f.properties.type)) {
       f.properties.priority = 1
     } else {
@@ -95,5 +96,5 @@ export default async function mapLobby({ params }) {
     f.id = fid++
   })
 
-  return <Cartographer data={data} name={map} fid={fid} stargazer />
+  return <Cartographer data={geojson} config={obj.config || {}} name={map} fid={fid} stargazer />
 }

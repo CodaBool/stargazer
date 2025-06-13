@@ -165,6 +165,7 @@ export function Link({ mobile, name, params }) {
         return
       }
 
+      // TODO: capture config changes here too
       fetch('/api/map', {
         method: 'PUT',
         headers: {

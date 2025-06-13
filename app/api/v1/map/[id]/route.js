@@ -39,15 +39,14 @@ export async function GET(req) {
 
 
     // Read stream to buffer
-    const clientGeojson = await response.Body?.transformToString();
+    const r2Obj = await response.Body?.transformToString();
 
-    if (!clientGeojson) throw 'file not found'
+    if (!r2Obj) throw 'file not found'
     if (!response.Metadata.map) throw 'map does not have the required metadata'
 
-    const geojson = JSON.parse(clientGeojson)
-    // console.log("result", combinedData)
+    const data = JSON.parse(r2Obj)
 
-    return Response.json(geojson)
+    return Response.json(data)
   } catch (error) {
     console.error(error)
     if (typeof error === 'string') {
