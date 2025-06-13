@@ -108,7 +108,7 @@ export default function Home({ revalidate, cloudMaps, user }) {
                       <p className='text-sm text-gray-400'>Warning: this exposes your Stargazer account to some risk. All connected players and enabled modules in Foundry can read this value once entered. Local maps are always safe, this risk only applies to Cloud maps.</p>
                       <FoundryLink secret={user?.secret} />
                     </>
-                    : <h3 className='text-gray-300 text-center'>Provide an <Link href={`/api/auth/signin?callbackUrl=${window.location.toString()}`} className='text-blue-300'>email address</Link> to link to Foundry <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
+                    : <h3 className='text-gray-300 text-center'>Provide an <Link href={`/api/auth/signin?callbackUrl=${window?.location.toString() || ""}`} className='text-blue-300'>email address</Link> to link to Foundry <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
                   }
                 </PopoverContent>
               </Popover>
@@ -191,11 +191,9 @@ async function download(type, data) {
 
 function deleteMapLocal(localMaps, map, setLocalMaps) {
   const updatedMaps = { ...localMaps }
-  console.log("old", localMaps, "key", `${map.map}-${map.id}`)
   delete updatedMaps[`${map.map}-${map.id}`]
   localSet("maps", updatedMaps)
   setLocalMaps(updatedMaps)
-  console.log("new", updatedMaps)
 }
 
 function deleteMapRemote(id, revalidate) {
@@ -461,7 +459,7 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
           </TabsContent>
           <TabsContent value="cloud" scifi={true}>
             {!user &&
-              <h3 className='text-gray-300'>Provide an <Link href={`/api/auth/signin?callbackUrl=${window.location.toString()}`} className='text-blue-300'>email address</Link> to publish a map <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
+              <h3 className='text-gray-300'>Provide an <Link href={`/api/auth/signin?callbackUrl=${window?.location.toString() || ""}`} className='text-blue-300'>email address</Link> to publish a map <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
             }
             {(Object.values(cloudMaps || {}).filter(m => m.map === selectedSystem).length === 0) && user &&
               <p>No cloud {selectedSystem} maps found</p>
@@ -735,7 +733,7 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
               }
               {!user &&
                 <DialogClose asChild>
-                  <Link href={`/api/auth/signin?callbackUrl=${window.location.toString()}`} className='text-blue-300'>
+                  <Link href={`/api/auth/signin?callbackUrl=${window?.location.toString() || ""}`} className='text-blue-300'>
                     <Button size="lg" className="rounded w-full" >
                       <User className="mr-2" /> Login
                     </Button>

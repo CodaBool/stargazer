@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, memo } from 'react';
-import { Clock, Group, Scene, WebGLRenderer, Vector4, PerspectiveCamera } from 'three';
+import { Clock, Group, Scene, WebGLRenderer, Vector4, PerspectiveCamera, AmbientLight, DirectionalLight } from 'three';
 import { createStars } from './planets/layers/stars'
 
 // planet generation
@@ -14,6 +14,8 @@ import { createIcePlanet } from "./planets/icePlanet.js";
 import { createLavaPlanet } from "./planets/lavaPlanet.js";
 import { createNoAtmospherePlanet } from "./planets/noAtmosphere.js";
 import { createStarPlanet } from "./planets/starPlanet.js";
+import { createStation } from "./planets/stations.js";
+import { createGate } from "./planets/gate.js";
 
 function ThreejsPlanet({
   sharedCanvas,
@@ -104,6 +106,16 @@ function ThreejsPlanet({
       scene.add(starGroup);
     }
 
+    // Add ambient + directional lighting
+    if (type === "station" || type === "gate") {
+      const ambientLight = new AmbientLight(0xffffff, 0.02); // soft white light
+      scene.add(ambientLight);
+
+      const directionalLight = new DirectionalLight(0xffffff, 0.5);
+      directionalLight.position.set(5, 5, 5);
+      scene.add(directionalLight);
+    }
+
     sharedCanvas.style.display = 'block';
 
     let animationId;
@@ -122,6 +134,8 @@ function ThreejsPlanet({
 
       planetGroup.children.forEach(planet => {
         planet.children.forEach(layer => {
+          if (!layer.material || !('uniforms' in layer.material)) return;
+
           const u = layer.material.uniforms;
           if (!u?.time || !u?.time_speed) return;
 
@@ -146,6 +160,18 @@ function ThreejsPlanet({
         starGroup.rotateZ(skySpeed);
       }
 
+      if (type === "station") {
+        planetGroup.rotation.z += 0.0002;
+      }
+
+      if (type === 'gate') {
+        planetGroup.children.forEach(child => {
+          if (child.userData.animate) {
+            child.userData.animate(clock.getElapsedTime());
+          }
+        });
+      }
+
       sharedRenderer.render(scene, camera);
       moveX = totalX = 0;
     };
@@ -155,22 +181,17 @@ function ThreejsPlanet({
     if (!disableListeners) {
       const handleMouseDown = () => {
         holding = true;
-        document.body.style.cursor = 'grabbing';
-        document.body.style.userSelect = 'none';
+        // document.body.style.cursor = 'grabbing';
+        // document.body.style.userSelect = 'none';
       };
       const handleMouseUp = () => {
         holding = false;
-        document.body.style.cursor = 'grab';
-        document.body.style.userSelect = 'auto';
-      };
-      const handleMouseMove = (e) => {
-        totalX += Math.abs(e.movementX);
-        moveX += e.movementX;
+        // document.body.style.cursor = 'grab';
+        // document.body.style.userSelect = 'auto';
       };
 
       container.addEventListener("pointerdown", handleMouseDown, false);
       container.addEventListener("pointerup", handleMouseUp, false);
-      container.addEventListener("pointermove", handleMouseMove, false);
       // document.body.style.cursor = 'grab';
     }
 
@@ -217,6 +238,10 @@ function generatePlanetByType(params) {
   switch (params.type) {
     case "barren":
       return createNoAtmospherePlanet(params)
+    case "gate":
+      return createGate(params)
+    case "station":
+      return createStation(params)
     case "moon":
       // duplicate of barren
       return createNoAtmospherePlanet(params)

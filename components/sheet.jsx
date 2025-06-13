@@ -150,9 +150,14 @@ function generateLocations(group) {
   for (const location of group) {
     const type = location.properties.type
     if (type === "star") continue
+    let planetSize = 1
+    if (type === "gate" || type === "station") {
+      planetSize = 2.5
+    }
     locations.push({
       name: location.properties.name,
       type,
+      planetSize,
       tint: "gray",
       source: location,
       groupCenter: g?.groupCenter,

@@ -165,46 +165,42 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
               maxHeight: "98vh",
             }}
           >
-            <DialogTitle>{activeBody.name || activeBody.type + `${activeBody.variant ? ` (${activeBody.variant})` : ""}`}</DialogTitle>
-            {activeBody.type !== "station" && activeBody.type !== "gate" ? (
-              <ThreejsPlanet
-                sharedCanvas={sharedCanvas}
-                sharedRenderer={sharedRenderer}
-                height={squareSize}
-                width={squareSize}
-                type={activeBody.ringed ? "ring" : activeBody.type}
-                pixels={800}
-                // 4 comma separated hexes
-                baseColors={activeBody.baseColors}
-                // 4 comma separated hexes
-                featureColors={activeBody.featureColors}
-                // 4 comma separated alpha hexes
-                layerColors={activeBody.layerColors}
-                // star ([blue, orange, red, white, yellow], default orange)
-                schemeColor={activeBody.schemeColor}
-                // 3 comma separated alpha hexes
-                atmosphere={activeBody.atmosphere}
-                // ice & terrestrial (defaults true)
-                clouds={activeBody.cloud}
-                // ice & terrestrial (lower is more clouds)
-                cloudCover={activeBody.cloud}
-                // asteroid 1-9
-                size={activeBody.size}
-                // terrestrial, lower is more land
-                land={activeBody.hydrosphere}
-                // ring size 0-.2
-                ringWidth={activeBody.ringSize}
-                // ice (lower is more lakes)
-                lakes={activeBody.ice}
-                // lava (lower is more lava)
-                rivers={activeBody.hydrosphere}
-                // a number
-                seed={activeBody.seed}
-                planetSize={activeBody.planetSize}
-              />
-            ) : (
-              <h1 className="text-center text-4xl">No preview available for this type</h1>
-            )}
+            <DialogTitle>{(activeBody.name || "") + `${activeBody.variant ? ` (${activeBody.variant})` : ""}`} - {activeBody.type}</DialogTitle>
+            <ThreejsPlanet
+              sharedCanvas={sharedCanvas}
+              sharedRenderer={sharedRenderer}
+              height={squareSize}
+              width={squareSize}
+              type={activeBody.ringed ? "ring" : activeBody.type}
+              pixels={800}
+              // 4 comma separated hexes
+              baseColors={activeBody.baseColors}
+              // 4 comma separated hexes
+              featureColors={activeBody.featureColors}
+              // 4 comma separated alpha hexes
+              layerColors={activeBody.layerColors}
+              // star ([blue, orange, red, white, yellow], default orange)
+              schemeColor={activeBody.schemeColor}
+              // 3 comma separated alpha hexes
+              atmosphere={activeBody.atmosphere}
+              // ice & terrestrial (defaults true)
+              clouds={activeBody.cloud}
+              // ice & terrestrial (lower is more clouds)
+              cloudCover={activeBody.cloud}
+              // asteroid 1-9
+              size={activeBody.size}
+              // terrestrial, lower is more land
+              land={activeBody.hydrosphere}
+              // ring size 0-.2
+              ringWidth={activeBody.ringSize}
+              // ice (lower is more lakes)
+              lakes={activeBody.ice}
+              // lava (lower is more lava)
+              rivers={activeBody.hydrosphere}
+              // a number
+              seed={activeBody.seed}
+              planetSize={activeBody.planetSize}
+            />
             {(activeBody.source && !activeBody.source?.properties?.userCreated)
               ? <div className="absolute top-[85px] left-[40px] flex flex-col items-center">
                 <Link href={genLink(activeBody.source, name, "href")} className="mb-2">
