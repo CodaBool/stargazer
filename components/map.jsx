@@ -16,6 +16,7 @@ import Hamburger from './hamburger'
 import Toolbox from './toolbox'
 import Starfield from './starfield'
 import Sheet from './sheet'
+import Tutorial from './tutorial'
 import { useDraw } from "./controls";
 import { Calibrate, Link } from './foundry'
 
@@ -446,32 +447,13 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       }
     })
   }
-  // useEffect(() => {
-  //   if (!wrapper) return;
-  //   data.features.forEach(f => {
-  //     const iconId = f.properties.icon;
-  //     if (iconId && !addedIcons.current.has(iconId)) {
-  //       const img = new Image();
-  //       img.crossOrigin = "anonymous";
-  //       img.width = 19;
-  //       img.height = 19;
-  //       img.src = iconId;
-  //       img.onload = () => {
-  //         if (!wrapper.hasImage(iconId)) {
-  //           wrapper.addImage(iconId, img, { sdf: true });
-  //           addedIcons.current.add(iconId);
-  //         }
-  //       };
-  //     }
-  //   });
-  // }, [wrapper, data]);
 
   /*
   TODO:
   ## Map fine tuning
-  - star wars location need to be separated into CANON / LEGENDS
-  - star wars needs the grid
-  - star wars has its own coordinate system
+  - sw location need to be separated into CANON / LEGENDS
+  - sw needs the grid
+  - sw has its own coordinate system
   - do a webgl check https://maplibre.org/maplibre-gl-js/docs/examples/check-for-support/
   */
   return (
@@ -595,6 +577,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       {params.get("secret") && <Link mode={mode} width={width} height={height} mobile={mobile} name={name} params={params} />}
       {params.get("calibrate") && <Calibrate mode={mode} width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}
 
+      <Tutorial name={name} IS_GALAXY={IS_GALAXY} />
       <Sheet {...drawerContent} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GENERATE_LOCATIONS={GENERATE_LOCATIONS} />
 
       <Toolbox mode={mode} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} />

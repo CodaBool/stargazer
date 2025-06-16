@@ -11,6 +11,8 @@ import randomName from '@scaleway/random-name'
 
 export const useStore = create((set) => ({
   editorTable: null,
+  tutorial: null,
+  setTutorial: tutorial => set({ tutorial }),
   setEditorTable: editorTable => set({ editorTable }),
 }))
 

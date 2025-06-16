@@ -95,6 +95,7 @@ export default function Home({ revalidate, cloudMaps, user }) {
             <DialogHeader>
               <DialogTitle className="text-cyan-400">Stargazer</DialogTitle>
             </DialogHeader>
+            <DialogDescription />
             <div className="space-y-2 mt-6">
               <Popover>
                 <PopoverTrigger asChild>
@@ -108,7 +109,7 @@ export default function Home({ revalidate, cloudMaps, user }) {
                       <p className='text-sm text-gray-400'>Warning: this exposes your Stargazer account to some risk. All connected players and enabled modules in Foundry can read this value once entered. Local maps are always safe, this risk only applies to Cloud maps.</p>
                       <FoundryLink secret={user?.secret} />
                     </>
-                    : <h3 className='text-gray-300 text-center'>Provide an <Link href={`/api/auth/signin?callbackUrl=${window?.location.toString() || ""}`} className='text-blue-300'>email address</Link> to link to Foundry <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
+                    : <h3 className='text-gray-300 text-center'>Provide an <Link href={`/api/auth/signin?callbackUrl=${typeof window !== "undefined" ? window.location.toString() : ""}`} className='text-blue-300'>email address</Link> to link to Foundry <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
                   }
                 </PopoverContent>
               </Popover>
@@ -142,6 +143,7 @@ export default function Home({ revalidate, cloudMaps, user }) {
             </Button>
           </DialogTrigger>
           <DialogContent className="md:max-w-[610px] md:min-w-[620px] md:max-h-[430px] md:min-h-[430px]" scifi={true}>
+            <DialogDescription />
             <DialogTitle />
             <MainMenu cloudMaps={cloudMaps} revalidate={revalidate} user={user} hash={hashParts || []} />
           </DialogContent>

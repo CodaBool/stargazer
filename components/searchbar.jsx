@@ -91,7 +91,7 @@ export default function MenuComponent({ map, data, mobile, name, pan, locationGr
       input.current.addEventListener('blur-sm', () => setActive(false));
     }
     function down(e) {
-      if (e.code === 'Space' && !editorTable) {
+      if (e.code === 'Space' && !document.querySelector(".editor-table")) {
         if (input.current !== document.activeElement) {
           e.preventDefault()
         }

@@ -7,6 +7,7 @@ import randomName from '@scaleway/random-name'
 import { useRouter } from 'next/navigation'
 import { hexToRgb, localGet, localSet } from '@/lib/utils'
 import { create } from 'zustand'
+import { useStore } from "./cartographer"
 
 export const useDraw = create(set => ({
   draw: null,
@@ -17,6 +18,7 @@ export const useDraw = create(set => ({
 
 export default function Controls({ name, params, setSize, TYPES, STYLES }) {
   const [saveTrigger, setSaveTrigger] = useState()
+  const { setTutorial } = useStore()
   const [mapId, setMapId] = useState()
   const draw = useDraw(d => d.draw)
   const setDraw = useDraw(d => d.setDraw)
@@ -53,6 +55,13 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
 
     localGet('maps').then(r => {
       r.onsuccess = () => {
+
+        // if this is the first time, show a tutorial
+        if (Object.keys(r.result).length === 0 && !localStorage.getItem("noTutorial")) {
+          setTutorial(true)
+          console.log("sent signal to open tutorial")
+        }
+
         const localMaps = r.result || {}
         localSet("maps", {
           ...localMaps, [mapId]: {

@@ -166,7 +166,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
   }, [])
 
   return (
-    <div className="space-y-4 font-mono select-text">
+    <div className="space-y-4 font-mono select-text editor-table">
       {popup.geometry.type === 'Point' && iconHTML && (
         <div dangerouslySetInnerHTML={{ __html: iconHTML }} className="w-5 h-5 popup-preview overflow-hidden"></div>
       )}
