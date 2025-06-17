@@ -28,9 +28,6 @@ export default function Tutorial({ IS_GALAXY, name }) {
     }
     setCheck(localStorage.getItem("noTutorial") === "true")
   }, [])
-  useEffect(() => {
-    console.log(tutorial)
-  }, [tutorial])
 
   // if this is the first time, show a tutorial
   useEffect(() => {
@@ -43,7 +40,7 @@ export default function Tutorial({ IS_GALAXY, name }) {
 
   return (
     <Dialog open={!!tutorial} onOpenChange={(open) => !open && setTutorial(null)}>
-      <DialogContent>
+      <DialogContent className="max-h-[80vh] overflow-auto">
         <DialogHeader>
           <DialogTitle><CircleHelp className="inline" size={18} /> Tutorial</DialogTitle>
           <DialogDescription asChild>
@@ -60,9 +57,9 @@ export default function Tutorial({ IS_GALAXY, name }) {
                   <br />
                   <p>To move a feature, click and drag it.</p>
                   <br />
-                  <p>When creating polygons and lines, you need to <b>double click</b> to finish the shape. Otherwise a new point will be added.</p>
+                  <p>When creating polygons and lines, you need to <b>double click</b> to finish the shape. Otherwise a new point will be added instead.</p>
                   <br />
-                  <p>To edit a polygon or line. You must <b>double click</b> any point on the feature. Then you can either click and drag an existing point. Or you can add new points by clicking on a small dot between any two points</p>
+                  <p>To edit a polygon or line. You must <b>double click</b> any point <b>on</b> the feature. Then you can either click and drag an existing point. Or you can add new points by clicking on a small dot between any two points</p>
                 </CollapsibleContent>
               </Collapsible>
               <Collapsible>
@@ -118,10 +115,10 @@ export default function Tutorial({ IS_GALAXY, name }) {
                 <CollapsibleTrigger>How can I make other changes to my map?</CollapsibleTrigger>
                 <CollapsibleContent className="text-white my-4">
                   <h3 className="text-lg">Advanced</h3>
-                  <p>Great! All maps have settings. You can define things like the bounds of the map. Or even if its set on Earth! This can be found on the home page. </p>
+                  <p>Great! All maps have settings. You can define things like the bounds of the map. Toggle the pregenerated planets. Or even if its set on Earth's surface! This can be found on the home page. </p>
                   <hr className="my-2 mt-4" />
                   <h3 className="text-lg">Expert</h3>
-                  <p>All the code is open source and under a copyleft license. Feel free to fork and tweak as desired (I can write a wiki guide on GitHub, just ping me using an issue. Then I will write on up for you). I also expose some Maplibre settings like the style spec and layout overrides for the symbol layer</p>
+                  <p>All the code is open source and under a copyleft license. Feel free to fork and tweak as desired (I can write a wiki guide on GitHub, just ping me using an issue. Then I will write on up for you). I do expose some Maplibre settings like the style spec and layout overrides for the symbol layer. Find those configs in any map settings page.</p>
                 </CollapsibleContent>
               </Collapsible>
               <Collapsible>
@@ -130,6 +127,14 @@ export default function Tutorial({ IS_GALAXY, name }) {
                   <p>Due to copyright, I have no plans to add other maps.</p>
                 </CollapsibleContent>
               </Collapsible>
+              {name !== "custom" &&
+                <Collapsible>
+                  <CollapsibleTrigger>How can I edit the base {name} map?</CollapsibleTrigger>
+                  <CollapsibleContent className="text-white my-4">
+                    <p>Base map data is shared with everyone in the community. If you have a valid source for an addition or edit I would love to review it. Click the Contribute button in the menu to get started.</p>
+                  </CollapsibleContent>
+                </Collapsible>
+              }
             </div>
           </DialogDescription>
         </DialogHeader>

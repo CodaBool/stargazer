@@ -59,7 +59,7 @@ export default function MapSettings({ map, id, data, config }) {
   const router = useRouter()
   const form = useForm()
 
-  console.log(config)
+  // console.log(config)
 
   async function submit(body, _, approved) {
     const newObj = {

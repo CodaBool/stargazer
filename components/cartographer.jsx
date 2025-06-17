@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import MapComponent from './map'
-import { combineLayers, deepArrayCheck, getConsts, isMobile, localGet, localSet, useStore, windowLocalGet } from '@/lib/utils'
+import { combineLayers, deepArrayCheck, getConsts, getLocationGroups, isMobile, localGet, localSet } from '@/lib/utils'
 import Map from 'react-map-gl/maplibre'
 import Controls from './controls.jsx'
 import Editor from './editor'
@@ -136,6 +136,21 @@ export default function Cartographer({ name, data, stargazer, fid, config }) {
     )
   }
 
+  const locationGroups = getLocationGroups((params.get("preview") ? (previewData || data) : data).features.filter(f =>
+    f.geometry.type === "Point" && f.properties.type !== "text"
+  ))
+
+  // duplicate of the else case
+  // TODO: rewrite cartographer to always have valid config
+  if (!CONST_FINAL.STYLES) {
+    CONST_FINAL = JSON.parse(JSON.stringify(CONST))
+    Object.keys(config || {}).forEach(key => {
+      if (CONST_FINAL.hasOwnProperty(key)) {
+        CONST_FINAL[key] = config[key]
+      }
+    })
+  }
+
   return (
     <>
       <Map
@@ -155,7 +170,7 @@ export default function Cartographer({ name, data, stargazer, fid, config }) {
       // good to view what kind of distortion is happening
       // projection="globe"
       >
-        <MapComponent width={size.width} height={size.height} name={name} data={params.get("preview") ? (previewData || data) : data} mobile={mobile} params={params} stargazer={stargazer} locked={locked} setCrashed={setCrashed} {...CONST_FINAL} />
+        <MapComponent locationGroups={locationGroups} width={size.width} height={size.height} name={name} data={params.get("preview") ? (previewData || data) : data} mobile={mobile} params={params} stargazer={stargazer} locked={locked} setCrashed={setCrashed} {...CONST_FINAL} />
         {showControls && <Controls name={name} params={params} setSize={setSize} TYPES={CONST_FINAL.TYPES} STYLES={CONST_FINAL.STYLES} />}
       </Map>
       {showEditor && <Editor mapName={name} params={params} TYPES={CONST_FINAL.TYPES} />}

@@ -241,7 +241,6 @@ export default function Toolbox({ map, width, height, mobile, name, initCrosshai
     }
 
     const handleKeyDown = (event) => {
-      console.log("event", event)
       if (event.altKey) {
         setMode(mode === "crosshair" ? null : "crosshair")
       } else if (event.ctrlKey) {

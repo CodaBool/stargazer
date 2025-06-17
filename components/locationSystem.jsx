@@ -1,7 +1,5 @@
 'use client';
-
-import { Badge } from "./ui/badge";
-import * as turf from '@turf/turf'
+import { Badge } from "./ui/badge"
 
 const svgBase = "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/svg/";
 
@@ -44,15 +42,23 @@ export default function SolarSystemDiagram({ group, selectedId, map, name }) {
       <div className="w-full overflow-x-auto overflow-y-visible py-2">
         <div className="flex items-baseline h-full space-x-6 px-4 justify-evenly">
           {group.map((body, index) => {
+            const selected = body.id === selectedId
+            if (selected) console.log("picked", body.properties.name, selected)
             return (
               <div key={index} className="flex flex-col items-center relative min-w-[40px]">
                 <img
                   src={`${svgBase + name}/${body.properties.type}.svg`}
                   alt={body.properties.name}
-                  onClick={() => panTo(body)}
+                  onClick={() => {
+                    if (selected) {
+                      window.open('https://external-site.com', '_blank');
+                    } else {
+                      panTo(body)
+                    }
+                  }}
                   onMouseOver={() => handleMouseOver(body)}
                   onMouseOut={() => handleMouseOut(body)}
-                  className="hover-grow-xl cursor-pointer"
+                  className={`hover-grow-xl cursor-pointer ${selected ? 'animate-pulse' : ''}`}
                   style={{
                     width: 40 + "px",
                     height: 40 + "px",

@@ -62,7 +62,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
       <div className="w-full overflow-x-auto overflow-y-visible py-2">
         <div className="flex items-baseline h-full space-x-6 px-4 justify-evenly">
           {group.map((body, index) => {
-            // const source = body.source?.id === selectedId ? body.source : undefined
+            const selected = body.id === selectedId
             return (
               <div key={index} className="flex flex-col items-center relative min-w-[40px]">
                 <img
@@ -71,7 +71,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
                   onClick={() => setActiveBody(body)}
                   onMouseOver={() => handleMouseOver(body.source)}
                   onMouseOut={() => handleMouseOut(body.source)}
-                  className="hover-grow-xl cursor-pointer"
+                  className={`hover-grow-xl cursor-pointer ${selected ? 'animate-pulse' : ''}`}
                   style={{
                     width: 40 + "px",
                     height: 40 + "px",

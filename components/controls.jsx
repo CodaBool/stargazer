@@ -59,8 +59,6 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
         // if this is the first time, show a tutorial
         if (Object.keys(r.result).length === 0 && !localStorage.getItem("noTutorial") && !mobile) {
           setTutorial(true)
-          console.log("control")
-
         }
 
         const localMaps = r.result || {}

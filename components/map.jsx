@@ -6,11 +6,10 @@ import maplibregl, {
 } from 'maplibre-gl'
 import { useMap, Layer, Source, Popup } from 'react-map-gl/maplibre'
 import { useEffect, useRef, useState } from 'react'
-import { getColorExpression, createPopupHTML, hexToRgb, localSet, windowLocalGet, useStore, useMode } from "@/lib/utils.js"
+import { getColorExpression, createPopupHTML, hexToRgb, localSet, windowLocalGet, useStore, useMode, getLocationGroups } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import SearchBar from './searchbar'
 import * as SVG from './svg.js'
-import turfCentroid from '@turf/centroid'
 import * as turf from '@turf/turf'
 import Hamburger from './hamburger'
 import Toolbox from './toolbox'
@@ -20,7 +19,14 @@ import Tutorial from './tutorial'
 import { useDraw } from "./controls";
 import { Calibrate, Link } from './foundry'
 
-let popup, isRightDragging = false
+let popup = new maplibregl.Popup({
+  closeButton: false,
+  offset: [0, 20],
+  closeOnClick: false,
+  maxWidth: "340px",
+  anchor: "top",
+  className: "fade-in"
+})
 
 export async function getIcon(d, fillRGBA) {
   const icon = d.properties.icon || SVG[d.properties.type]
@@ -60,53 +66,11 @@ export async function getIcon(d, fillRGBA) {
   return null;
 }
 
-function getLocationGroups(features, maxDistance = 20) {
-  const unvisited = new Set(features.map(f => f.id))
-  const solarSystems = []
-
-  while (unvisited.size > 0) {
-    const startId = unvisited.values().next().value
-    const startFeature = features.find(f => f.id === startId)
-
-    const cluster = []
-    const queue = [startFeature]
-    unvisited.delete(startId)
-
-    while (queue.length > 0) {
-      const current = queue.pop()
-      cluster.push(current)
-      unvisited.delete(current.id)
-
-      for (const f of features) {
-        if (!unvisited.has(f.id)) continue
-        const dist = turf.distance(current.geometry.coordinates, turf.point(f.geometry.coordinates))
-        if (dist <= maxDistance) {
-          queue.push(f)
-          unvisited.delete(f.id)
-        }
-      }
-    }
-
-    const centroid = turf.centroid({
-      type: "FeatureCollection",
-      features: cluster,
-    });
-
-    solarSystems.push({
-      id: `solar-${solarSystems.length}`,
-      center: centroid.geometry.coordinates,
-      members: cluster.map(f => f.id)
-    });
-  }
-  return solarSystems;
-}
-
-export default function Map({ width, height, data, name, mobile, params, locked, stargazer, setCrashed, CLICK_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY }) {
+export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, stargazer, setCrashed, CLICK_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
-  const { mode, setMode } = useMode()
+  const { mode } = useMode()
   const recreateListeners = useDraw(s => s.recreateListeners)
-  const locationGroups = getLocationGroups(data.features.filter(f => f.geometry.type === "Point" && f.properties.type !== "text"))
   const modeRef = useRef(mode)
   useEffect(() => { modeRef.current = mode }, [mode])
 
@@ -267,7 +231,6 @@ export default function Map({ width, height, data, name, mobile, params, locked,
         if (g === group) return false; // Exclude the clicked group
         return turf.distance(group.center, g.center) <= (UNIT === "ly" ? 510 : 60);
       })
-      // console.log("pre nearbyGroups", nearbyGroups)
 
       const nearby = nearbyGroups.map(({ center, members }) => {
         return members.map(id => {
@@ -278,33 +241,26 @@ export default function Map({ width, height, data, name, mobile, params, locked,
         })
       })
 
-      // const myGroup = group.members.map(id => data.features.find(f => f.id === id))
       const myGroup = group.members.map(id => ({
         groupCenter: group.center,
         ...data.features.find(f => f.id === id)
       }))
 
-      // console.log("Clicked", clicked)
-      // console.log("click group", group)
-      // console.log("Nearby groups (excluding clicked group)", nearby)
-
       pan(clicked, myGroup, nearby)
 
       // remove popup
-      if (popup._container) {
-        popup.remove()
-      }
+      if (popup._container) popup.remove()
     }
 
+    // remove popup when moving
     const removePopup = () => {
-      // remove popup when moving
-      if (popup._container) {
-        popup.remove()
-      }
+      if (popup._container) popup.remove()
     }
 
     // RMB panning
-    let offset, isMoving = false;
+    let offset, isMoving = false
+
+    // create Listeners
     map.on("mousedown", (e) => {
       if (e.originalEvent.button === 2) {
         isMoving = true;
@@ -408,20 +364,11 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       }
     }
 
-    const interval = setInterval(checkWebGLCrash, 1_500) // check every 1.5 seconds
+    const interval = setInterval(checkWebGLCrash, 1_500) // check every 1.5s
     return () => clearInterval(interval)
   }, [wrapper, recreateListeners, params.get("preview"), mode])
 
   useEffect(() => {
-    popup = new maplibregl.Popup({
-      closeButton: false,
-      offset: [0, 20],
-      closeOnClick: false,
-      maxWidth: "340px",
-      anchor: "top",
-      className: "fade-in"
-    })
-
     // local dev testing functions
     window.localSet = localSet
     window.localGet = windowLocalGet
