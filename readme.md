@@ -15,7 +15,7 @@ This is because the project will release a free TopoJSON & GeoJSON file (common 
 ### ✨ Yet Another Stylized Map
 > not interested in programming or manually handling map data?
 
-In addition to the goal of consolidating map data. I will be creating my own stylized app which can read this data. It will support the ability to customize the style, add locations and publish the map. Click the link at the top to see it.
+In addition to the goal of having accurate and accessible map data. I will be creating my own stylized app which can read this data. It will support the ability to customize the style, add locations and publish the map. Click the link at the top to see it.
 
 ### ⚖️ Legal
 Stargazer is not an official Lancer product; it is a third party work, and is not affiliated with Massif Press. Stargazer is published via the Lancer Third Party License.
