@@ -5,8 +5,8 @@ import maplibregl, {
   LngLatBounds,
 } from 'maplibre-gl'
 import { useMap, Layer, Source, Popup } from 'react-map-gl/maplibre'
-import { useEffect, useState } from 'react'
-import { getColorExpression, createPopupHTML, hexToRgb } from "@/lib/utils.js"
+import { useEffect, useRef, useState } from 'react'
+import { getColorExpression, createPopupHTML, hexToRgb, localSet, windowLocalGet, useStore, useMode } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import SearchBar from './searchbar'
 import * as SVG from './svg.js'
@@ -20,8 +20,7 @@ import Tutorial from './tutorial'
 import { useDraw } from "./controls";
 import { Calibrate, Link } from './foundry'
 
-let popup, mode = new Set([])
-let isRightDragging = false
+let popup, isRightDragging = false
 
 export async function getIcon(d, fillRGBA) {
   const icon = d.properties.icon || SVG[d.properties.type]
@@ -105,12 +104,14 @@ function getLocationGroups(features, maxDistance = 20) {
 export default function Map({ width, height, data, name, mobile, params, locked, stargazer, setCrashed, CLICK_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
+  const { mode, setMode } = useMode()
   const recreateListeners = useDraw(s => s.recreateListeners)
   const locationGroups = getLocationGroups(data.features.filter(f => f.geometry.type === "Point" && f.properties.type !== "text"))
+  const modeRef = useRef(mode)
+  useEffect(() => { modeRef.current = mode }, [mode])
 
   async function pan(d, myGroup, nearbyGroups, fit) {
     if (locked && !fit) return
-    mode.add("zooming")
     let fly = true, lat, lng, bounds, coordinates = d.geometry.coordinates
     let zoomedOut = wrapper.getZoom() < 6
 
@@ -165,7 +166,6 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       } else {
         wrapper.flyTo({ center: [lng, lat], duration: 800, zoom })
       }
-      setTimeout(() => mode.delete("zooming"), 801)
     }
 
     if (d.geometry.type === "Point") {
@@ -251,9 +251,9 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap());
     }
 
-
     function locationClick(e) {
-      if (mode.has("measure") || (mode.has("crosshair") && mobile) || locked) return;
+      const currentMode = modeRef.current
+      if (currentMode === "measure" || (currentMode === "crosshair" && mobile) || locked) return;
 
       const clicked = e.features[0];
 
@@ -296,13 +296,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       }
     }
 
-    const ensureCheckbox = () => {
-      if (mode.has("measureStart")) {
-        mode.delete("measureStart")
-      } else if (mode.has("crosshairZoom")) {
-        mode.delete("crosshairZoom")
-      }
-
+    const removePopup = () => {
       // remove popup when moving
       if (popup._container) {
         popup.remove()
@@ -325,7 +319,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
         offset = e.point;
       }
     })
-    map.off("move", ensureCheckbox)
+    map.off("move", removePopup)
     map.off('mousemove', 'location', mouseMove)
     map.off('mouseleave', 'location', mouseLeave)
     map.off('mousemove', 'guide', mouseMove)
@@ -333,7 +327,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
     map.off('click', 'territory', territoryClick)
     map.off('click', 'location', locationClick)
 
-    map.on("move", ensureCheckbox)
+    map.on("move", removePopup)
     map.on("mouseup", () => isMoving = false)
     map.on('mousemove', 'location', mouseMove)
     map.on('mouseleave', 'location', mouseLeave)
@@ -416,10 +410,9 @@ export default function Map({ width, height, data, name, mobile, params, locked,
 
     const interval = setInterval(checkWebGLCrash, 1_500) // check every 1.5 seconds
     return () => clearInterval(interval)
-  }, [wrapper, recreateListeners, params.get("preview")])
+  }, [wrapper, recreateListeners, params.get("preview"), mode])
 
   useEffect(() => {
-    // wrapper.on("load", listeners)
     popup = new maplibregl.Popup({
       closeButton: false,
       offset: [0, 20],
@@ -428,6 +421,10 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       anchor: "top",
       className: "fade-in"
     })
+
+    // local dev testing functions
+    window.localSet = localSet
+    window.localGet = windowLocalGet
   }, [])
 
   // add all custom icons
@@ -574,14 +571,14 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       {params.get("search") !== "0" && <SearchBar map={wrapper} name={name} data={data} pan={pan} mobile={mobile} locationGroups={locationGroups} UNIT={UNIT} STYLES={STYLES} />}
 
       {/* FOUNDRY */}
-      {params.get("secret") && <Link mode={mode} width={width} height={height} mobile={mobile} name={name} params={params} />}
-      {params.get("calibrate") && <Calibrate mode={mode} width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}
+      {params.get("secret") && <Link width={width} height={height} mobile={mobile} name={name} params={params} />}
+      {params.get("calibrate") && <Calibrate width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}
 
       <Tutorial name={name} IS_GALAXY={IS_GALAXY} />
       <Sheet {...drawerContent} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GENERATE_LOCATIONS={GENERATE_LOCATIONS} />
 
-      <Toolbox mode={mode} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} />
-      {params.get("hamburger") !== "0" && <Hamburger mode={mode} name={name} params={params} map={wrapper} stargazer={stargazer} mobile={mobile} IS_GALAXY={IS_GALAXY} />}
+      <Toolbox initCrosshair={params.get("c")} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} />
+      {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} stargazer={stargazer} mobile={mobile} IS_GALAXY={IS_GALAXY} />}
     </>
   )
 }

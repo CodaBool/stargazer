@@ -1,20 +1,12 @@
 'use client'
 import { useEffect, useState } from 'react'
 import MapComponent from './map'
-import { combineLayers, deepArrayCheck, getConsts, isMobile, localGet, localSet } from '@/lib/utils'
+import { combineLayers, deepArrayCheck, getConsts, isMobile, localGet, localSet, useStore } from '@/lib/utils'
 import Map from 'react-map-gl/maplibre'
 import Controls from './controls.jsx'
 import Editor from './editor'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { create } from 'zustand'
 import randomName from '@scaleway/random-name'
-
-export const useStore = create((set) => ({
-  editorTable: null,
-  tutorial: null,
-  setTutorial: tutorial => set({ tutorial }),
-  setEditorTable: editorTable => set({ editorTable }),
-}))
 
 let CONST_FINAL = {}
 export default function Cartographer({ name, data, stargazer, fid, config }) {
@@ -28,6 +20,7 @@ export default function Cartographer({ name, data, stargazer, fid, config }) {
   const params = useSearchParams()
   const mobile = isMobile()
   const router = useRouter()
+  const { setTutorial, tutorial } = useStore()
   CONST.VIEW.zoom = params.get("z") || CONST.VIEW.zoom
   CONST.VIEW.longitude = params.get("lng") || CONST.VIEW.longitude
   CONST.VIEW.latitude = params.get("lat") || CONST.VIEW.latitude
@@ -48,10 +41,17 @@ export default function Cartographer({ name, data, stargazer, fid, config }) {
   }, [])
 
   if (params.get("id")) {
+    // TODO: rewrite this in a await fashion
     localGet('maps').then(r => {
       r.onerror = e => console.error("db error", e, r)
       r.onsuccess = () => {
         const localMaps = r.result || {}
+        // if this is the first time, show a tutorial
+        if (Object.keys(r.result).length === 0 && !localStorage.getItem("noTutorial") && !tutorial) {
+          setTutorial(true)
+          console.log("sent signal to open tutorial")
+        }
+
         if (params.get("id") === "foundry") {
           const uuid = params.get("uuid")
           // console.log("get map geojson using secret", params.get("secret"), uuid)
@@ -72,23 +72,19 @@ export default function Cartographer({ name, data, stargazer, fid, config }) {
                   }, '*')
                   return
                 }
-                localGet('maps').then(r => {
-                  r.onsuccess = () => {
-                    const mapKey = name + "-" + uuid
+                const mapKey = name + "-" + uuid
 
-                    localSet("maps", {
-                      ...localMaps, [mapKey]: {
-                        geojson: res.geojson,
-                        name: localMaps[mapKey]?.name || randomName('', ' '),
-                        updated: Date.now(),
-                        id: Number(uuid),
-                        map: name,
-                        config: localMaps[mapKey]?.config || {},
-                      }
-                    })
-                    router.replace(`/${name}?secret=${params.get("secret")}&id=${uuid}&hamburger=0&search=0&zoom=0`)
+                localSet("maps", {
+                  ...localMaps, [mapKey]: {
+                    geojson: res.geojson,
+                    name: localMaps[mapKey]?.name || randomName('', ' '),
+                    updated: Date.now(),
+                    id: Number(uuid),
+                    map: name,
+                    config: localMaps[mapKey]?.config || {},
                   }
                 })
+                router.replace(`/${name}?secret=${params.get("secret")}&id=${uuid}&hamburger=0&search=0&zoom=0`)
               }
             })
             .catch(message => {

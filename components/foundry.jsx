@@ -10,7 +10,7 @@ import { localGet } from "@/lib/utils"
 
 let text, zText, crosshairX, crosshairY
 
-export function Calibrate({ mode, width, height, mobile, name, IS_GALAXY }) {
+export function Calibrate({ width, height, mobile, name, IS_GALAXY }) {
   const { map } = useMap()
 
   useEffect(() => {

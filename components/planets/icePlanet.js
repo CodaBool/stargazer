@@ -14,7 +14,7 @@ export const createIcePlanet = ({ colors, pixels, seed, clouds, lakes, cloudCove
     ]
   }
 
-  //                               lightPos , lightIntensity , colors , rotationSpeed , rotation , pixels , seed )
+  // lightPos , lightIntensity , colors , rotationSpeed , rotation , pixels , seed )
   const basePlanet = createBasePlanet(undefined, undefined, colors, undefined, undefined, pixels, seed)
 
   // ightPos = new Vector2(0.39, 0.7), rotationSpeed = 0.1, lakes = 0.6, colors, rotation = 0.0

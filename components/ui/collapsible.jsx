@@ -11,7 +11,7 @@ function Collapsible({
 function CollapsibleTrigger({
   ...props
 }) {
-  return (<CollapsiblePrimitive.CollapsibleTrigger className="cursor-pointer" data-slot="collapsible-trigger" {...props} />);
+  return (<CollapsiblePrimitive.CollapsibleTrigger className="text-lg cursor-pointer my-1" data-slot="collapsible-trigger" {...props} />);
 }
 
 function CollapsibleContent({

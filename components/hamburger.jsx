@@ -17,52 +17,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Sparkle, BookOpen, Bug, Pencil, Plus, MapPin, RectangleHorizontal, Map, ArrowRightFromLine, Hexagon, ListCollapse, User, LogOut, Ruler, CodeXml, Menu, Crosshair, HeartHandshake, Eye, Gavel } from "lucide-react"
+import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Pencil, User, Ruler, Menu, Crosshair, HeartHandshake, Eye, CircleHelp, House } from "lucide-react"
 import { useEffect, useState } from "react"
+import { useMode, useStore } from "@/lib/utils"
 
-export default function Hamburger({ mode, name, params, map, stargazer, mobile, IS_GALAXY }) {
-  const [check, setCheck] = useState()
+// TODO: this should be rewritten to use zustand instead of a Set (called mode)
 
-  function toggle(newMode, skipnull) {
-    if (mode.has(newMode)) {
-      mode.delete(newMode)
-      if (skipnull) setCheck(null)
-      document.querySelector('.textbox').style.visibility = "hidden"
-      document.querySelectorAll('.crosshair').forEach(el => el.style.visibility = "hidden")
-      if (map.getSource('toolbox')) {
-        map.getSource('toolbox').setData({
-          "type": "FeatureCollection",
-          "features": []
-        })
-      }
-    } else {
-      if (mode.has("measure")) {
-        toggle("measure", true)
-      } else if (mode.has("crosshair")) {
-        toggle("crosshair", true)
-      }
-      mode.add(newMode)
-      if (newMode === "crosshair") {
-        const { lng, lat } = map.getCenter()
-        console.log("turned on crosshair", lng)
-        document.querySelectorAll('.crosshair').forEach(el => el.style.visibility = "visible")
-        const text = document.querySelector('.textbox')
-        if (IS_GALAXY) {
-          text.textContent = `X: ${lng.toFixed(1)} | Y: ${lat.toFixed(1)}`;
-        } else {
-          text.textContent = `Lat: ${lat.toFixed(3)}° | Lng: ${lng.toFixed(3)}°`;
-        }
-        text.style.visibility = 'visible'
-      }
-      setCheck(newMode)
-    }
-  }
-
-  useEffect(() => {
-    if (params.get("c") && !mode.has("crosshair")) {
-      toggle("crosshair", true)
-    }
-  }, [])
+export default function Hamburger({ name, params, map, stargazer, mobile, IS_GALAXY }) {
+  const { mode, setMode } = useMode()
+  const { setTutorial } = useStore()
 
   return (
     <DropdownMenu>
@@ -71,11 +34,11 @@ export default function Hamburger({ mode, name, params, map, stargazer, mobile, 
       </DropdownMenuTrigger>
       <DropdownMenuContent onPointerDown={e => e.stopPropagation()}>
         <DropdownMenuLabel>Tools</DropdownMenuLabel>
-        <DropdownMenuItem className="cursor-pointer" onPointerUp={() => toggle("measure", check === "measure")}>
-          <Ruler /> Measure <input type="checkbox" checked={check === "measure"} readOnly />
+        <DropdownMenuItem className="cursor-pointer" onClick={() => setMode(mode === "measure" ? null : "measure")}>
+          <Ruler /> Measure <input type="checkbox" checked={mode === "measure"} readOnly />
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" onPointerUp={() => toggle("crosshair", check === "crosshair")}>
-          <Crosshair /> Coordinate <input type="checkbox" checked={check === "crosshair"} readOnly />
+        <DropdownMenuItem className="cursor-pointer" onClick={() => setMode(mode === "crosshair" ? null : "crosshair")}>
+          <Crosshair /> Coordinate <input type="checkbox" checked={mode === "crosshair"} readOnly />
         </DropdownMenuItem>
         {params.get("iframe") !== "1" && (
           <>
@@ -120,6 +83,9 @@ export default function Hamburger({ mode, name, params, map, stargazer, mobile, 
                 </DropdownMenuItem>
               </a>
             }
+            <DropdownMenuItem className="cursor-pointer" onClick={() => setTutorial(true)}>
+              <CircleHelp className="ml-[.6em] inline" /> <span className="ml-[5px]">Help</span>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel>Create</DropdownMenuLabel>
             {name !== "custom" &&
@@ -131,7 +97,7 @@ export default function Hamburger({ mode, name, params, map, stargazer, mobile, 
             }
             {!mobile && <Link href={`/#${name}_local`}>
               <DropdownMenuItem className="cursor-pointer">
-                <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">Export</span>
+                <House className="ml-[.6em] inline" /> <span className="ml-[5px]">Home</span>
               </DropdownMenuItem>
             </Link>}
             {(!stargazer && !mobile) &&

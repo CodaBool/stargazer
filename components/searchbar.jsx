@@ -8,10 +8,9 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Sparkle, BookOpen, Bug, Pencil, Plus, MapPin, RectangleHorizontal, Map, ArrowRightFromLine, Hexagon, ListCollapse, User, LogOut, Ruler, CodeXml, Menu, Crosshair } from "lucide-react"
-import { darkenColor } from "@/lib/utils.js"
+import { darkenColor, useStore } from "@/lib/utils.js"
 import * as turf from '@turf/turf'
 import { useEffect, useRef, useState } from "react"
-import { useStore } from "./cartographer"
 
 export default function MenuComponent({ map, data, mobile, name, pan, locationGroups, UNIT, STYLES }) {
   const [active, setActive] = useState()

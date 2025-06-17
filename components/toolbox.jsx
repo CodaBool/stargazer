@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
-import maplibregl from 'maplibre-gl'
+import { useEffect } from 'react'
 import { Layer, Source, useMap } from 'react-map-gl/maplibre'
 import * as turf from '@turf/turf'
+import { debounce, useMode } from '@/lib/utils'
 
 const linestring = {
   'type': 'Feature',
@@ -10,14 +10,14 @@ const linestring = {
     'coordinates': []
   }
 }
-
 let text, crosshairX, crosshairY
 
 // TODO: consider useMap
-export default function Toolbox({ mode, map, width, height, mobile, name, IS_GALAXY, DISTANCE_CONVERTER }) {
+export default function Toolbox({ map, width, height, mobile, name, initCrosshair, IS_GALAXY, DISTANCE_CONVERTER }) {
+  const { mode, setMode } = useMode()
 
   function handleClick(e) {
-    if (!mode.has("measure")) return
+    if (mode !== "measure") return
 
     const features = map.queryRenderedFeatures(e.point, {
       layers: ['measure-points']
@@ -79,7 +79,7 @@ export default function Toolbox({ mode, map, width, height, mobile, name, IS_GAL
   }
 
   function handleMove() {
-    if (mode.has("crosshair")) {
+    if (mode === "crosshair") {
       const { lng, lat } = map.getCenter()
       crosshairX.style.visibility = 'visible'
       crosshairY.style.visibility = 'visible'
@@ -94,6 +94,9 @@ export default function Toolbox({ mode, map, width, height, mobile, name, IS_GAL
 
   useEffect(() => {
     if (!map) return
+    if (initCrosshair && mode !== "crosshair" && !mode) {
+      setMode("crosshair")
+    }
 
     const crosshairLength = height / 5
 
@@ -148,27 +151,121 @@ export default function Toolbox({ mode, map, width, height, mobile, name, IS_GAL
 
     // Crosshair Logic
     map.on('move', handleMove)
-    map.on('mousemove', "measure-points", () => {
-      map.getCanvas().style.cursor = 'pointer'
-    })
-    map.on('mouseleave', "measure-points", () => {
-      map.getCanvas().style.cursor = 'grab'
-    })
+    // map.on('mousemove', "measure-points", () => {
+    //   map.getCanvas().style.cursor = 'pointer'
+    // })
+    // map.on('mouseleave', "measure-points", () => {
+    //   map.getCanvas().style.cursor = 'grab'
+    // })
+
+    const updateLiveDistance = debounce((e) => {
+      if (mode === "crosshair") return
+
+      const source = map.getSource('toolbox')
+      if (!source) return
+      const geojson = source._data
+
+      const points = geojson.features.filter(f => f.geometry.type === "Point")
+      const existingLineIndex = geojson.features.findIndex(f => f.geometry.type === "LineString")
+
+      // Remove old live line if present
+      if (existingLineIndex !== -1) {
+        geojson.features.splice(existingLineIndex, 1)
+      }
+
+      if (points.length === 0) {
+        source.setData(geojson)
+        return
+      }
+
+      // Construct live line from existing points + current mouse position
+      const coords = points.map(p => p.geometry.coordinates)
+      const liveLine = {
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          coordinates: [...coords, [e.lngLat.lng, e.lngLat.lat]]
+        }
+      }
+
+      geojson.features.push(liveLine)
+
+      const km = turf.length(liveLine)
+      const distance = km * DISTANCE_CONVERTER
+
+      if (name === "postwar") {
+        const walkingSpeedMph = 3
+        const walkingTimeHours = distance / walkingSpeedMph
+        text.textContent = `${distance.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`
+      } else if (name.includes("lancer") || name === "mousewars") {
+        const relativeTime = (distance / Math.sinh(Math.atanh(0.995))).toFixed(1)
+        text.textContent = `${distance.toFixed(1)}ly | ${relativeTime} rel. years (.995u) | ${(distance / 0.995).toFixed(1)} observer years`
+      }
+
+      text.style.visibility = 'visible'
+      source.setData(geojson)
+    }, 1)
+
+
+    if (!mobile) {
+      map.on('mousemove', updateLiveDistance)
+    }
+
+    // run once to make sure the crosshair is visible on start
+    // toggleMode(mode)
+
+    const source = map.getSource('toolbox')
+
+    // Clear all UI and mode state
+    text.style.visibility = 'hidden'
+    document.querySelectorAll('.crosshair').forEach(el => el.style.visibility = 'hidden')
+
+    if (source) {
+      source.setData({
+        type: 'FeatureCollection',
+        features: []
+      })
+    }
+
+    if (mode === "crosshair") {
+      const { lng, lat } = map.getCenter()
+      document.querySelectorAll('.crosshair').forEach(el => el.style.visibility = "visible")
+      if (IS_GALAXY) {
+        text.textContent = `X: ${lng.toFixed(1)} | Y: ${lat.toFixed(1)}`;
+      } else {
+        text.textContent = `Lat: ${lat.toFixed(3)}° | Lng: ${lng.toFixed(3)}°`;
+      }
+      text.style.visibility = 'visible'
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.altKey) {
+        setMode(mode === "crosshair" ? null : "crosshair")
+      } else if (event.ctrlKey) {
+        setMode(mode === "measure" ? null : "measure")
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
 
     return () => {
       mapboxChildrenParent.removeChild(crosshairX)
       mapboxChildrenParent.removeChild(crosshairY)
       mapboxChildrenParent.removeChild(text)
+      window.removeEventListener("keydown", handleKeyDown)
       map.off('click', handleClick)
       map.off('move', handleMove)
       map.off('mouseleave', "measure-points", () => {
+        if (!mobile) {
+          map.off('mousemove', updateLiveDistance)
+        }
         map.getCanvas().style.cursor = 'grab'
       })
       map.off('mousemove', "measure-points", () => {
         map.getCanvas().style.cursor = 'pointer'
       })
     }
-  }, [map])
+  }, [map, mode])
 
   return (
     <Source id="toolbox" type="geojson" data={{

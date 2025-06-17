@@ -27,6 +27,12 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
   const GROUP_NAME = IS_GALAXY ? "Solar Systems" : "Locations"
 
   useEffect(() => {
+    // scroll SheetContent to top
+    const sheet = document.getElementById("bottom-sheet")
+    if (sheet) {
+      sheet.scrollTop = 0
+    }
+
     // move editor table
     const el = document.querySelector(".editor-table")
     if (el) {
@@ -90,44 +96,50 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
   }
 
   return (
-    <Sheet open={!!drawerContent} onOpenChange={() => setDrawerContent(null)} modal={false} style={{ color: 'white' }} >
-      <SheetContent side="bottom" style={{ maxHeight: '38vh', overflowY: 'auto' }} onPointerDownOutside={e => e.preventDefault()} id="bottom-sheet">
-        <SheetHeader >
-          <SheetTitle className="text-center ">
-            <Crosshair onClick={() => panToGroup(local)} className="inline mr-2 mb-1 cursor-pointer" />
-            <span className="text-gray-400">{coordinates ? `${IS_GALAXY ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${IS_GALAXY ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}</span>
-          </SheetTitle>
-          {nearby.length > 1 && <SheetDescription className="text-center" >{nearby.length} Nearby {GROUP_NAME}</SheetDescription>}
-        </SheetHeader >
-        {IS_GALAXY
-          ? <SolarSystemDiagram group={local} height={height} isGalaxy={IS_GALAXY} map={map} selectedId={selectedId} name={name} />
-          : <LocationSystem group={local} map={map} selectedId={selectedId} name={name} />
-        }
-        <hr />
-        {nearby.length > 0 && (
-          <>
-            <h1 className="text-center text-2xl my-4">Nearby {GROUP_NAME}</h1>
-            {nearby.map((group, index) => {
-              return (
-                <div key={index} className="flex flex-col">
-                  <div className="mx-auto">
-                    <Crosshair onClick={() => panToGroup(group)} className="cursor-pointer inline" />
-                    <span className="ml-2 text-gray-400">
-                      {`${IS_GALAXY ? "Y" : "lat"}: ${Math.floor(group[0].groupCenter[1])}, ${IS_GALAXY ? "X" : "lng"}: ${Math.floor(group[0].groupCenter[0])}`}
-                    </span>
+    <div
+      key={drawerContent?.id || drawerContent?.name || 'default'}
+      className="fade-in-up"
+    >
+      <Sheet open={!!drawerContent} onOpenChange={() => setDrawerContent(null)} modal={false} style={{ color: 'white' }} >
+        <SheetContent side="bottom" style={{ maxHeight: '38vh', overflowY: 'auto' }} onPointerDownOutside={e => e.preventDefault()} id="bottom-sheet">
+          <SheetHeader >
+            <SheetTitle className="text-center ">
+              <Crosshair onClick={() => panToGroup(local)} className="inline mr-2 mb-1 cursor-pointer" />
+              <span className="text-gray-400">{coordinates ? `${IS_GALAXY ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${IS_GALAXY ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}</span>
+            </SheetTitle>
+            {nearby.length > 1 && <SheetDescription className="text-center" >{nearby.length} Nearby {GROUP_NAME}</SheetDescription>}
+          </SheetHeader >
+          {IS_GALAXY
+            ? <SolarSystemDiagram group={local} height={height} isGalaxy={IS_GALAXY} map={map} selectedId={selectedId} name={name} />
+            : <LocationSystem group={local} map={map} selectedId={selectedId} name={name} />
+          }
+          <hr />
+          {nearby.length > 0 && (
+            <>
+              <h1 className="text-center text-2xl my-4">Nearby {GROUP_NAME}</h1>
+              {nearby.map((group, index) => {
+                return (
+                  <div key={index} className="flex flex-col">
+                    <div className="mx-auto">
+                      <Crosshair onClick={() => panToGroup(group)} className="cursor-pointer inline" />
+                      <span className="ml-2 text-gray-400">
+                        {`${IS_GALAXY ? "Y" : "lat"}: ${Math.floor(group[0].groupCenter[1])}, ${IS_GALAXY ? "X" : "lng"}: ${Math.floor(group[0].groupCenter[0])}`}
+                      </span>
+                    </div>
+                    {IS_GALAXY
+                      ? <SolarSystemDiagram group={group} height={height} isGalaxy={IS_GALAXY} map={map} name={name} />
+                      : <LocationSystem group={group} map={map} selectedId={selectedId} name={name} />
+                    }
+                    {index + 1 !== nearby.length && <hr />}
                   </div>
-                  {IS_GALAXY
-                    ? <SolarSystemDiagram group={group} height={height} isGalaxy={IS_GALAXY} map={map} name={name} />
-                    : <LocationSystem group={group} map={map} selectedId={selectedId} name={name} />
-                  }
-                  {index + 1 !== nearby.length && <hr />}
-                </div>
-              )
-            })}
-          </>
-        )}
-      </SheetContent>
-    </Sheet>
+                )
+              })}
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+    </div>
+
   )
 }
 

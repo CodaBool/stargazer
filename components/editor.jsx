@@ -4,9 +4,8 @@ import { useMap } from "react-map-gl/maplibre";
 import EditorForm from "./forms/editor";
 import randomName from "@scaleway/random-name";
 import { X } from "lucide-react";
-import { useStore } from "./cartographer";
 import { useDraw } from "./controls";
-import { localGet, localSet } from "@/lib/utils";
+import { localGet, localSet, useStore } from "@/lib/utils";
 
 export default function Editor({ mapName, params, TYPES }) {
   const { map } = useMap()
