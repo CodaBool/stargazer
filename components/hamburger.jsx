@@ -83,9 +83,11 @@ export default function Hamburger({ name, params, map, stargazer, mobile, IS_GAL
                 </DropdownMenuItem>
               </a>
             }
-            <DropdownMenuItem className="cursor-pointer" onClick={() => setTutorial(true)}>
-              <CircleHelp className="ml-[.6em] inline" /> <span className="ml-[5px]">Help</span>
-            </DropdownMenuItem>
+            {!mobile &&
+              <DropdownMenuItem className="cursor-pointer" onClick={() => setTutorial(true)}>
+                <CircleHelp className="ml-[.6em] inline" /> <span className="ml-[5px]">Help</span>
+              </DropdownMenuItem>
+            }
             <DropdownMenuSeparator />
             <DropdownMenuLabel>Create</DropdownMenuLabel>
             {name !== "custom" &&

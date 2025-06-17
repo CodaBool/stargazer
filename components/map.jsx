@@ -577,7 +577,7 @@ export default function Map({ width, height, data, name, mobile, params, locked,
       <Tutorial name={name} IS_GALAXY={IS_GALAXY} />
       <Sheet {...drawerContent} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GENERATE_LOCATIONS={GENERATE_LOCATIONS} />
 
-      <Toolbox initCrosshair={params.get("c")} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} />
+      <Toolbox initCrosshair={params.get("c")} id={params.get("id")} preview={params.get("preview")} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} />
       {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} stargazer={stargazer} mobile={mobile} IS_GALAXY={IS_GALAXY} />}
     </>
   )

@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 import { Layer, Source, useMap } from 'react-map-gl/maplibre'
 import * as turf from '@turf/turf'
-import { debounce, useMode } from '@/lib/utils'
+import { debounce, useMode, useStore, windowLocalGet } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 
 const linestring = {
   'type': 'Feature',
@@ -13,8 +14,9 @@ const linestring = {
 let text, crosshairX, crosshairY
 
 // TODO: consider useMap
-export default function Toolbox({ map, width, height, mobile, name, initCrosshair, IS_GALAXY, DISTANCE_CONVERTER }) {
+export default function Toolbox({ map, width, height, mobile, name, initCrosshair, id, preview, IS_GALAXY, DISTANCE_CONVERTER }) {
   const { mode, setMode } = useMode()
+  const router = useRouter()
 
   function handleClick(e) {
     if (mode !== "measure") return
@@ -239,10 +241,18 @@ export default function Toolbox({ map, width, height, mobile, name, initCrosshai
     }
 
     const handleKeyDown = (event) => {
+      console.log("event", event)
       if (event.altKey) {
         setMode(mode === "crosshair" ? null : "crosshair")
       } else if (event.ctrlKey) {
         setMode(mode === "measure" ? null : "measure")
+      } else if (event.code === "KeyP") {
+        if (preview) {
+          router.push(`/${name}?id=${id}`)
+        } else {
+          // TODO: breaks if no points
+          router.push(`/${name}?id=${id}&preview=1`)
+        }
       }
     }
 
@@ -266,6 +276,8 @@ export default function Toolbox({ map, width, height, mobile, name, initCrosshai
       })
     }
   }, [map, mode])
+
+
 
   return (
     <Source id="toolbox" type="geojson" data={{

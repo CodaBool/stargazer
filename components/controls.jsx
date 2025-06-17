@@ -5,7 +5,7 @@ import MapboxDraw from "@hyvilo/maplibre-gl-draw"
 import { useEffect, useState } from 'react'
 import randomName from '@scaleway/random-name'
 import { useRouter } from 'next/navigation'
-import { hexToRgb, localGet, localSet, useStore } from '@/lib/utils'
+import { hexToRgb, localGet, localSet, useStore, isMobile } from '@/lib/utils'
 import { create } from 'zustand'
 
 export const useDraw = create(set => ({
@@ -19,6 +19,7 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
   const [saveTrigger, setSaveTrigger] = useState()
   const { setTutorial } = useStore()
   const [mapId, setMapId] = useState()
+  const mobile = isMobile()
   const draw = useDraw(d => d.draw)
   const setDraw = useDraw(d => d.setDraw)
   const setRecreateListeners = useDraw(d => d.setRecreateListeners)
@@ -56,9 +57,10 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
       r.onsuccess = () => {
 
         // if this is the first time, show a tutorial
-        if (Object.keys(r.result).length === 0 && !localStorage.getItem("noTutorial")) {
+        if (Object.keys(r.result).length === 0 && !localStorage.getItem("noTutorial") && !mobile) {
           setTutorial(true)
-          console.log("sent signal to open tutorial")
+          console.log("control")
+
         }
 
         const localMaps = r.result || {}
