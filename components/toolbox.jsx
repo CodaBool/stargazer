@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
-import { Layer, Source, useMap } from 'react-map-gl/maplibre'
+import { Layer, Source } from 'react-map-gl/maplibre'
 import * as turf from '@turf/turf'
-import { debounce, useMode, useStore, windowLocalGet } from '@/lib/utils'
+import { debounce, useMode, windowLocalGet } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 
 const linestring = {
@@ -14,12 +14,12 @@ const linestring = {
 let text, crosshairX, crosshairY
 
 // TODO: consider useMap
-export default function Toolbox({ map, width, height, mobile, name, initCrosshair, id, preview, IS_GALAXY, DISTANCE_CONVERTER }) {
+export default function Toolbox({ map, width, params, height, mobile, name, IS_GALAXY, DISTANCE_CONVERTER }) {
   const { mode, setMode } = useMode()
   const router = useRouter()
 
   function handleClick(e) {
-    if (mode !== "measure") return
+    if (mode !== "measure" || !map) return
 
     const features = map.queryRenderedFeatures(e.point, {
       layers: ['measure-points']
@@ -96,7 +96,7 @@ export default function Toolbox({ map, width, height, mobile, name, initCrosshai
 
   useEffect(() => {
     if (!map) return
-    if (initCrosshair && mode !== "crosshair" && !mode) {
+    if (params.get("c") && mode !== "crosshair" && !mode) {
       setMode("crosshair")
     }
 
@@ -161,7 +161,7 @@ export default function Toolbox({ map, width, height, mobile, name, initCrosshai
     // })
 
     const updateLiveDistance = debounce((e) => {
-      if (mode === "crosshair") return
+      if (mode === "crosshair" || !map) return
 
       const source = map.getSource('toolbox')
       if (!source) return
@@ -246,11 +246,16 @@ export default function Toolbox({ map, width, height, mobile, name, initCrosshai
       } else if (event.ctrlKey) {
         setMode(mode === "measure" ? null : "measure")
       } else if (event.code === "KeyP") {
-        if (preview) {
-          router.push(`/${name}?id=${id}`)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("preview")) {
+          router.push(`/${name}?id=${urlParams.get("id")}`)
         } else {
-          // TODO: breaks if no points
-          router.push(`/${name}?id=${id}&preview=1`)
+          // will break if the map doesn't exist, so let's check for it
+          windowLocalGet("maps").then(maps => {
+            if (maps.hasOwnProperty(`${name}-${urlParams.get("id")}`)) {
+              router.push(`/${name}?id=${urlParams.get("id")}&preview=1`)
+            }
+          })
         }
       }
     }

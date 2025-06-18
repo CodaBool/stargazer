@@ -1,4 +1,5 @@
 'use client';
+import { genLink } from "@/lib/utils";
 import { Badge } from "./ui/badge"
 
 const svgBase = "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/svg/";
@@ -43,7 +44,6 @@ export default function SolarSystemDiagram({ group, selectedId, map, name }) {
         <div className="flex items-baseline h-full space-x-6 px-4 justify-evenly">
           {group.map((body, index) => {
             const selected = body.id === selectedId
-            if (selected) console.log("picked", body.properties.name, selected)
             return (
               <div key={index} className="flex flex-col items-center relative min-w-[40px]">
                 <img
@@ -51,7 +51,7 @@ export default function SolarSystemDiagram({ group, selectedId, map, name }) {
                   alt={body.properties.name}
                   onClick={() => {
                     if (selected) {
-                      window.open('https://external-site.com', '_blank');
+                      window.open(genLink(body, name, "href"), '_blank');
                     } else {
                       panTo(body)
                     }
