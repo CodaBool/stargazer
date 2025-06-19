@@ -21,14 +21,14 @@ export default async function mapLobby({ params }) {
   if (id.length === 36) {
     const session = await getServerSession(authOptions)
     const user = session ? await db.user.findUnique({ where: { email: session.user.email } }) : null
-    if (!user) redirect('/')
+    if (!user) redirect('/?error=user%20not%20found')
     const cloud = await db.map.findUnique({
       where: {
         userId: user.id,
         id,
       },
     })
-    if (!cloud) redirect('/')
+    if (!cloud) redirect('/?error=map%20not%20found%20code%20a')
     const command = new GetObjectCommand({
       Bucket: "maps",
       Key: id,
@@ -37,7 +37,7 @@ export default async function mapLobby({ params }) {
     const response = await s3.send(command)
     // Read stream to buffer
     const r2Obj = await response.Body?.transformToString();
-    if (!r2Obj) redirect('/')
+    if (!r2Obj) redirect('/?error=map%20not%20found%20code%20b')
     const data = JSON.parse(r2Obj)
     const config = data.config
     const DEFAULTS = getConsts(map)

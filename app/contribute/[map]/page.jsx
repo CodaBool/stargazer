@@ -20,15 +20,22 @@ import {
 import { getConsts } from '@/lib/utils'
 
 import { Badge } from "@/components/ui/badge"
+import { redirect } from "next/navigation"
+import { CircleHelp, House, Plus } from "lucide-react"
 
 export default async function Contribute({ params, searchParams }) {
   const session = await getServerSession(authOptions)
   const { p: openLocationForm, v: variant } = await searchParams
   const { map } = await params
-  const { QUOTE } = getConsts(map)
+  const authURL = `/link?back=/contribute/${map}&callback=/contribute/${map}?p=1`
 
+  // unauthenticated and trying to create a location
+  if (openLocationForm && !session) {
+    redirect(authURL)
+  }
 
   // TODO: test if this will be a cached request for unauth requests
+  const { QUOTE } = getConsts(map)
   const user = session ? await db.user.findUnique({ where: { email: session.user.email } }) : null
   const isAdmin = user?.email === process.env.EMAIL
   const locations = await db.location.findMany({
@@ -47,10 +54,10 @@ export default async function Contribute({ params, searchParams }) {
     <div className="md:container mx-auto my-10 md:p-0 p-2">
       {openLocationForm
         ? <CreateLocation map={map} />
-        : <Link href={`/contribute/${map}?p=1`} ><Button variant="outline" className="w-full my-4 cursor-pointer">Create a new Location</Button ></Link>
+        : <Link href={session ? `/contribute/${map}?p=1` : authURL}><Button variant="outline" className="w-full my-1"><Plus /> Create a new Location</Button ></Link>
       }
       <Dialog>
-        <DialogTrigger className="rounded-md border border-slate-800 bg-slate-950 hover:bg-slate-800 hover:text-slate-50 h-10 w-full my-4 cursor-pointer">What is this?</DialogTrigger>
+        <DialogTrigger className="rounded-md border border-slate-800 bg-slate-950 hover:bg-slate-800 hover:text-slate-50 h-10 w-full my-4 cursor-pointer"><CircleHelp className="inline relative top-[-2px]" size={18} /> What is this?</DialogTrigger>
         <DialogContent className="sm:px-6 px-0  pr-2">
           <DialogHeader>
             <DialogTitle>Community driven data</DialogTitle>
@@ -91,14 +98,17 @@ export default async function Contribute({ params, searchParams }) {
         </DialogContent>
       </Dialog>
 
-      {(submissions.length > 0 && !isAdmin) &&
+      <Link href="/"><Button variant="outline" className="w-full my-1 mb-4"><House />Home</Button ></Link>
+
+      {
+        (submissions.length > 0 && !isAdmin) &&
         <>
           <h1 className="text-5xl text-center">Submissions</h1>
           <hr className="my-4" />
           <div className="flex flex-wrap justify-center">
             {submissions.map(location => {
               return (
-                <Card className="w-full  m-2 min-[392px]:w-[180px]" key={location.id}>
+                <Card className="w-full m-2 min-[392px]:w-[180px]" key={location.id}>
                   <Link href={`/contribute/${map}/${location.id}`} className="block h-full">
                     <CardContent className="p-2 m-0">
                       <p className="font-bold text-xl text-center overflow-hidden text-ellipsis">{location.name}</p>

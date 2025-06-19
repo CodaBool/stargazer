@@ -47,41 +47,41 @@ export default function Hamburger({ name, params, map, stargazer, mobile, IS_GAL
             {/* <DropdownMenuItem className="cursor-pointer"><Copyright /> License</DropdownMenuItem> */}
             {/* <DropdownMenuItem className="cursor-pointer"><Heart /> Credits</DropdownMenuItem> */}
             {name !== "custom" &&
-              <Dialog className="" >
+              <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="ghost" className="w-full pl-0 cursor-pointer">
                     <Heart size={16} className="relative top-[-1px] pe-[2px] inline left-[-6px]" />
                     <span className="left-[-2px] relative">Credits</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-[410px]" style={{ color: 'white' }} onInteractOutside={e => console.log("outside")}>
+                <DialogContent className="max-w-[410px]" style={{ color: 'white' }}>
                   <DialogHeader>
                     <DialogTitle className="text-center"><><Heart size={18} className="pe-[2px] animate-bounce inline mr-2" /> Credits</></DialogTitle>
-                    <DialogDescription className="py-6">
+                    <DialogDescription className="py-6" asChild>
                       <Credits name={name} />
                     </DialogDescription>
                   </DialogHeader>
                 </DialogContent>
               </Dialog>
             }
-            <a href="https://github.com/codabool/stargazer" target="_blank">
+            <Link href="https://github.com/codabool/stargazer" target="_blank">
               <DropdownMenuItem className="cursor-pointer">
                 <Github className="ml-[.6em]" /> <span className="ml-[5px]">GitHub</span>
               </DropdownMenuItem>
-            </a>
+            </Link>
             {name === "lancer" &&
-              <a href="/lancer_starwall">
+              <Link href="/lancer_starwall">
                 <DropdownMenuItem className="cursor-pointer">
                   <User className="ml-[.6em]" /> <span className="ml-[5px]">Variant</span>
                 </DropdownMenuItem>
-              </a>
+              </Link>
             }
             {name === "lancer_starwall" &&
-              <a href="/lancer">
+              <Link href="/lancer">
                 <DropdownMenuItem className="cursor-pointer">
                   <User className="ml-[.6em]" /> <span className="ml-[5px]">Core</span>
                 </DropdownMenuItem>
-              </a>
+              </Link>
             }
             {!mobile &&
               <DropdownMenuItem className="cursor-pointer" onClick={() => setTutorial(true)}>
@@ -97,11 +97,11 @@ export default function Hamburger({ name, params, map, stargazer, mobile, IS_GAL
                 </DropdownMenuItem>
               </Link>
             }
-            {!mobile && <Link href={`/#${name}_local`}>
+            <Link href={`/#${name}_local`}>
               <DropdownMenuItem className="cursor-pointer">
                 <House className="ml-[.6em] inline" /> <span className="ml-[5px]">Home</span>
               </DropdownMenuItem>
-            </Link>}
+            </Link>
             {(!stargazer && !mobile) &&
               <Link href={`/${name}?id=${params.get("id")}&preview=1`}>
                 <DropdownMenuItem className="cursor-pointer">
@@ -189,7 +189,7 @@ function Credits({ name }) {
       </span>
       <span className="text-center block text-[dimgray] mt-4">Created with <Heart size={14} className="inline" /> by <Link href={`/easteregg?redirect=${window?.location?.href || "/" + name}`} style={{ color: "#60677c" }}>CodaBool</Link></span>
       {name.includes("lancer") && <span className="text-center block text-[dimgray] mt-4">Stargazer is not an official Lancer product<br />Lancer is copyright Massif Press</span>}
-      <span className="ml-[9.7em]">
+      <span className="text-center">
         <Link href={`/legal?redirect=${window?.location?.href || "/" + name}`} className="hover:underline text-sm inline text-[#8A8A8A]">
           Full Disclaimer
         </Link>

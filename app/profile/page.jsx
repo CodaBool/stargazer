@@ -3,18 +3,16 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { getServerSession } from 'next-auth'
 import db from "@/lib/db"
 import { redirect } from 'next/navigation'
-import { Toaster } from "@/components/ui/sonner"
 
 export default async function Profile() {
+
+  // auth
   const session = await getServerSession(authOptions)
-  if (!session) redirect('/contribute')
+  if (!session) redirect('/link?back=/&callback=/profile')
   const user = await db.user.findUnique({ where: { email: session.user.email } })
-  if (!user) redirect('/contribute')
+  if (!user) redirect('/link?back=/&callback=/profile')
 
   return (
-    <>
-      <Toaster />
-      <ProfileForm user={user} />
-    </>
+    <ProfileForm user={user} />
   )
 }

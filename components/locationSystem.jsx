@@ -69,6 +69,7 @@ export default function SolarSystemDiagram({ group, selectedId, map, name }) {
                   {body.properties.name}
                 </div>
                 <div className="text-xs mt-2 text-center text-white opacity-80">
+                  {selected && <Badge variant="brightOrange" className="mx-auto">Selected</Badge>}
                   {body.properties.unofficial && <Badge variant="destructive" className="mx-auto">unofficial</Badge>}
                   {body.properties.faction && <Badge className="mx-auto">{body.properties.faction}</Badge>}
                   {body.properties.destroyed && <Badge className="mx-auto">destroyed</Badge>}

@@ -29,6 +29,13 @@ export default async function Location({ params, searchParams }) {
   const session = await getServerSession(authOptions)
   const { id, map } = await params
   const { c: commentFormOpen } = await searchParams
+  const authURL = `/link?back=/contribute/${map}/${id}&callback=/contribute/${map}/${id}?c=1`
+
+  // unauthenticated and trying to create a location
+  if (commentFormOpen && !session) {
+    redirect(authURL)
+  }
+
   const user = session ? await db.user.findUnique({ where: { email: session.user.email } }) : null
   const isAdmin = user?.email === process.env.EMAIL
 
@@ -173,9 +180,7 @@ export default async function Location({ params, searchParams }) {
         <CardFooter className="flex-col items-start mt-4 md:p-6 p-1">
           {commentFormOpen
             ? <CommentForm map={map} locationId={id} />
-            : session
-              ? <Link href={`/contribute/${map}/${id}/?c=1`} className="md:w-[150px] w-full"><Button variant="outline" className="md:w-[150px] w-full cursor-pointer">Create Comment</Button></Link>
-              : <Link href="/api/auth/signin" className="md:w-[150px] w-full"><Button variant="outline" className="md:w-[150px] w-full cursor-pointer">Create Comment</Button></Link>
+            : <Link href={session ? `/contribute/${map}/${id}/?c=1` : authURL} className="md:w-[150px] w-full"><Button variant="outline" className="md:w-[150px] w-full cursor-pointer">Create Comment</Button></Link>
           }
           <div className="w-full my-4">
             {location.comments.map(comment => {

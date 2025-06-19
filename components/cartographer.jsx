@@ -115,6 +115,7 @@ export default function Cartographer({ name, data, stargazer, fid, config }) {
           })
         }
         CONST_FINAL = JSON.parse(JSON.stringify(CONST));
+        // TODO: this tries to update state before mount. Should rethink this whole config init process
         if (!configRead) setConfigRead(true)
       }
     })

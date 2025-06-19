@@ -28,7 +28,6 @@ import { toast } from "sonner"
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useSession } from "next-auth/react"
 import { useForm } from "react-hook-form"
 import { LoaderCircle, X } from "lucide-react"
 import { useMemo, useState } from "react"
@@ -38,23 +37,9 @@ import 'react-quill-new/dist/quill.bubble.css'
 export default function CreateLocation({ map }) {
   // https://github.com/zenoamaro/react-quill/issues/921
   const Editor = useMemo(() => dynamic(() => import("react-quill-new"), { ssr: false }), [])
-  const { data: session, status } = useSession()
   const [submitting, setSubmitting] = useState()
   const router = useRouter()
   const form = useForm()
-
-  if (status === "unauthenticated") {
-    setTimeout(() => {
-      router.replace('/contribute')
-    }, 0)
-    return (
-      <LoaderCircle className="animate-spin mt-[48px] mx-auto" />
-    )
-  } else if (!session) {
-    return (
-      <LoaderCircle className="animate-spin mt-[48px] mx-auto" />
-    )
-  }
 
   async function submit(body) {
     body.map = map
@@ -91,7 +76,7 @@ export default function CreateLocation({ map }) {
                 <X />
               </Button>
             </div>
-            <CardDescription className="select-text">Add a new feature to the shared core map. To edit an existing location, select it below. For other issues submit on the <a className="text-blue-50" href="https://github.com/CodaBool/community-vtt-maps/issues" target="_blank">issues</a> page. Or DM <b>CodaBool</b> by searching in the <a href="https://discord.gg/foundryvtt" className="text-blue-50" target="_blank">FoundryVTT</a> Discord</CardDescription>
+            <CardDescription className="select-text">Add a new feature to the shared core map. To edit an existing location, select it below. For other issues submit on the <a className="text-blue-50" href="https://github.com/CodaBool/stargazer/issues" target="_blank">issues</a> page. Or DM <b>CodaBool</b> by searching in the <a href="https://discord.gg/foundryvtt" className="text-blue-50" target="_blank">FoundryVTT</a> Discord</CardDescription>
           </CardHeader>
           <CardContent>
             <FormField
@@ -105,9 +90,6 @@ export default function CreateLocation({ map }) {
                   <FormControl>
                     <Input placeholder="Name" {...field} className="font-mono" />
                   </FormControl>
-                  {/* <FormDescription>
-                    The location name
-                  </FormDescription> */}
                   <FormMessage />
                 </FormItem >
               )}

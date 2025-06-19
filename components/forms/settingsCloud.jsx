@@ -114,6 +114,12 @@ export default function MapSettings({ map, id, data, config }) {
       body.VIEW.maxBounds = body.MAX_BOUNDS.split(",").map(Number)
       delete body.MAX_BOUNDS
     }
+    if (body.MAX_ZOOM) {
+      body.MAX_ZOOM = Number(body.MAX_ZOOM)
+    }
+    if (body.MIN_ZOOM) {
+      body.MIN_ZOOM = Number(body.MIN_ZOOM)
+    }
 
 
     delete body.file
@@ -180,7 +186,13 @@ export default function MapSettings({ map, id, data, config }) {
           <CardContent>
             <FormField
               control={form.control}
-              rules={{ required: "Map name is required" }}
+              rules={{
+                required: "Map name is required",
+                maxLength: {
+                  value: 50,
+                  message: "Map name cannot exceed 50 characters",
+                },
+              }}
               name="name"
               defaultValue={data.name}
               render={({ field }) => (
@@ -199,7 +211,8 @@ export default function MapSettings({ map, id, data, config }) {
               name="CENTER"
               rules={{
                 validate: v => {
-                  return v.includes(',') && v.split(',').length === 2 && v.split(',').every(part => !isNaN(part.trim())) || "Value must be two numbers separated by a comma"
+                  const parts = v.split(",")
+                  return parts.length === 2 && parts.every(part => part.trim().length > 0 && !isNaN(part.trim())) || "This must be two numbers separated by a comma";
                 }
               }}
               defaultValue={data.config?.VIEW?.latitude ? [data.config?.VIEW?.latitude, data.config?.VIEW?.longitude].toString() : [VIEW.latitude, VIEW.longitude].toString()}
@@ -222,8 +235,8 @@ export default function MapSettings({ map, id, data, config }) {
               rules={{
                 validate: v => {
                   if (v === "" || typeof v === "undefined") return true
-                  const parts = v.split(',');
-                  return parts.length === 4 && parts.every(part => !isNaN(part.trim())) || "Value must be four numbers separated by commas"
+                  const parts = v.split(',')
+                  return parts.length === 4 && parts.every(part => part.trim().length > 0 && !isNaN(part.trim())) || "Value must be four numbers separated by commas"
                 }
               }}
               defaultValue={data.config?.VIEW?.maxBounds ? data.config?.VIEW?.maxBounds.toString() : VIEW.maxBounds?.toString()}
@@ -244,12 +257,12 @@ export default function MapSettings({ map, id, data, config }) {
               control={form.control}
               rules={{ validate: v => !isNaN(v) || "Value must be a number" }}
               name="ZOOM"
-              defaultValue={data.config?.VIEW?.zoom || VIEW.zoom}
+              defaultValue={typeof data.config?.VIEW?.zoom !== "undefined" ? data.config?.VIEW?.zoom : VIEW.zoom}
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Starting Zoom</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder={VIEW.zoom} {...field} />
+                    <Input type="range" min={0} max={24} step={0.1} {...field} />
                   </FormControl>
                   <FormDescription>
                     Controls the initial zoom level when first viewing the map (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#zoom">source</a>)
@@ -268,15 +281,15 @@ export default function MapSettings({ map, id, data, config }) {
                 }
               }}
               name="MAX_ZOOM"
-              defaultValue={data.config?.MAX_ZOOM || MAX_ZOOM}
+              defaultValue={typeof data.config?.MAX_ZOOM !== "undefined" ? data.config?.MAX_ZOOM : MAX_ZOOM}
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Maximum Zoom</FormLabel>
                   <FormControl>
-                    <Input placeholder={MAX_ZOOM} type="number" {...field} />
+                    <Input type="range" min={0} max={24} step={0.1} {...field} />
                   </FormControl>
                   <FormDescription>
-                    Limits how far in you can zoom (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#maxzoom">source</a>)
+                    Limits how far in you can zoom. Higher values allow users to zoom in more closely. Lower values limit users view further away from the map. (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#maxzoom">source</a>)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -292,15 +305,15 @@ export default function MapSettings({ map, id, data, config }) {
                 }
               }}
               name="MIN_ZOOM"
-              defaultValue={data.config?.MIN_ZOOM || MIN_ZOOM}
+              defaultValue={typeof data.config?.MIN_ZOOM !== "undefined" ? data.config?.MIN_ZOOM : MIN_ZOOM}
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Minimum Zoom</FormLabel>
                   <FormControl>
-                    <Input placeholder={MIN_ZOOM} type="number" {...field} />
+                    <Input type="range" min={0} max={24} step={0.1} {...field} />
                   </FormControl>
                   <FormDescription>
-                    Limits how far out you can zoom (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#minzoom">source</a>)
+                    Limits how far out you can zoom. Higher values limit users view closer to the map. Lower values allow users to zoom out further. (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#minzoom">source</a>)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -349,7 +362,7 @@ export default function MapSettings({ map, id, data, config }) {
               control={form.control}
               rules={{ validate: v => !isNaN(v) || "Value must be a number" }}
               name="DISTANCE_CONVERTER"
-              defaultValue={data.config?.DISTANCE_CONVERTER || DISTANCE_CONVERTER}
+              defaultValue={typeof data.config?.DISTANCE_CONVERTER ? data.config?.DISTANCE_CONVERTER : DISTANCE_CONVERTER}
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Unit Factor</FormLabel>

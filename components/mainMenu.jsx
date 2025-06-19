@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Settings, ArrowLeft, Heart, Map, Terminal, Plus, WifiOff, Cloud, ArrowRightFromLine, LogIn, Download, Link as Chain, Eye, Trash2, CloudUpload, Replace, X, CloudDownload, BookOpenCheck, Copy, Check, CloudOff, RefreshCcw, EyeOff, MapPin, Route, Landmark, Hexagon, Spline, Gavel, User } from 'lucide-react'
+import { Settings, ArrowLeft, Heart, Map, Terminal, Plus, WifiOff, Cloud, ArrowRightFromLine, LogIn, Download, Link as Chain, Eye, Trash2, CloudUpload, Replace, X, CloudDownload, BookOpenCheck, Copy, Check, CloudOff, RefreshCcw, EyeOff, MapPin, Route, Landmark, Hexagon, Spline, Gavel, User, Bug, DollarSign } from 'lucide-react'
 import { topology } from "topojson-server"
 import { toKML } from "@placemarkio/tokml"
 import {
@@ -59,24 +59,43 @@ import lancerTitle from '@/public/lancer_title.webp'
 import { toast } from "sonner"
 import StarsBackground from "@/components/ui/starbackground"
 import { useRouter } from 'next/navigation'
-import { combineAndDownload, combineLayers, combineLayersForTopoJSON, isMobile, localGet, localSet } from "@/lib/utils"
+import { animateText, combineAndDownload, combineLayers, combineLayersForTopoJSON, getDailyMenuQuote, isMobile, localGet, localSet } from "@/lib/utils"
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
-import PlanetBackground from '@/components/ui/PlanetBackground';
+import PlanetBackground from '@/components/ui/PlanetBackground'
 
 export default function Home({ revalidate, cloudMaps, user }) {
   const [hashParts, setHashParts] = useState()
   const [dialog, setDialog] = useState()
+  const [settingsDialog, setSettingsDialog] = useState()
+  const router = useRouter()
 
   useEffect(() => {
     // restore menu state
     const hash = window.location.hash
     if (hash) {
       setHashParts(hash.substring(1).split("_"))
-      setDialog(true)
+      if (hash === "#settings") {
+        setSettingsDialog(true)
+      } else {
+        setDialog(true)
+      }
     }
-    // console.log("cloud maps", cloudMaps)
+
+    // show any redirected to error message
+    const queryParams = new URLSearchParams(window.location.search);
+    const errorMsg = queryParams.get("error")
+    if (errorMsg) {
+      toast.warning(errorMsg)
+    }
+    setTimeout(() => animateText('quoteDisplay', getDailyMenuQuote(), 100, 1_000), 3_000)
   }, [])
+
+  useEffect(() => {
+    if (!dialog && window.location.hash && !settingsDialog) {
+      router.replace("")
+    }
+  }, [dialog, settingsDialog])
 
   return (
     <div className="fixed inset-0 overflow-hidden w-screen h-screen max-h-screen max-w-screen">
@@ -84,9 +103,12 @@ export default function Home({ revalidate, cloudMaps, user }) {
 
       {/* Settings Cog Dialog */}
       <div className="absolute top-4 right-4 z-50">
-        <Dialog>
+        <Dialog open={!!settingsDialog} onOpenChange={(open) => !open && setSettingsDialog(null)}>
           <DialogTrigger asChild>
-            <Button variant="ghost" className="md:w-20 md:h-20 w-16 h-16 p-0 m-0 cursor-pointer">
+            <Button variant="ghost" className="md:w-20 md:h-20 w-16 h-16 p-0 m-0 cursor-pointer" onClick={() => {
+              setSettingsDialog(true)
+              router.replace(`#settings`)
+            }}>
               <Settings className='md:w-16 md:h-16 h-8 w-[4em]' />
             </Button>
           </DialogTrigger>
@@ -109,15 +131,21 @@ export default function Home({ revalidate, cloudMaps, user }) {
                       <p className='text-sm text-gray-400'>Warning: this exposes your Stargazer account to some risk. All connected players and enabled modules in Foundry can read this value once entered. Local maps are always safe, this risk only applies to Cloud maps.</p>
                       <FoundryLink secret={user?.secret} />
                     </>
-                    : <h3 className='text-gray-300 text-center'>Provide an <Link href={`/api/auth/signin?callbackUrl=${typeof window !== "undefined" ? window.location.toString() : ""}`} className='text-blue-300'>email address</Link> to link to Foundry <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
+                    : <h3 className='text-gray-300 text-center'>Provide an <Link href={`/api/auth/signin?callbackUrl=${typeof window !== "undefined" ? window.location.toString() + "#settings" : ""}`} className='text-blue-300'>email address</Link> to link to Foundry <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
                   }
                 </PopoverContent>
               </Popover>
               <Link href="/legal">
                 <Button variant="scifi" className="w-full"><Gavel className="w-4 h-4" /> Legal</Button>
               </Link>
-              <Link href="/profile">
-                <Button variant="scifi" className="w-full mt-2"><User className="w-4 h-4" /> Account</Button>
+              <Link href="https://github.com/codabool/stargazer/issues" target="_blank">
+                <Button variant="scifi" className="w-full mt-2"><Bug className="w-4 h-4" /> Issues</Button>
+              </Link>
+              <Link href="https://ko-fi.com/codabool" target="_blank">
+                <Button variant="scifi" className="w-full my-2"><DollarSign className="w-4 h-4 relative top-[-2px]" /> Donate</Button>
+              </Link>
+              <Link href={user ? "/profile" : `/link?callback=/profile`}>
+                <Button variant="scifi" className="w-full"><User className="w-4 h-4" /> Account</Button>
               </Link>
             </div>
           </DialogContent>
@@ -133,6 +161,9 @@ export default function Home({ revalidate, cloudMaps, user }) {
           Stargazer
         </h1>
       </div>
+
+      {/* Quote subtext */}
+      <div className="absolute top-40 left-1/2 transform -translate-x-1/2 z-40 text-white opacity-80 text-xs" id="quoteDisplay" style={{ fontFamily: '"Press Start 2P", monospace' }}></div>
 
       {/* Lancer Dialog */}
       <div className="absolute md:bottom-20 bottom-45 left-1/2 transform -translate-x-1/2 z-40 space-y-4 text-center opacity-0 animate-[fade-in-up_1.2s_ease-out_forwards]">
@@ -153,171 +184,10 @@ export default function Home({ revalidate, cloudMaps, user }) {
   )
 }
 
-async function download(type, data) {
-  try {
-    let downloadData, finalFileType = "application/json"
-    if (data.map === "custom") {
-      const localGeojson = data.geojson
-      if (type === "geojson") {
-        downloadData = JSON.stringify(localGeojson)
-      } else if (type === "kml") {
-        const combinedGeojson = combineLayers([localGeojson]);
-        downloadData = toKML(combinedGeojson)
-        finalFileType = "application/vnd.google-earth.kml+xml"
-      } else if (type === "topojson") {
-        downloadData = JSON.stringify(topology(combineLayersForTopoJSON([localGeojson])))
-      }
-
-    } else {
-      const response = await fetch(`/api/download/${data.map}`)
-      const data = await response.json()
-      const localGeojson = data.geojson
-      const [finalData, fileType] = combineAndDownload(type, data, localGeojson)
-      downloadData = finalData
-      finalFileType = fileType
-    }
-
-    // Create and trigger file download
-    const blob = new Blob([downloadData], { type: finalFileType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${data.map}.${type}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  } catch (error) {
-    console.error("Error downloading map:", error);
-  }
-}
-
-function deleteMapLocal(localMaps, map, setLocalMaps) {
-  const updatedMaps = { ...localMaps }
-  delete updatedMaps[`${map.map}-${map.id}`]
-  localSet("maps", updatedMaps)
-  setLocalMaps(updatedMaps)
-}
-
-function deleteMapRemote(id, revalidate) {
-  fetch('/api/map', {
-    method: 'DELETE',
-    body: id,
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.error) {
-        toast.warning(data.error)
-      } else {
-        revalidate(`/`)
-        toast.success(`${data.map.name} deleted`)
-        // Optionally, you can add code here to update the UI after deletion
-      }
-    })
-    .catch(error => {
-      console.log(error)
-      toast.warning("A server error occurred")
-    })
-}
-
-function replaceRemoteMap(localMap, revalidate) {
-  fetch('/api/map', {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ geojson: localMap.geojson, id: localMap.id }),
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.error) {
-        toast.warning(data.error)
-      } else {
-        revalidate(`/`)
-        toast.success(`Cloud map for ${localMap.map} updated successfully`)
-      }
-    })
-    .catch(error => {
-      console.log(error)
-      toast.warning("A server error occurred")
-    })
-}
-
-function uploadMap(mapData, revalidate,) {
-  const body = JSON.stringify(mapData)
-  fetch('/api/map', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body,
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.error) {
-        toast.warning(data.error)
-      } else {
-        toast.success(`${data.map.map} map, ${data.map.name}, successfully uploaded`)
-        revalidate(`/`)
-      }
-    })
-    .catch(error => {
-      console.log(error)
-      toast.warning("A server error occurred")
-    });
-}
-
-async function saveLocally(map, setLocalMaps) {
-  const response = await fetch(`/api/map?id=${map.id}`)
-  const data = await response.json()
-  const parsed = JSON.parse(data)
-  const time = Date.now()
-  const key = `${map.map}-${time}`
-  localGet('maps').then(r => {
-    r.onsuccess = () => {
-      const newMaps = {
-        ...r.result || {}, [key]: {
-          geojson: parsed.geojson,
-          config: parsed.config || {},
-          name: map.name,
-          id: time,
-          updated: time,
-          map: map.map,
-        }
-      }
-      localSet("maps", newMaps)
-      setLocalMaps(newMaps)
-      toast.success(data.name + " saved locally")
-    }
-  })
-}
-
-function putMap(body, revalidate, setSelectedMap) {
-  fetch('/api/map', {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body),
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.error) {
-        toast.warning(data.error)
-      } else {
-        revalidate(`/`)
-        setSelectedMap(data.map)
-        toast.success(`"${data.map.name}" successfully updated. Changes may not take effect immediately`)
-      }
-    })
-    .catch(error => {
-      console.log(error)
-      toast.warning("A server error occurred")
-    })
-}
-
 const systems = ['lancer', 'custom']
-
 export function MainMenu({ cloudMaps, user, revalidate, hash }) {
+  // don't allow it to try and say settings are a system
+  if (hash) if (hash[0] === "settings") hash = []
   const [selectedSystem, setSelectedSystem] = useState(typeof hash === "object" ? hash[0] : null)
   const [selectedMap, setSelectedMap] = useState()
   const [localMaps, setLocalMaps] = useState()
@@ -451,7 +321,8 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
                   // console.log("text size", getSize(data.name))
                   return (
                     <Button variant="scifi" className="w-full m-0 p-0 my-1" onClick={() => setSelectedMap(data)} key={key}>
-                      {data.name}
+                      {data.name?.length > 20 ? `${data.name?.substring(0, 20)}...` : data.name}
+                      {/* {data.name} */}
                     </Button>
                   )
                 })}
@@ -472,8 +343,8 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
                   // console.log("data", data)
                   if (data.map !== selectedSystem) return null
                   return (
-                    <Button variant="scifi" className="w-full m-0 p-0 my-1" onClick={() => setSelectedMap(data)} key={data.id}>
-                      {data.name}
+                    <Button variant="scifi" className="w-full m-0 p-0 my-1 md:text-[.8em] text-[.6em]" onClick={() => setSelectedMap(data)} key={data.id}>
+                      {data.name?.length > 20 ? `${data.name?.substring(0, 20)}...` : data.name}
                     </Button>
                   )
                 })}
@@ -804,6 +675,168 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
   )
 }
 
+
+
+async function download(type, data) {
+  try {
+    let downloadData, finalFileType = "application/json"
+    if (data.map === "custom") {
+      const localGeojson = data.geojson
+      if (type === "geojson") {
+        downloadData = JSON.stringify(localGeojson)
+      } else if (type === "kml") {
+        const combinedGeojson = combineLayers([localGeojson]);
+        downloadData = toKML(combinedGeojson)
+        finalFileType = "application/vnd.google-earth.kml+xml"
+      } else if (type === "topojson") {
+        downloadData = JSON.stringify(topology(combineLayersForTopoJSON([localGeojson])))
+      }
+
+    } else {
+      const response = await fetch(`/api/download/${data.map}`)
+      const data = await response.json()
+      const localGeojson = data.geojson
+      const [finalData, fileType] = combineAndDownload(type, data, localGeojson)
+      downloadData = finalData
+      finalFileType = fileType
+    }
+
+    // Create and trigger file download
+    const blob = new Blob([downloadData], { type: finalFileType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${data.map}.${type}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch (error) {
+    console.error("Error downloading map:", error);
+  }
+}
+
+function deleteMapLocal(localMaps, map, setLocalMaps) {
+  const updatedMaps = { ...localMaps }
+  delete updatedMaps[`${map.map}-${map.id}`]
+  localSet("maps", updatedMaps)
+  setLocalMaps(updatedMaps)
+}
+
+function deleteMapRemote(id, revalidate) {
+  fetch('/api/map', {
+    method: 'DELETE',
+    body: id,
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.error) {
+        toast.warning(data.error)
+      } else {
+        revalidate(`/`)
+        toast.success(`${data.map.name} deleted`)
+        // Optionally, you can add code here to update the UI after deletion
+      }
+    })
+    .catch(error => {
+      console.log(error)
+      toast.warning("A server error occurred")
+    })
+}
+
+function replaceRemoteMap(localMap, revalidate) {
+  fetch('/api/map', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ geojson: localMap.geojson, id: localMap.id }),
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.error) {
+        toast.warning(data.error)
+      } else {
+        revalidate(`/`)
+        toast.success(`Cloud map for ${localMap.map} updated successfully`)
+      }
+    })
+    .catch(error => {
+      console.log(error)
+      toast.warning("A server error occurred")
+    })
+}
+
+function uploadMap(mapData, revalidate,) {
+  const body = JSON.stringify(mapData)
+  fetch('/api/map', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body,
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.error) {
+        toast.warning(data.error)
+      } else {
+        toast.success(`${data.map.map} map, ${data.map.name}, successfully uploaded`)
+        revalidate(`/`)
+      }
+    })
+    .catch(error => {
+      console.log(error)
+      toast.warning("A server error occurred")
+    });
+}
+
+async function saveLocally(map, setLocalMaps) {
+  const response = await fetch(`/api/map?id=${map.id}`)
+  const data = await response.json()
+  const time = Date.now()
+  const key = `${map.map}-${time}`
+  localGet('maps').then(r => {
+    r.onsuccess = () => {
+      const newMaps = {
+        ...r.result || {}, [key]: {
+          geojson: data.geojson,
+          config: data.config || {},
+          name: map.name,
+          id: time,
+          updated: time,
+          map: map.map,
+        }
+      }
+      localSet("maps", newMaps)
+      setLocalMaps(newMaps)
+      toast.success(data.name + " saved locally")
+    }
+  })
+}
+
+function putMap(body, revalidate, setSelectedMap) {
+  fetch('/api/map', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body),
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.error) {
+        toast.warning(data.error)
+      } else {
+        revalidate(`/`)
+        setSelectedMap(data.map)
+        toast.success(`"${data.map.name}" successfully updated. Changes may not take effect immediately`)
+      }
+    })
+    .catch(error => {
+      console.log(error)
+      toast.warning("A server error occurred")
+    })
+}
 
 
 function FoundryLink({ secret }) {

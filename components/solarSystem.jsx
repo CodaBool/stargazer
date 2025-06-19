@@ -102,6 +102,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
                 </div>
                 {body.source && (
                   <div className="text-xs mt-2 text-center text-white opacity-80">
+                    {selected && <Badge variant="brightOrange" className="mx-auto">Selected</Badge>}
                     {body.source.properties.unofficial && <Badge variant="destructive" className="mx-auto">unofficial</Badge>}
                     {body.source.properties.faction && <Badge className="mx-auto">{body.source.properties.faction}</Badge>}
                     {body.source.properties.destroyed && <Badge className="mx-auto">destroyed</Badge>}

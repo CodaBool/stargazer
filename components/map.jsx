@@ -501,7 +501,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
             "text-rotate": 25,
             "text-offset": [0, 1.3],
             "text-field": ['get', 'name'],
-            "text-size": 8,
+            "text-size": 11,
             "text-optional": false,
           }}
           paint={{

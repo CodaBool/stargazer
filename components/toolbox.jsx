@@ -11,7 +11,7 @@ const linestring = {
     'coordinates': []
   }
 }
-let text, crosshairX, crosshairY
+let text, tutorial, crosshairX, crosshairY
 
 // TODO: consider useMap
 export default function Toolbox({ map, width, params, height, mobile, name, IS_GALAXY, DISTANCE_CONVERTER }) {
@@ -74,7 +74,11 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
         const relativeTime = (distance / Math.sinh(Math.atanh(0.995))).toFixed(1);
         text.textContent = `${distance.toFixed(1)}ly | ${relativeTime} rel. years (.995u) | ${(distance / 0.995).toFixed(1)} observer years`;
       }
-      text.style.visibility = 'visible';
+      text.style.visibility = 'visible'
+
+      // show tutorial text now
+      tutorial.textContent = `Toggle measure off to reset`
+      tutorial.style.visibility = 'visible'
     }
 
     map.getSource('toolbox').setData(geojson)
@@ -133,6 +137,7 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
     crosshairY.style.transform = 'translateY(-50%)'
     mapboxChildrenParent.appendChild(crosshairY);
 
+    // output text
     text = document.createElement('div')
     text.className = 'textbox'
     text.style.position = 'absolute'
@@ -142,12 +147,29 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
     text.style.transform = 'translateX(-50%)';
     text.style.top = mobile ? '70px' : '90px'
     text.style.color = 'white'
-    text.style.opacity = 0.7
+    text.style.opacity = 0.8
     text.style.fontSize = mobile ? '1.5em' : '2.2em'
     text.style.pointerEvents = 'none'
     text.style.visibility = 'hidden'
     text.style.textAlign = 'center'
     mapboxChildrenParent.appendChild(text)
+
+    // tutorial text
+    tutorial = document.createElement('div')
+    tutorial.className = 'textbox'
+    tutorial.style.position = 'absolute'
+    tutorial.style.left = '50%';
+    tutorial.style.lineHeight = '1.4'
+    tutorial.style.zIndex = 2;
+    tutorial.style.transform = 'translateX(-50%)';
+    tutorial.style.top = mobile ? '160px' : '140px'
+    tutorial.style.color = 'white'
+    tutorial.style.opacity = 0.5
+    tutorial.style.fontSize = mobile ? '1.2em' : '1.8em'
+    tutorial.style.pointerEvents = 'none'
+    tutorial.style.visibility = 'hidden'
+    tutorial.style.textAlign = 'center'
+    mapboxChildrenParent.appendChild(tutorial)
 
     map.on('click', handleClick)
 
@@ -213,9 +235,6 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       map.on('mousemove', updateLiveDistance)
     }
 
-    // run once to make sure the crosshair is visible on start
-    // toggleMode(mode)
-
     const source = map.getSource('toolbox')
 
     // Clear all UI and mode state
@@ -237,6 +256,9 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       } else {
         text.textContent = `Lat: ${lat.toFixed(3)}° | Lng: ${lng.toFixed(3)}°`;
       }
+      text.style.visibility = 'visible'
+    } else if (mode === "measure") {
+      text.textContent = `${mobile ? 'Tap' : 'Click'} to begin measuring`
       text.style.visibility = 'visible'
     }
 
@@ -266,6 +288,7 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       mapboxChildrenParent.removeChild(crosshairX)
       mapboxChildrenParent.removeChild(crosshairY)
       mapboxChildrenParent.removeChild(text)
+      mapboxChildrenParent.removeChild(tutorial)
       window.removeEventListener("keydown", handleKeyDown)
       map.off('click', handleClick)
       map.off('move', handleMove)

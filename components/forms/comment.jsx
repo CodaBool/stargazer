@@ -17,7 +17,6 @@ import {
 import { toast } from "sonner"
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
-import { useSession, signIn } from "next-auth/react"
 import { useForm } from "react-hook-form"
 import { LoaderCircle, X } from "lucide-react"
 import { useMemo, useState } from "react"
@@ -27,7 +26,6 @@ import 'react-quill-new/dist/quill.bubble.css'
 
 export default function CreateComment({ map, locationId }) {
   const Editor = useMemo(() => dynamic(() => import("react-quill-new"), { ssr: false }), [])
-  const { data: session, status } = useSession()
   const [submitting, setSubmitting] = useState()
   const router = useRouter()
   const form = useForm()
@@ -52,17 +50,6 @@ export default function CreateComment({ map, locationId }) {
       console.error(response.error)
       toast.warning("Could not create a new comment at this time")
     }
-  }
-
-  if (status === "unauthenticated") {
-    signIn()
-    return (
-      <LoaderCircle className="animate-spin m-4" />
-    )
-  } else if (!session) {
-    return (
-      <LoaderCircle className="animate-spin m-4" />
-    )
   }
 
   return (
