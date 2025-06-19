@@ -23,7 +23,7 @@ import { useMode, useStore } from "@/lib/utils"
 
 // TODO: this should be rewritten to use zustand instead of a Set (called mode)
 
-export default function Hamburger({ name, params, map, stargazer, mobile, IS_GALAXY }) {
+export default function Hamburger({ name, params, map, stargazer, mobile }) {
   const { mode, setMode } = useMode()
   const { setTutorial } = useStore()
 
@@ -102,14 +102,14 @@ export default function Hamburger({ name, params, map, stargazer, mobile, IS_GAL
                 <House className="ml-[.6em] inline" /> <span className="ml-[5px]">Home</span>
               </DropdownMenuItem>
             </Link>
-            {(!stargazer && !mobile) &&
+            {(!params.get("preview") && !mobile && params.get("id")) &&
               <Link href={`/${name}?id=${params.get("id")}&preview=1`}>
                 <DropdownMenuItem className="cursor-pointer">
                   <Eye className="ml-[.6em] inline" /> <span className="ml-[5px]">Preview</span>
                 </DropdownMenuItem>
               </Link>
             }
-            {(stargazer && !mobile) &&
+            {(params.get("preview") && !mobile && params.get("id")) &&
               <Link href={`/${name}?id=${params.get("id")}`}>
                 <DropdownMenuItem className="cursor-pointer">
                   <Pencil className="ml-[.6em] inline" /> <span className="ml-[5px]">Edit</span>

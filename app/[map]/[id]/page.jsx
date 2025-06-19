@@ -96,5 +96,5 @@ export default async function mapLobby({ params }) {
     f.id = fid++
   })
 
-  return <Cartographer data={geojson} config={obj.config || {}} name={map} fid={fid} stargazer />
+  return <Cartographer data={geojson} config={obj.config || {}} name={map} fid={fid} stargazer={true} />
 }

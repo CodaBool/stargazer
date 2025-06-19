@@ -525,7 +525,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       <Sheet {...drawerContent} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GENERATE_LOCATIONS={GENERATE_LOCATIONS} />
 
       <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} />
-      {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} stargazer={stargazer} mobile={mobile} IS_GALAXY={IS_GALAXY} />}
+      {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} stargazer={stargazer} mobile={mobile} />}
     </>
   )
 }

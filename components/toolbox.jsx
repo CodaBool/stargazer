@@ -25,6 +25,8 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       layers: ['measure-points']
     })
 
+    // TODO: this will sometimes throw a map is undefined error, but returning early doesn't work
+    // test to find out what could be happening
     const geojson = map.getSource('toolbox')._data
 
     // Remove the linestring from the group
@@ -183,8 +185,10 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
     // })
 
     const updateLiveDistance = debounce((e) => {
-      if (mode === "crosshair" || !map) return
+      if (mode === "crosshair") return
 
+      // TODO: this will sometimes throw a map is undefined error, but returning early doesn't work
+      // test to find out what could be happening
       const source = map.getSource('toolbox')
       if (!source) return
       const geojson = source._data
@@ -258,7 +262,7 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       }
       text.style.visibility = 'visible'
     } else if (mode === "measure") {
-      text.textContent = `${mobile ? 'Tap' : 'Click'} to begin measuring`
+      text.textContent = `${mobile ? 'Tap two points' : 'Click'} to begin measuring`
       text.style.visibility = 'visible'
     }
 

@@ -24,7 +24,6 @@ export default function Cartographer({ name, data, stargazer, fid, config }) {
   CONST.VIEW.longitude = params.get("lng") || CONST.VIEW.longitude
   CONST.VIEW.latitude = params.get("lat") || CONST.VIEW.latitude
   const locked = params.get("locked") === "1"
-  if (params.get("preview")) stargazer = true
   const showControls = params.get("controls") !== "0" && !mobile && !stargazer && !locked
   const showEditor = params.get("editor") !== "0" && !mobile && !stargazer && !locked
 

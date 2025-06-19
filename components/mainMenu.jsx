@@ -163,7 +163,7 @@ export default function Home({ revalidate, cloudMaps, user }) {
       </div>
 
       {/* Quote subtext */}
-      <div className="absolute top-40 left-1/2 transform -translate-x-1/2 z-40 text-white opacity-80 text-xs" id="quoteDisplay" style={{ fontFamily: '"Press Start 2P", monospace' }}></div>
+      <div className="absolute top-40 left-1/2 transform -translate-x-1/2 z-40 text-white opacity-50 text-xs text-center" id="quoteDisplay" style={{ fontFamily: '"Press Start 2P", monospace' }}></div>
 
       {/* Lancer Dialog */}
       <div className="absolute md:bottom-20 bottom-45 left-1/2 transform -translate-x-1/2 z-40 space-y-4 text-center opacity-0 animate-[fade-in-up_1.2s_ease-out_forwards]">
