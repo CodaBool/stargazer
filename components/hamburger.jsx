@@ -194,11 +194,13 @@ function Credits({ name }) {
       }
 
       {name.includes("lancer") && <span className="text-center block text-[dimgray] mt-4">{TITLE} is not an official Lancer product<br />Lancer is copyright Massif Press</span>}
-      <span className="text-center">
-        <Link href={`/legal?redirect=${window?.location?.href || "/" + name}`} className="hover:underline text-sm inline text-[#8A8A8A]">
-          Full Disclaimer
-        </Link>
-      </span>
+      {REPO &&
+        <span className="text-center">
+          <Link href={`/legal?redirect=${window?.location?.href || "/" + name}`} className="hover:underline text-sm inline text-[#8A8A8A]">
+            Full Disclaimer
+          </Link>
+        </span>
+      }
     </>
   )
 }

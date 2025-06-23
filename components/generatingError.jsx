@@ -1,5 +1,5 @@
 export const dynamic = 'force-static'
-import { USER } from '@/lib/utils'
+import { USER, REPO } from '@/lib/utils'
 import { ArrowLeft, Clock, Clock12, Github, Mail, MessageCircle } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
