@@ -80,7 +80,6 @@ export default function SharedSettings({
                 </Button>
               </Link>
             </div>
-            {/* <CardDescription className="select-text"> <a className="text-blue-50" href="https://github.com/CodaBool/community-vtt-maps/issues" target="_blank">issues</a> page. Or DM <b>CodaBool</b> by searching in the <a href="https://discord.gg/foundryvtt" className="text-blue-50" target="_blank">FoundryVTT</a> Discord</CardDescription> */}
           </CardHeader>
           <CardContent>
             <FormField
@@ -483,9 +482,15 @@ export default function SharedSettings({
 
                             // fill required data
                             fileData.features.forEach(f => {
-                              const availableTypes = Object.keys(TYPES).filter(t =>
-                                f.geometry.type.toLowerCase() === t.split(".")[1]
-                              ).map(t => t.split(".")[0])
+
+                              // TYPES: {
+                              //   "polygon": ["sector", "cluster", "nebulae"],
+                              //   "point": ["station", "jovian", "moon", "terrestrial", "desert planet", "ocean planet", "barren planet", "ice planet", "asteroid", "lava planet", "ringed planet", "gate", "red dwarf", "orange star", "yellow star", "white dwarf", "red giant", "red supergiant", "blue giant", "blue supergiant", "red star", "blue star", "black hole", "wormhole", "exoplanet", "neutron star", "comet"],
+                              //   "linestring": ["guide", "hyperspace"],
+                              // },
+
+                              const availableTypes = TYPES[f.geometry.type.toLowerCase().trim()]
+
                               if (!f.properties.name) {
                                 f.properties.name = randomName('', ' ')
                               }

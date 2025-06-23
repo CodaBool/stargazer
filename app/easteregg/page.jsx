@@ -1,8 +1,11 @@
+import { TITLE, USER } from '@/lib/utils'
 import { ArrowLeft, Heart, Map, Terminal } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { redirect as replace } from "next/navigation"
 
 export default async function Page({ searchParams }) {
+  if (TITLE !== "Stargazer") replace("/")
   const { redirect } = await searchParams
   const redirectUrl = redirect || '/'
 
@@ -19,7 +22,7 @@ export default async function Page({ searchParams }) {
       <Link href={redirectUrl} className="mb-4">
         <ArrowLeft size={42} />
       </Link>
-      <h1 className='text-gray-500'>Made with <Heart size={16} className="inline text-black animate-pulse" fill="red" /> by <a href="https://codabool.com" className='text-black' target='_blank'>CodaBool</a></h1>
+      <h1 className='text-gray-500'>Made with <Heart size={16} className="inline text-black animate-pulse" fill="red" /> by <a href="https://codabool.com" className='text-black' target='_blank'>{USER}</a></h1>
       <h3 className='text-gray-500'>Other Creations:</h3>
       <a href="https://codabool.itch.io/terminal" className='my-4 text-2xl' target="_blank"><Terminal className='inline' /> Terminal</a>
       <a href="https://codabool.itch.io/maps-in-cyberspace" className='my-4 text-2xl' target="_blank"><Map className='inline' /> Maps in Cyberspace</a>

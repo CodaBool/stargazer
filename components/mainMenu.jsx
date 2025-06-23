@@ -55,16 +55,17 @@ import {
   CardFooter
 } from '@/components/ui/card'
 import Image from 'next/image'
-import lancerTitle from '@/public/lancer_title.webp'
 import { toast } from "sonner"
 import StarsBackground from "@/components/ui/starbackground"
 import { useRouter } from 'next/navigation'
-import { animateText, combineAndDownload, combineLayers, combineLayersForTopoJSON, getDailyMenuQuote, isMobile, localGet, localSet } from "@/lib/utils"
+import { animateText, combineAndDownload, combineLayers, combineLayersForTopoJSON, getDailyMenuQuote, isMobile, localSet, TITLE, REPO, USER, getMaps } from "@/lib/utils"
+
+// import { animateText, combineAndDownload, combineLayers, combineLayersForTopoJSON, getDailyMenuQuote, localSet, TITLE, REPO, USER, getMaps } from "@/lib/utils"
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import PlanetBackground from '@/components/ui/PlanetBackground'
 
-export default function Home({ revalidate, cloudMaps, user }) {
+export default function Home({ revalidate, cloudMaps, user, systems }) {
   const [hashParts, setHashParts] = useState()
   const [dialog, setDialog] = useState()
   const [settingsDialog, setSettingsDialog] = useState()
@@ -115,7 +116,7 @@ export default function Home({ revalidate, cloudMaps, user }) {
           <DialogContent scifi={true} >
             <DialogTitle></DialogTitle>
             <DialogHeader>
-              <DialogTitle className="text-cyan-400">Stargazer</DialogTitle>
+              <DialogTitle className="text-cyan-400">Settings</DialogTitle>
             </DialogHeader>
             <DialogDescription />
             <div className="space-y-2 mt-6">
@@ -126,9 +127,9 @@ export default function Home({ revalidate, cloudMaps, user }) {
                 <PopoverContent className="flex flex-col w-[385px]">
                   {user
                     ? <>
-                      <p className='mb-3 text-gray-200'>Link Foundry to your Stargazer account by pasting this secret into the module settings</p>
+                      <p className='mb-3 text-gray-200'>Link to your FoundryVTT by pasting this secret into the module settings</p>
                       <hr className='border my-2 border-gray-500' />
-                      <p className='text-sm text-gray-400'>Warning: this exposes your Stargazer account to some risk. All connected players and enabled modules in Foundry can read this value once entered. Local maps are always safe, this risk only applies to Cloud maps.</p>
+                      <p className='text-sm text-gray-400'>Warning: this exposes your account to some risk. All connected players and enabled modules in Foundry can read this value once entered. Local maps are always safe, this risk only applies to Cloud maps.</p>
                       <FoundryLink secret={user?.secret} />
                     </>
                     : <h3 className='text-gray-300 text-center'>Provide an <Link href={`/api/auth/signin?callbackUrl=${typeof window !== "undefined" ? window.location.toString() + "#settings" : ""}`} className='text-blue-300'>email address</Link> to link to Foundry <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
@@ -138,34 +139,38 @@ export default function Home({ revalidate, cloudMaps, user }) {
               <Link href="/legal">
                 <Button variant="scifi" className="w-full"><Gavel className="w-4 h-4" /> Legal</Button>
               </Link>
-              <Link href="https://github.com/codabool/stargazer/issues" target="_blank">
-                <Button variant="scifi" className="w-full mt-2"><Bug className="w-4 h-4" /> Issues</Button>
-              </Link>
-              <Link href="https://ko-fi.com/codabool" target="_blank">
-                <Button variant="scifi" className="w-full my-2"><DollarSign className="w-4 h-4 relative top-[-2px]" /> Donate</Button>
-              </Link>
+              {REPO &&
+                <Link href={`${REPO}/issues`} target="_blank">
+                  <Button variant="scifi" className="w-full mt-2"><Bug className="w-4 h-4" /> Issues</Button>
+                </Link>
+              }
+              {(USER && REPO) &&
+                <Link href={`https://ko-fi.com/${USER}`} target="_blank">
+                  <Button variant="scifi" className="w-full mt-2"><DollarSign className="w-4 h-4 relative top-[-2px]" /> Donate</Button>
+                </Link>
+              }
               <Link href={user ? "/profile" : `/link?callback=/profile`}>
-                <Button variant="scifi" className="w-full"><User className="w-4 h-4" /> Account</Button>
+                <Button variant="scifi" className="w-full mt-2"><User className="w-4 h-4" /> Account</Button>
               </Link>
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Stargazer Title */}
+      {/* Title */}
       <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-40">
         <h1
           className={`text-4xl md:text-6xl font-extrabold text-white drop-shadow-lg opacity-0 animate-[fade-in-down_3s_ease-out_forwards]`}
           style={{ fontFamily: '"Press Start 2P", monospace' }}
         >
-          Stargazer
+          {TITLE}
         </h1>
       </div>
 
       {/* Quote subtext */}
       <div className="absolute top-40 left-1/2 transform -translate-x-1/2 z-40 text-white opacity-50 text-xs text-center" id="quoteDisplay" style={{ fontFamily: '"Press Start 2P", monospace' }}></div>
 
-      {/* Lancer Dialog */}
+      {/* Menu Dialog */}
       <div className="absolute md:bottom-20 bottom-45 left-1/2 transform -translate-x-1/2 z-40 space-y-4 text-center opacity-0 animate-[fade-in-up_1.2s_ease-out_forwards]">
         <Dialog open={!!dialog} onOpenChange={(open) => !open && setDialog(null)}>
           <DialogTrigger asChild>
@@ -176,7 +181,7 @@ export default function Home({ revalidate, cloudMaps, user }) {
           <DialogContent className="md:max-w-[610px] md:min-w-[620px] md:max-h-[430px] md:min-h-[430px]" scifi={true}>
             <DialogDescription />
             <DialogTitle />
-            <MainMenu cloudMaps={cloudMaps} revalidate={revalidate} user={user} hash={hashParts || []} />
+            <MainMenu cloudMaps={cloudMaps} revalidate={revalidate} user={user} hash={hashParts || []} systems={systems} />
           </DialogContent>
         </Dialog>
       </div>
@@ -184,8 +189,7 @@ export default function Home({ revalidate, cloudMaps, user }) {
   )
 }
 
-const systems = ['lancer', 'custom']
-export function MainMenu({ cloudMaps, user, revalidate, hash }) {
+export function MainMenu({ cloudMaps, user, revalidate, hash, systems }) {
   // don't allow it to try and say settings are a system
   if (hash) if (hash[0] === "settings") hash = []
   const [selectedSystem, setSelectedSystem] = useState(typeof hash === "object" ? hash[0] : null)
@@ -195,15 +199,15 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
   const router = useRouter()
 
   useEffect(() => {
-    localGet('maps').then(r => r.onsuccess = () => {
-      setLocalMaps(r.result || {})
+    getMaps().then(maps => {
+      setLocalMaps(maps)
       // restore session
       if (typeof hash !== "object") return
       if (hash[2]) {
         if (hash[2].length === 36) {
           setSelectedMap((cloudMaps || []).find(m => m.id === hash[2]))
         } else {
-          setSelectedMap(Object.values(r.result).find(m => m.id === Number(hash[2])))
+          setSelectedMap(Object.values(maps).find(m => m.id === Number(hash[2])))
         }
       }
     })
@@ -272,7 +276,7 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
               <PopoverContent className="flex flex-col w-80 bg-black/80 border border-cyan-400 text-white">
                 <p className='mb-3 text-gray-200'>Download the base {selectedSystem} map features. Your added locations will not be included.</p>
                 <hr className='border my-2 border-gray-500' />
-                <p className='my-2 text-gray-300'>Topojson is a newer version of Geojson, and the recommended format for Stargazer</p>
+                <p className='my-2 text-gray-300'>Topojson is a newer version of Geojson, and the recommended format for {TITLE}</p>
                 <Link href={`/api/download/${selectedSystem}`}>
                   <Button className="cursor-pointer w-full" variant="secondary">
                     <ArrowRightFromLine className="ml-[.6em] inline" /> Topojson
@@ -350,30 +354,17 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
                 })}
               </div>
             }
-
           </TabsContent>
         </Tabs>
       )}
 
       {/* Systems view */}
       {!selectedSystem && (
-        <div className="flex flex-wrap gap-2 justify-evenly mt-8">
+        <div className="flex flex-wrap gap-2 justify-evenly mt-8 max-h-[330px] overflow-auto">
           {systems.map((system) => (
             <div key={system}>
-              {system === "lancer"
+              {system === "custom"
                 ?
-                <Card className="max-w-[250px] cursor-pointer lg:max-w-[269px] rounded-xl m-1" onClick={() => setSelectedSystem(system)}>
-                  <CardContent className="p-2">
-                    <StarsBackground>
-                      <Image
-                        src={lancerTitle}
-                        alt="Lancer Map"
-                        className="hover-grow rounded-xl"
-                      />
-                    </StarsBackground>
-                  </CardContent>
-                </Card>
-                :
                 <Card className="max-w-[250px] cursor-pointer lg:max-w-[269px] rounded-xl m-1" onClick={() => setSelectedSystem(system)}>
                   <CardContent className="p-2">
                     <StarsBackground>
@@ -385,6 +376,20 @@ export function MainMenu({ cloudMaps, user, revalidate, hash }) {
                     </StarsBackground>
                   </CardContent>
                 </Card >
+                :
+                <Card className="max-w-[250px] cursor-pointer lg:max-w-[269px] rounded-xl m-1" onClick={() => setSelectedSystem(system)}>
+                  <CardContent className="p-2">
+                    <StarsBackground>
+                      <Image
+                        src={`/systems/${system}.webp`}
+                        alt={system}
+                        width={200}
+                        height={200}
+                        className="hover-grow rounded-xl"
+                      />
+                    </StarsBackground>
+                  </CardContent>
+                </Card>
               }
             </div>
           ))}
@@ -433,7 +438,7 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
                       <Button variant="scifi" className="w-full" onClick={() => navigator.clipboard.writeText(data.id)}>
                         <Copy className="mr-2" /> Copy ID
                       </Button>
-                      <Button variant="scifi" className="w-full mt-[.25em]" onClick={() => navigator.clipboard.writeText(`https://stargazer.vercel.app/${data.map}/${data.id}`)}>
+                      <Button variant="scifi" className="w-full mt-[.25em]" onClick={() => navigator.clipboard.writeText(`${NEXT_PUBLIC_URL}/${data.map}/${data.id}`)}>
                         <Copy className="mr-2" /> Copy URL
                       </Button>
                     </div>
@@ -562,7 +567,7 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
                   <hr className="border my-2 border-gray-500" />
                 </>
               }
-              <p className="my-2 text-gray-300">Topojson is a newer version of Geojson, and the recommended format for Stargazer</p>
+              <p className="my-2 text-gray-300">Topojson is a newer version of Geojson, and the recommended format for {TITLE}</p>
               <Button className="cursor-pointer w-full" variant="secondary" onClick={() => download("topojson", data)}>
                 <ArrowRightFromLine className="mr-2" /> Topojson
               </Button>
@@ -795,23 +800,20 @@ async function saveLocally(map, setLocalMaps) {
   const data = await response.json()
   const time = Date.now()
   const key = `${map.map}-${time}`
-  localGet('maps').then(r => {
-    r.onsuccess = () => {
-      const newMaps = {
-        ...r.result || {}, [key]: {
-          geojson: data.geojson,
-          config: data.config || {},
-          name: map.name,
-          id: time,
-          updated: time,
-          map: map.map,
-        }
-      }
-      localSet("maps", newMaps)
-      setLocalMaps(newMaps)
-      toast.success(data.name + " saved locally")
+  const local = await getMaps()
+  const maps = {
+    ...local, [key]: {
+      geojson: data.geojson,
+      config: data.config || {},
+      name: map.name,
+      id: time,
+      updated: time,
+      map: map.map,
     }
-  })
+  }
+  localSet("maps", maps)
+  setLocalMaps(maps)
+  toast.success(data.name + " saved locally")
 }
 
 function putMap(body, revalidate, setSelectedMap) {

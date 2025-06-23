@@ -24,7 +24,9 @@ const nextConfig = {
   // experimental: {
   //   // outputFileTracingRoot: path.join(__dirname),
   //   outputFileTracingIncludes: {
-  //     "/app/[map]/topojson": ["./app/[map]/topojson/**/*"]
+  //     "/app/[map]": ["./app/[map]/topojson/*.json"],
+  //     "/app/[map]/**": ["./app/[map]/topojson/*.json"],
+  //     "/": ["./app/[map]/topojson/*.json"],
   //   }
   // }
 };

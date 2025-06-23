@@ -14,7 +14,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { useEffect, useState } from "react"
-import { isMobile, useStore, windowLocalGet } from "@/lib/utils"
+import { isMobile, useStore, getMaps, TITLE } from "@/lib/utils"
 
 export default function Tutorial({ IS_GALAXY, name }) {
   const { tutorial, setTutorial } = useStore()
@@ -31,7 +31,7 @@ export default function Tutorial({ IS_GALAXY, name }) {
 
   // if this is the first time, show a tutorial
   useEffect(() => {
-    windowLocalGet("maps").then(maps => {
+    getMaps().then(maps => {
       if (Object.keys(maps).length === 0 && !localStorage.getItem("noTutorial") && !tutorial && !mobile) {
         setTutorial(true)
       }
@@ -45,7 +45,7 @@ export default function Tutorial({ IS_GALAXY, name }) {
           <DialogTitle><CircleHelp className="inline" size={18} /> Tutorial</DialogTitle>
           <DialogDescription asChild>
             <div>
-              <h1 className="text-2xl text-gray-200">Welcome to Stargazer!</h1>
+              <h1 className="text-2xl text-gray-200">Welcome to {TITLE}!</h1>
               {mobile
                 ? <p className="my-8">Unfortunately many features are not available on mobile. Please visit the website on desktop to view the full capabilities.</p>
                 : <>
@@ -93,7 +93,7 @@ export default function Tutorial({ IS_GALAXY, name }) {
                   <Collapsible>
                     <CollapsibleTrigger>How can I integrate with FoundryVTT?</CollapsibleTrigger>
                     <CollapsibleContent className="text-white my-4">
-                      <h3 className="text-lg">Stargazer</h3>
+                      <h3 className="text-lg">{TITLE}</h3>
                       <ol className="list-decimal">
                         <li>copy your account secret found at the home page, by clicking the cog icon.</li>
                       </ol>

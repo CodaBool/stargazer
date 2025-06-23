@@ -9,10 +9,8 @@ import {
 import ThreejsPlanet from "./threejsPlanet";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { genLink } from "@/lib/utils";
+import { genLink, getIcon, SVG_BASE } from "@/lib/utils";
 import Link from "next/link";
-
-const svgBase = "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/svg/";
 
 let sharedRenderer = null;
 let sharedCanvas = null;
@@ -57,16 +55,28 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
     )
   }
 
+  function getFilter(body) {
+    if (body.source?.name === "competent burnell")
+      if (body.source) {
+        if (body.source.stroke) {
+          return `drop-shadow(0 0 6px ${body.source.stroke})`
+        } else if (body.source.fill) {
+          return `drop-shadow(0 0 6px ${body.source.fill})`
+        }
+      }
+    return body.tint ? `drop-shadow(0 0 6px ${body.tint})` : undefined
+  }
+
   return (
     <>
       <div className="w-full overflow-x-auto overflow-y-visible py-2">
         <div className="flex items-baseline h-full space-x-6 px-4 justify-evenly">
           {group.map((body, index) => {
-            const selected = body.source?.id === selectedId
+            const selected = (body.source?.id === selectedId) && typeof selectedId !== "undefined"
             return (
               <div key={index} className="flex flex-col items-center relative min-w-[40px]">
                 <img
-                  src={`${isGalaxy ? svgBase + "lancer/" + (body.ringed ? "ringed_planet" : body.type) + ".svg" : svgBase + "lancer/moon.svg"}`}
+                  src={getIcon(body.source, body.type, name)}
                   alt={body.name}
                   onClick={() => setActiveBody(body)}
                   onMouseOver={() => handleMouseOver(body.source)}
@@ -75,13 +85,13 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
                   style={{
                     width: 40 + "px",
                     height: 40 + "px",
-                    filter: body.tint ? `drop-shadow(0 0 6px ${body.tint})` : undefined,
+                    filter: getFilter(body),
                   }}
                 />
                 {body.moons?.length > 0 && (
                   <div className="mt-2 flex flex-col items-center">
                     <img
-                      src={svgBase + "lancer/moon.svg"}
+                      src={SVG_BASE + "lancer/moon.svg"}
                       className="hover-grow-xl cursor-pointer"
                       onClick={() => {
                         if (body.moons.length === 1) {
@@ -135,12 +145,12 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
                 // console.log("display moon", moon)
                 return (
                   <img
-                    src={svgBase + "lancer/" + moon.type + ".svg"}
+                    src={getIcon(moon.source, moon.type, name)}
                     alt={moon.name}
                     key={i}
                     onClick={() => setActiveBody(moon)}
                     style={{
-                      filter: moon.tint ? `drop-shadow(0 0 6px ${moon.tint})` : undefined,
+                      filter: getFilter(moon),
                       cursor: "pointer",
                       maxWidth: "50px", // Ensure images are small by default
                       margin: "8px", // Margins for spacing between images
@@ -166,7 +176,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
               maxHeight: "98vh",
             }}
           >
-            <DialogTitle>{(activeBody.name || "") + `${activeBody.variant ? ` (${activeBody.variant})` : ""}`} - {activeBody.type}</DialogTitle>
+            <DialogTitle>{(activeBody.name || "") + `${activeBody.variant ? ` (${activeBody.variant})` : ""}`} - {activeBody.type.replaceAll("_", " ")}</DialogTitle>
             <ThreejsPlanet
               sharedCanvas={sharedCanvas}
               sharedRenderer={sharedRenderer}
@@ -206,8 +216,8 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
               ? <div className="absolute top-[85px] left-[40px] flex flex-col items-center">
                 <Link href={genLink(activeBody.source, name, "href")} className="mb-2">
                   {name === "lancer" && <Button className="cursor-pointer rounded" variant="outline">Contribute</Button>}
-                  {name === "postwar" && <Button className="cursor-pointer">Wiki</Button>}
-                  {name === "mousewars" && <Button className="cursor-pointer">Wiki</Button>}
+                  {name === "fallout" && <Button className="cursor-pointer">Wiki</Button>}
+                  {name === "starwars" && <Button className="cursor-pointer">Wiki</Button>}
                 </Link>
                 <div className="pointer-events-none">
                   {activeBody.source.properties.unofficial && <Badge variant="destructive" className="">unofficial</Badge>}
@@ -231,10 +241,10 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
                 </div>
               </div>
               : <div className="absolute top-[35px] flex flex-col text-xs pointer-events-none md:text-sm md:left-[35px] md:top-[65px] left-[18px]">
-                {(typeof activeBody.cloud === "number" && (activeBody.type === "terrestrial" || activeBody.type === "ice")) && <p variant="destructive" className="mt-2">{(1 - activeBody.cloud).toFixed(1) * 100} cloud coverage %</p>}
-                {(typeof activeBody.hydrosphere === "number" && activeBody.type !== "ice") && <p className="mt-2">{activeBody.hydrosphere.toFixed(1) * 100} hydrosphere %</p>}
-                {(typeof activeBody.hydrosphere === "number" && activeBody.type === "ice") && <p className="mt-2">{(1 - activeBody.ice).toFixed(1) * 100} hydrosphere %</p>}
-                {typeof activeBody.ice === "number" && activeBody.type === "ice" && <p variant="destructive" className="mt-2">{activeBody.ice.toFixed(1)} ice coverage %</p>}
+                {(typeof activeBody.cloud === "number" && (activeBody.type === "terrestrial" || activeBody.type === "ice_planet")) && <p variant="destructive" className="mt-2">{(1 - activeBody.cloud).toFixed(1) * 100} cloud coverage %</p>}
+                {(typeof activeBody.hydrosphere === "number" && activeBody.type !== "ice_planet") && <p className="mt-2">{activeBody.hydrosphere.toFixed(1) * 100} hydrosphere %</p>}
+                {(typeof activeBody.hydrosphere === "number" && activeBody.type === "ice_planet") && <p className="mt-2">{(1 - activeBody.ice).toFixed(1) * 100} hydrosphere %</p>}
+                {typeof activeBody.ice === "number" && activeBody.type === "ice_planet" && <p variant="destructive" className="mt-2">{activeBody.ice.toFixed(1)} ice coverage %</p>}
                 {typeof activeBody.radius === "number" && <p variant="destructive" className="mt-2">{activeBody.radius.toFixed(2)} {activeBody.type === "star" ? "solar radii" : "km radius"}</p>}
                 {typeof activeBody.temperature === "number" && <p variant="destructive" className="mt-2">{activeBody.temperature}°C</p>}
                 {typeof activeBody.dominantChemical === "string" && <p variant="destructive" className="mt-2">Dominant Chemical: {activeBody.dominantChemical}</p>}

@@ -34,7 +34,6 @@ model Location {
   userId      String
   published   Boolean   @default(false)
   capital     Boolean   @default(false)
-  label       Boolean   @default(false)
   destroyed   Boolean   @default(false)
   resolved    Boolean   @default(false)
   unofficial  Boolean   @default(false)

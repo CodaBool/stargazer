@@ -1,4 +1,5 @@
 export const dynamic = 'force-static'
+import { USER } from '@/lib/utils'
 import { ArrowLeft, Clock, Clock12, Github, Mail, MessageCircle } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -31,9 +32,9 @@ export default function NotFoundPage({ map, error, mapdId }) {
 
           <div className='flex flex-col items-center'>
             <a href="https://discord.gg/foundryvtt" target="_blank" className='flex items-center text-black w-full'>
-              <span className='w-full text-sm'><MessageCircle className='mr-2 inline' />search for and DM <span className="mx-1 font-bold">CodaBool</span> in FoundryVTT Discord</span>
+              <span className='w-full text-sm'><MessageCircle className='mr-2 inline' />search for and DM <span className="mx-1 font-bold">{USER}</span> in FoundryVTT Discord</span>
             </a>
-            <a href="https://github.com/codabool/stargazer/issues" target="_blank" className='flex items-center text-black w-full'>
+            <a href={REPO ? REPO + "/issues" : ""} target="_blank" className='flex items-center text-black w-full'>
               <Github className='mr-2' /> open an issue
             </a>
           </div>
@@ -76,13 +77,13 @@ export default function NotFoundPage({ map, error, mapdId }) {
           <p className='text-black mb-2'>If you are still experiencing issues, feel free to reach out:</p>
 
           <div className='flex flex-col items-center'>
-            <a href="mailto:codabool@pm.me" className='flex items-center text-black w-full'>
-              <Mail className='mr-2' /> email <b className='pl-2'>codabool@pm.me</b>
+            <a href="mailto:map.ejv0v@passmail.net" className='flex items-center text-black w-full'>
+              <Mail className='mr-2' /> email <b className='pl-2'>map.ejv0v@passmail.net</b>
             </a>
             <a href="https://discord.gg/foundryvtt" target="_blank" className='flex items-center text-black w-full'>
-              <span className='w-full text-sm'><MessageCircle className='mr-2 inline' />search for and DM <span className="mx-1 font-bold">CodaBool</span> in FoundryVTT Discord</span>
+              <span className='w-full text-sm'><MessageCircle className='mr-2 inline' />search for and DM <span className="mx-1 font-bold">{USER}</span> in FoundryVTT Discord</span>
             </a>
-            <a href="https://github.com/codabool/stargazer/issues" target="_blank" className='flex items-center text-black w-full'>
+            <a href={REPO ? REPO + "/issues" : ""} target="_blank" className='flex items-center text-black w-full'>
               <Github className='mr-2' /> open an issue
             </a>
           </div>
@@ -129,13 +130,13 @@ export default function NotFoundPage({ map, error, mapdId }) {
         <p className='text-black mb-2'>If you are still experiencing issues, feel free to reach out:</p>
 
         <div className='flex flex-col items-center'>
-          <a href="mailto:codabool@pm.me" className='flex items-center text-black w-full'>
-            <Mail className='mr-2' /> email <b className='pl-2'>codabool@pm.me</b>
+          <a href="mailto:map.ejv0v@passmail.net" className='flex items-center text-black w-full'>
+            <Mail className='mr-2' /> email <b className='pl-2'>map.ejv0v@passmail.net</b>
           </a>
           <a href="https://discord.gg/foundryvtt" target="_blank" className='flex items-center text-black w-full'>
-            <span className='w-full text-sm'><MessageCircle className='mr-2 inline' />search for and DM <span className="mx-1 font-bold">CodaBool</span> in FoundryVTT Discord</span>
+            <span className='w-full text-sm'><MessageCircle className='mr-2 inline' />search for and DM <span className="mx-1 font-bold">{USER}</span> in FoundryVTT Discord</span>
           </a>
-          <a href="https://github.com/codabool/stargazer/issues" target="_blank" className='flex items-center text-black w-full'>
+          <a href={REPO ? REPO + "/issues" : ""} target="_blank" className='flex items-center text-black w-full'>
             <Github className='mr-2' /> open an issue
           </a>
         </div>

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Layer, Source } from 'react-map-gl/maplibre'
 import * as turf from '@turf/turf'
-import { debounce, useMode, windowLocalGet } from '@/lib/utils'
+import { debounce, useMode, getMaps } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 
 const linestring = {
@@ -64,14 +64,14 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       geojson.features.push(linestring)
       const km = turf.length(linestring)
       const distance = km * DISTANCE_CONVERTER
-      if (name === "postwar") {
+      if (name === "fallout") {
         const walkingSpeedMph = 3 // average walking speed in miles per hour
         const walkingTimeHours = distance / walkingSpeedMph;
         text.textContent = `${distance.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`;
       } else if (name.includes("lancer")) {
         const relativeTime = (distance / Math.sinh(Math.atanh(0.995))).toFixed(1);
         text.textContent = `${distance.toFixed(1)}ly | ${relativeTime} rel. years (.995u) | ${(distance / 0.995).toFixed(1)} observer years`;
-      } else if (name === "mousewars") {
+      } else if (name === "starwars") {
         // TODO: find a conversion and research how hyperspace works
         const relativeTime = (distance / Math.sinh(Math.atanh(0.995))).toFixed(1);
         text.textContent = `${distance.toFixed(1)}ly | ${relativeTime} rel. years (.995u) | ${(distance / 0.995).toFixed(1)} observer years`;
@@ -221,11 +221,11 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       const km = turf.length(liveLine)
       const distance = km * DISTANCE_CONVERTER
 
-      if (name === "postwar") {
+      if (name === "fallout") {
         const walkingSpeedMph = 3
         const walkingTimeHours = distance / walkingSpeedMph
         text.textContent = `${distance.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`
-      } else if (name.includes("lancer") || name === "mousewars") {
+      } else if (name.includes("lancer") || name === "starwars") {
         const relativeTime = (distance / Math.sinh(Math.atanh(0.995))).toFixed(1)
         text.textContent = `${distance.toFixed(1)}ly | ${relativeTime} rel. years (.995u) | ${(distance / 0.995).toFixed(1)} observer years`
       }
@@ -266,7 +266,7 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       text.style.visibility = 'visible'
     }
 
-    const handleKeyDown = (event) => {
+    const handleKeyDown = async event => {
       if (event.altKey) {
         setMode(mode === "crosshair" ? null : "crosshair")
       } else if (event.ctrlKey) {
@@ -277,11 +277,10 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
           router.push(`/${name}?id=${urlParams.get("id")}`)
         } else {
           // will break if the map doesn't exist, so let's check for it
-          windowLocalGet("maps").then(maps => {
-            if (maps.hasOwnProperty(`${name}-${urlParams.get("id")}`)) {
-              router.push(`/${name}?id=${urlParams.get("id")}&preview=1`)
-            }
-          })
+          const maps = await getMaps()
+          if (maps.hasOwnProperty(`${name}-${urlParams.get("id")}`)) {
+            router.push(`/${name}?id=${urlParams.get("id")}&preview=1`)
+          }
         }
       }
     }

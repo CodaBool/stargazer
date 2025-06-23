@@ -30,9 +30,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { CircleHelp, Image, Pencil, Plus, Save, Trash2, Link as Chain, Notebook, StickyNote, Code } from "lucide-react"
-import { AVAILABLE_PROPERTIES, useStore } from "@/lib/utils"
+import { AVAILABLE_PROPERTIES, SVG_BASE, useStore, getIconHTML } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { getIcon } from "../map"
 import IconSelector from "../iconSelector"
 
 export default function EditorForm({ feature, draw, setPopup, mapName, popup, params, TYPES }) {
@@ -46,9 +45,8 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
     key: "",
     value: "",
   })
-  const availableTypes = Object.keys(TYPES).filter(t =>
-    feature.geometry.type.toLowerCase() === t.split(".")[1]
-  ).map(t => t.split(".")[0])
+
+  const availableTypes = TYPES[feature.geometry.type.toLowerCase().trim()]
 
   function handleInputChange(e) {
     setNewRow((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -104,8 +102,12 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
   function editProp(newVal, key) {
     const newProperties = { ...feature.properties }
     newProperties[key] = newVal
+    // if (key === "type") {
+    //   newProperties[key] = newVal.replaceAll(" ", "_")
+    // }
     const latestFeature = draw.get(feature.id)
     const newFeature = { ...latestFeature, properties: newProperties }
+    console.log("new feature:", newFeature, "latest", latestFeature)
     draw.add(newFeature)
     setPopup(newFeature)
     setEditorTable(newFeature.properties)
@@ -115,11 +117,9 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
   }
 
   function selectIcon(icon) {
-    // TODO: update url to stargazer
     let url = icon
     if (typeof icon === "object") {
-      url = `https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/svg/${icon.folder}/${icon.name}.svg`
-      // url = `http://192.168.0.16:3000/svg/${icon.folder}/${icon.name}.svg`
+      url = `${SVG_BASE}${icon.folder}/${icon.name}.svg`
     }
     // console.log("icon", icon, " | remote =", url)
     editProp(url, "icon")
@@ -145,9 +145,9 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
       }
     }
 
-    // fetch icon, could be a promise
+    // fetch icon as a promise
     if (popup.geometry.type === 'Point') {
-      getIcon(popup).then(r => {
+      getIconHTML(popup, mapName).then(r => {
         setIconHTML(r)
       })
     }
@@ -194,7 +194,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
         <TableBody>
           {editorTable && (
             Object.entries(feature.properties).map((arr, i) => {
-              if (typeof arr[1] === "undefined" || arr[1] === null) return null;
+              if (typeof arr[1] === "undefined" || arr[1] === null) return null
               return (
                 <TableRow key={i}>
                   <TableCell className="font-medium">{arr[0]}</TableCell>
@@ -205,8 +205,8 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
                       </SelectTrigger>
                       <SelectContent>
                         {availableTypes.map((type, index) => (
-                          <SelectItem key={index} value={type} className="cursor-pointer">
-                            {type}
+                          <SelectItem key={index} value={type} selected={arr[1] === type} className="cursor-pointer">
+                            {type.replaceAll("_", " ")}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -239,7 +239,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
               if (typeof arr[1] === "undefined" || arr[1] === null) return null
               const isColor = arr[1]?.toString().startsWith("rgba") || (arr[1]?.toString().startsWith("#") && arr[1]?.length === 7)
               return (
-                <TableRow key={i} >
+                <TableRow key={i}>
                   <TableCell className="font-medium">{arr[0]}</TableCell>
                   {arr[1]?.toString().startsWith("http") &&
                     <TableCell>
@@ -264,7 +264,10 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
                       }
                     </TableCell>
                   }
-                  {(!isColor && !arr[1]?.toString().startsWith("http")) &&
+                  {arr[0] === "type" &&
+                    <TableCell>{arr[1].replaceAll("_", " ")}</TableCell>
+                  }
+                  {(!isColor && !arr[1]?.toString().startsWith("http") && arr[0] !== "type") &&
                     // <TableCell>{arr[1]}</TableCell>
                     <TableCell>{arr[1]?.length > 40 ? `${arr[1]?.substring(0, 40)}...` : arr[1]}</TableCell>
                   }

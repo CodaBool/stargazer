@@ -1,15 +1,16 @@
 import NextAuth from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import db from "@/lib/db"
+import { TITLE } from "@/lib/utils"
 
 async function sendVerificationRequest({ identifier: email, url }) {
   const urlParams = new URLSearchParams({
-    subject: "Sign into Stargazer",
+    subject: "Sign into " + TITLE,
     to: email,
     name: "contributor",
-    from: "Stargazer",
+    from: TITLE || "anon",
     secret: process.env.EMAIL_SECRET,
-    simpleBody: `<h1>Welcome to Stargazer</h1>
+    simpleBody: `<h1>Welcome to ${TITLE}</h1>
     ${starHTML}
     <br/>
     <a href="${url}">Please click here to login</a><p>This link is only valid for 24 hours</p>`

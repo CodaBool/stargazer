@@ -5,7 +5,7 @@ import MapboxDraw from "@hyvilo/maplibre-gl-draw"
 import { useEffect, useState } from 'react'
 import randomName from '@scaleway/random-name'
 import { useRouter } from 'next/navigation'
-import { hexToRgb, localGet, localSet, useStore, isMobile } from '@/lib/utils'
+import { hexToRgb, getMaps, localSet, useStore, isMobile } from '@/lib/utils'
 import { create } from 'zustand'
 
 export const useDraw = create(set => ({
@@ -31,16 +31,20 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
     if (!geojson.features.length) return
 
     geojson.features.forEach(f => {
-      const availableTypes = Object.keys(TYPES).filter(t =>
-        f.geometry.type.toLowerCase() === t.split(".")[1]
-      ).map(t => t.split(".")[0])
+      // TYPES: {
+      //   "polygon": ["sector", "cluster", "nebulae"],
+      //   "point": ["station", "jovian", "moon", "terrestrial", "desert planet", "ocean planet", "barren planet", "ice planet", "asteroid", "lava planet", "ringed planet", "gate", "red dwarf", "orange star", "yellow star", "white dwarf", "red giant", "red supergiant", "blue giant", "blue supergiant", "red star", "blue star", "black hole", "wormhole", "exoplanet", "neutron star", "comet"],
+      //   "linestring": ["guide", "hyperspace"],
+      // },
+
+      const types = TYPES[f.geometry.type.toLowerCase().trim()]
       if (!f.properties.name) {
         f.properties.name = randomName('', ' ')
         draw.add(f)
       }
       if (!f.properties.type) {
         // console.log("found missing type for feature", f, "adding", availableTypes[0])
-        f.properties.type = availableTypes[0] || "placeholder"
+        f.properties.type = types[0] || "placeholder"
         draw.add(f)
       }
       if ((f.geometry.type === "Point" || f.geometry.type.includes("Poly")) && !f.properties.fill) {
@@ -53,26 +57,22 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
       }
     })
 
-    localGet('maps').then(r => {
-      r.onsuccess = () => {
-
-        // if this is the first time, show a tutorial
-        if (Object.keys(r.result).length === 0 && !localStorage.getItem("noTutorial") && !mobile) {
-          setTutorial(true)
-        }
-
-        const localMaps = r.result || {}
-        localSet("maps", {
-          ...localMaps, [mapId]: {
-            geojson,
-            name: localMaps[mapId]?.name || randomName('', ' '),
-            updated: Date.now(),
-            id: Number(mapId.split("-")[1]),
-            map: name,
-            config: localMaps[mapId]?.config || {},
-          }
-        })
+    getMaps().then(maps => {
+      // if this is the first time, show a tutorial
+      if (Object.keys(maps).length === 0 && !localStorage.getItem("noTutorial") && !mobile) {
+        setTutorial(true)
       }
+
+      localSet("maps", {
+        ...maps, [mapId]: {
+          geojson,
+          name: maps[mapId]?.name || randomName('', ' '),
+          updated: Date.now(),
+          id: Number(mapId.split("-")[1]),
+          map: name,
+          config: maps[mapId]?.config || {},
+        }
+      })
     })
 
   }, [saveTrigger, mapId])
@@ -82,99 +82,96 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
     // hacky solution to prevent draw being used before initialization
     try { draw.getAll() } catch (error) { return }
 
-    localGet('maps').then(r => {
-      r.onsuccess = () => {
-        const localMaps = r.result || {}
-        const mapsWithData = Object.keys(localMaps).filter(id => id.split('-')[0] === name)
+    getMaps().then(maps => {
+      const mapsWithData = Object.keys(maps).filter(id => id.split('-')[0] === name)
 
-        // if no data exists set an id and save
-        if (!mapsWithData.length || params.get("new")) {
+      // if no data exists set an id and save
+      if (!mapsWithData.length || params.get("new")) {
 
-          console.log("no data exists, or given create param", params.get("new"), "maps =", localMaps)
-          // TODO: consider const uuid = crypto.randomUUID()
+        console.log("no data exists, or given create param", params.get("new"), "maps =", maps)
+        // TODO: consider const uuid = crypto.randomUUID()
+        const id = Date.now()
+        setMapId(`${name}-${id}`)
+
+        const url = new URL(window.location).toString().split("?")[0] + "?id=" + id
+        // console.log("replaced URL to", url)
+        window.history.replaceState(null, '', url)
+
+        setSaveTrigger(p => !p)
+        return
+      }
+
+      // if id is set save
+      if (mapId) {
+        // console.log("mapId already exists", mapId, "save")
+        setSaveTrigger(p => !p)
+        return
+      }
+
+      // console.log(mapsWithData.length, "map found")
+
+      // if data exists ask to restore and save id
+      // const matchingMapsCount = mapsWithData.length;
+      // console.log(`Number of saved maps that match the name "${name}":`, matchingMapsCount);
+
+      if (params.get("id")) {
+        // TODO: toast system, show a message "restored local map"
+        // console.log("chose map from URL param")
+        const mId = `${name}-${params.get("id")}`
+        const geojson = maps[mId]?.geojson
+
+        if (geojson) {
+          setMapId(mId)
+          draw.add(geojson)
+          return
+        } else {
+          // TODO: give toast message "map not found locally"
+          console.log("could not find map using id", mId)
+        }
+      }
+
+      for (const [key, data] of Object.entries(maps)) {
+        // console.log("storage", data)
+        const mapName = key.split('-')[0]
+        if (mapName !== name) continue
+        let daysAgo = Math.floor((Date.now() - parseInt(key.split('-')[1])) / (1000 * 60 * 60 * 24))
+        if (daysAgo === 0) {
+          daysAgo = "today"
+        } else if (daysAgo === 1) {
+          daysAgo = "yesterday"
+        } else {
+          daysAgo = daysAgo + " days ago"
+        }
+        // console.log("found", mapsWithData.length, "previous maps for", mapName, "from", daysAgo)
+        // TODO: need a way to have multiple stored maps for the same map
+        const restore = window.confirm(`${mapsWithData.length === 1 ? "A previous session was found" : mapsWithData.length + " previous sessions found, one"} from ${daysAgo}. Would you like to ${mapsWithData.length === 1 ? "restore this session" : "choose a session to restore"}?`)
+        if (restore) {
+          if (mapsWithData.length === 1) {
+            // console.log("restore session, only one found", key)
+            setMapId(key)
+            draw.add(data.geojson)
+            router.replace(new URL(window.location).toString() + `?id=${key.split("-")[1]}`)
+            return
+          } else {
+            console.log(`need to redirect to /#${name} page since there are multiple`, key)
+            setSize(null)
+            router.push(`/#${name}_local`)
+            return
+          }
+        } else {
+          // TODO: toast system, show a message "fresh map started"
+          console.log("start a new session")
+
+          // duplicate of ?new=1 conditional
           const id = Date.now()
+          // TODO: consider const uuid = crypto.randomUUID()
           setMapId(`${name}-${id}`)
-
           const url = new URL(window.location).toString().split("?")[0] + "?id=" + id
           // console.log("replaced URL to", url)
           window.history.replaceState(null, '', url)
 
           setSaveTrigger(p => !p)
           return
-        }
-
-        // if id is set save
-        if (mapId) {
-          // console.log("mapId already exists", mapId, "save")
-          setSaveTrigger(p => !p)
-          return
-        }
-
-        // console.log(mapsWithData.length, "map found")
-
-        // if data exists ask to restore and save id
-        // const matchingMapsCount = mapsWithData.length;
-        // console.log(`Number of saved maps that match the name "${name}":`, matchingMapsCount);
-
-        if (params.get("id")) {
-          // TODO: toast system, show a message "restored local map"
-          // console.log("chose map from URL param")
-          const mId = `${name}-${params.get("id")}`
-          const geojson = localMaps[mId]?.geojson
-
-          if (geojson) {
-            setMapId(mId)
-            draw.add(geojson)
-            return
-          } else {
-            // TODO: give toast message "map not found locally"
-            console.log("could not find map using id", mId)
-          }
-        }
-
-        for (const [key, data] of Object.entries(localMaps)) {
-          // console.log("storage", data)
-          const mapName = key.split('-')[0]
-          if (mapName !== name) continue
-          let daysAgo = Math.floor((Date.now() - parseInt(key.split('-')[1])) / (1000 * 60 * 60 * 24))
-          if (daysAgo === 0) {
-            daysAgo = "today"
-          } else if (daysAgo === 1) {
-            daysAgo = "yesterday"
-          } else {
-            daysAgo = daysAgo + " days ago"
-          }
-          // console.log("found", mapsWithData.length, "previous maps for", mapName, "from", daysAgo)
-          // TODO: need a way to have multiple stored maps for the same map
-          const restore = window.confirm(`${mapsWithData.length === 1 ? "A previous session was found" : mapsWithData.length + " previous sessions found, one"} from ${daysAgo}. Would you like to ${mapsWithData.length === 1 ? "restore this session" : "choose a session to restore"}?`)
-          if (restore) {
-            if (mapsWithData.length === 1) {
-              // console.log("restore session, only one found", key)
-              setMapId(key)
-              draw.add(data.geojson)
-              router.replace(new URL(window.location).toString() + `?id=${key.split("-")[1]}`)
-              return
-            } else {
-              console.log(`need to redirect to /#${name} page since there are multiple`, key)
-              setSize(null)
-              router.push(`/#${name}_local`)
-              return
-            }
-          } else {
-            // TODO: toast system, show a message "fresh map started"
-            console.log("start a new session")
-
-            // duplicate of ?new=1 conditional
-            const id = Date.now()
-            // TODO: consider const uuid = crypto.randomUUID()
-            setMapId(`${name}-${id}`)
-            const url = new URL(window.location).toString().split("?")[0] + "?id=" + id
-            // console.log("replaced URL to", url)
-            window.history.replaceState(null, '', url)
-
-            setSaveTrigger(p => !p)
-            return
-          }
         }
       }
     })

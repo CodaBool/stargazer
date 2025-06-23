@@ -33,6 +33,7 @@ import { LoaderCircle, X } from "lucide-react"
 import { useMemo, useState } from "react"
 import dynamic from "next/dynamic"
 import 'react-quill-new/dist/quill.bubble.css'
+import { REPO, USER } from "@/lib/utils"
 
 export default function CreateLocation({ map }) {
   // https://github.com/zenoamaro/react-quill/issues/921
@@ -76,7 +77,7 @@ export default function CreateLocation({ map }) {
                 <X />
               </Button>
             </div>
-            <CardDescription className="select-text">Add a new feature to the shared core map. To edit an existing location, select it below. For other issues submit on the <a className="text-blue-50" href="https://github.com/CodaBool/stargazer/issues" target="_blank">issues</a> page. Or DM <b>CodaBool</b> by searching in the <a href="https://discord.gg/foundryvtt" className="text-blue-50" target="_blank">FoundryVTT</a> Discord</CardDescription>
+            <CardDescription className="select-text">Add a new feature to the shared core map. To edit an existing location, select it below. For other issues submit on the <a className="text-blue-50" href={REPO ? REPO + "/issues" : ""} target="_blank">issues</a> page. Or DM <b>{USER}</b> by searching in the <a href="https://discord.gg/foundryvtt" className="text-blue-50" target="_blank">FoundryVTT</a> Discord</CardDescription>
           </CardHeader>
           <CardContent>
             <FormField

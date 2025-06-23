@@ -22,10 +22,10 @@ export async function GET(req, { params }) {
     buffer = toKML(buffer)
   }
 
-  path.resolve(`app/[map]/topojson/mousewars.json`)
-  path.resolve(`app/[map]/topojson/postwar.json`)
-  path.resolve(`app/[map]/topojson/lancer.json`)
-  path.resolve(`app/[map]/topojson/lancer_starwall.json`)
+  // TODO: verify that this is still needed
+  fs.readdirSync(dataDir).forEach(file => {
+    path.resolve(`app/[map]/topojson/${file}`)
+  })
 
   const headers = new Headers()
   if (format === "kml") {

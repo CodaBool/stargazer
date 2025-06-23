@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import { ArrowLeft, LoaderCircle, Settings, X } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import 'react-quill-new/dist/quill.bubble.css'
-import { combineAndDownload, combineLayers, getConsts, hexToRgb, localGet, localSet } from "@/lib/utils"
+import { combineAndDownload, combineLayers, getConsts, getMaps, hexToRgb, localGet, localSet } from "@/lib/utils"
 import SharedSettings from "./sharedSettings"
 
 let preAlertData
@@ -76,6 +76,9 @@ export default function MapSettings({ map, id }) {
     if (body.MIN_ZOOM) {
       body.MIN_ZOOM = Number(body.MIN_ZOOM)
     }
+    if (JSON.stringify(body.LAYOUT_OVERRIDE)?.replaceAll(" ", "") === "{}") {
+      delete body.LAYOUT_OVERRIDE
+    }
     if (body.MAX_BOUNDS) {
       body.VIEW.maxBounds = body.MAX_BOUNDS.split(",").map(Number)
       delete body.MAX_BOUNDS
@@ -84,41 +87,34 @@ export default function MapSettings({ map, id }) {
     setSubmitting(false)
     delete body.file
     delete body.name
-    localGet('maps').then(r => {
-      r.onsuccess = () => {
-        const localMaps = r.result || {}
-        const currentConfig = localMaps[`${map}-${id}`]?.config
-        console.log("submit", {
-          ...newObj,
-          config: {
-            ...currentConfig,
-            ...body,
-          },
-        })
-        localSet("maps", {
-          ...localMaps,
-          [`${map}-${id}`]: {
-            ...newObj,
-            config: {
-              ...currentConfig,
-              ...body,
-            },
-          },
-        })
-        router.push(`/#${map}_local`)
-      }
+    const maps = await getMaps()
+    const currentConfig = maps[`${map}-${id}`]?.config
+    console.log("submit", {
+      ...newObj,
+      config: {
+        ...currentConfig,
+        ...body,
+      },
     })
+    localSet("maps", {
+      ...maps,
+      [`${map}-${id}`]: {
+        ...newObj,
+        config: {
+          ...currentConfig,
+          ...body,
+        },
+      },
+    })
+    router.push(`/#${map}_local`)
   }
 
   useEffect(() => {
-    localGet('maps').then(r => {
-      r.onsuccess = () => {
-        if (r.result?.hasOwnProperty(`${map}-${id}`)) {
-          setData(r.result[`${map}-${id}`])
-          // console.log("form", form, "starting with", r.result[`${map}-${id}`]?.config)
-        } else {
-          router.push(`/#${map}_local_${id}`)
-        }
+    getMaps().then(maps => {
+      if (maps?.hasOwnProperty(`${map}-${id}`)) {
+        setData(maps[`${map}-${id}`])
+      } else {
+        router.push(`/#${map}_local_${id}`)
       }
     })
   }, [])

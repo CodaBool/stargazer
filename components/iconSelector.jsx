@@ -158,7 +158,7 @@ export default function IconSelector({ onSelect, mapName, show }) {
                 <ul className="pl-4 list-disc mb-2">
                   {mapName.includes("lancer") && (
                     <li>
-                      Lancer icons are from {' '}
+                      Some Lancer icons are from {' '}
                       <a
                         href="https://game-icons.net"
                         target="_blank"
@@ -170,7 +170,7 @@ export default function IconSelector({ onSelect, mapName, show }) {
                     </li>
                   )}
                   <li>
-                    Some icons are from
+                    Some icons are from{' '}
                     <a
                       href="https://www.freepik.com/search?format=search&type=icon"
                       target="_blank"

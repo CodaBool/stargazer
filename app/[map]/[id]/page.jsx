@@ -66,14 +66,14 @@ export default async function mapLobby({ params }) {
     return feature;
   })
 
-  const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");
+  const dataDir = path.join(process.cwd(), "app", "[map]", "topojson");
   const filePath = path.join(dataDir, `${map}.json`)
 
-  // WARN: for some reason a path.resolve is needed here otherwise it cannot find the file
-  path.resolve(`app/[map]/topojson/mousewars.json`)
-  path.resolve(`app/[map]/topojson/postwar.json`)
-  path.resolve(`app/[map]/topojson/lancer.json`)
-  path.resolve(`app/[map]/topojson/lancer_starwall.json`)
+  // TODO: verify that this is still needed
+  fs.readdirSync(dataDir).forEach(file => {
+    path.resolve(`app/[map]/topojson/${file}`)
+  })
+
   let geojson
   if (map === "custom") {
     geojson = obj.geojson
@@ -96,5 +96,5 @@ export default async function mapLobby({ params }) {
     f.id = fid++
   })
 
-  return <Cartographer data={geojson} config={obj.config || {}} name={map} fid={fid} stargazer={true} />
+  return <Cartographer data={geojson} remoteConfig={obj.config || {}} name={map} fid={fid} uuid={id} />
 }

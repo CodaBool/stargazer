@@ -43,7 +43,7 @@ export default function SolarSystemDiagram({ group, selectedId, map, name }) {
       <div className="w-full overflow-x-auto overflow-y-visible py-2">
         <div className="flex items-baseline h-full space-x-6 px-4 justify-evenly">
           {group.map((body, index) => {
-            const selected = body.id === selectedId
+            const selected = (body.id === selectedId) && typeof selectedId !== "undefined"
             return (
               <div key={index} className="flex flex-col items-center relative min-w-[40px]">
                 <img

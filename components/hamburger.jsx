@@ -18,12 +18,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Pencil, User, Ruler, Menu, Crosshair, HeartHandshake, Eye, CircleHelp, House } from "lucide-react"
-import { useEffect, useState } from "react"
-import { useMode, useStore } from "@/lib/utils"
+import { REPO, TITLE, useMode, USER, useStore } from "@/lib/utils"
 
 // TODO: this should be rewritten to use zustand instead of a Set (called mode)
 
-export default function Hamburger({ name, params, map, stargazer, mobile }) {
+export default function Hamburger({ name, params, map, mobile }) {
   const { mode, setMode } = useMode()
   const { setTutorial } = useStore()
 
@@ -64,11 +63,14 @@ export default function Hamburger({ name, params, map, stargazer, mobile }) {
                 </DialogContent>
               </Dialog>
             }
-            <Link href="https://github.com/codabool/stargazer" target="_blank">
-              <DropdownMenuItem className="cursor-pointer">
-                <Github className="ml-[.6em]" /> <span className="ml-[5px]">GitHub</span>
-              </DropdownMenuItem>
-            </Link>
+            {REPO &&
+              <Link href={REPO + "/issues"} target="_blank">
+                <DropdownMenuItem className="cursor-pointer">
+                  <Github className="ml-[.6em]" /> <span className="ml-[5px]">GitHub</span>
+                </DropdownMenuItem>
+              </Link>
+            }
+
             {name === "lancer" &&
               <Link href="/lancer_starwall">
                 <DropdownMenuItem className="cursor-pointer">
@@ -187,8 +189,11 @@ function Credits({ name }) {
           {/* <span><Sparkle className="inline pr-2" /> contribute to be added</span><br /> */}
         </span>
       </span>
-      <span className="text-center block text-[dimgray] mt-4">Created with <Heart size={14} className="inline" /> by <Link href={`/easteregg?redirect=${window?.location?.href || "/" + name}`} style={{ color: "#60677c" }}>CodaBool</Link></span>
-      {name.includes("lancer") && <span className="text-center block text-[dimgray] mt-4">Stargazer is not an official Lancer product<br />Lancer is copyright Massif Press</span>}
+      {TITLE === "Stargazer" &&
+        <span className="text-center block text-[dimgray] mt-4">Created with <Heart size={14} className="inline" /> by <Link href={`/easteregg?redirect=${window?.location?.href || "/" + name}`} style={{ color: "#60677c" }}>{USER}</Link></span>
+      }
+
+      {name.includes("lancer") && <span className="text-center block text-[dimgray] mt-4">{TITLE} is not an official Lancer product<br />Lancer is copyright Massif Press</span>}
       <span className="text-center">
         <Link href={`/legal?redirect=${window?.location?.href || "/" + name}`} className="hover:underline text-sm inline text-[#8A8A8A]">
           Full Disclaimer

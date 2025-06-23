@@ -51,11 +51,10 @@ export async function GET(req) {
     const filePath = path.join(dataDir, `${response.Metadata.map}.json`)
     const content = await fs.promises.readFile(filePath, 'utf8')
 
-    // WARN: for some reason a path.resolve is needed here otherwise it cannot find the file
-    path.resolve(`app/[map]/topojson/mousewars.json`)
-    path.resolve(`app/[map]/topojson/postwar.json`)
-    path.resolve(`app/[map]/topojson/lancer.json`)
-    path.resolve(`app/[map]/topojson/lancer_starwall.json`)
+    // TODO: verify that this is still needed
+    fs.readdirSync(dataDir).forEach(file => {
+      path.resolve(`app/[map]/topojson/${file}`)
+    })
     const topojson = JSON.parse(content)
     const geojson = JSON.parse(r2Obj.geojson)
     const [data, type] = combineAndDownload("geojson", topojson, geojson)

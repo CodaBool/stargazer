@@ -6,10 +6,9 @@ import maplibregl, {
 } from 'maplibre-gl'
 import { useMap, Layer, Source, Popup } from 'react-map-gl/maplibre'
 import { useEffect, useRef, useState } from 'react'
-import { getColorExpression, createPopupHTML, hexToRgb, localSet, windowLocalGet, useStore, useMode, getLocationGroups } from "@/lib/utils.js"
+import { getColorExpression, createPopupHTML, hexToRgb, localSet, getMaps, useStore, useMode, getLocationGroups } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import SearchBar from './searchbar'
-import * as SVG from './svg.js'
 import * as turf from '@turf/turf'
 import Hamburger from './hamburger'
 import Toolbox from './toolbox'
@@ -28,51 +27,165 @@ let popup = new maplibregl.Popup({
   className: "fade-in"
 })
 
-export async function getIcon(d, fillRGBA) {
-  const icon = d.properties.icon || SVG[d.properties.type]
-  const fill = fillRGBA || d.properties.fill
-  const stroke = d.properties.stroke
-
-  // Apply to all <path>, <circle>, <rect>, etc.
-  const forceAttrs = (svg, fill, stroke) => {
-    if (fill) {
-      svg = svg.replace(/(<(path|circle|rect|polygon|g)[^>]*?)\s*(fill=".*?")?/gi, (match, before) => {
-        return `${before} fill="${fill}" `;
-      });
+const mouseMove = (e, wrapper, IS_GALAXY, name) => {
+  if (window.isMoving) {
+    wrapper.panBy([offset.x - e.point.x, offset.y - e.point.y], {
+      duration: 0,
+    });
+    window.offset = e.point;
+  }
+  // hover
+  if (e.features.length > 0) {
+    if (window.hoveredStateId) {
+      wrapper.setFeatureState(
+        { source: 'source', id: window.hoveredStateId },
+        { hover: false }
+      );
     }
-    if (stroke) {
-      svg = svg.replace(/(<(path|circle|rect|polygon|g)[^>]*?)\s*(stroke=".*?")?/gi, (match, before) => {
-        return `${before} stroke="${stroke}" `;
-      });
-    }
-    return svg;
-  };
-
-  if (icon && !icon.startsWith("http")) {
-    return forceAttrs(icon, fill, stroke);
+    window.hoveredStateId = e.features[0].id
+    wrapper.setFeatureState(
+      { source: 'source', id: window.hoveredStateId },
+      { hover: true }
+    );
   }
 
-  if (icon?.startsWith("http")) {
-    try {
-      const res = await fetch(icon)
-      let remoteSvg = await res.text();
-      return forceAttrs(remoteSvg, fill, stroke);
-    } catch (e) {
-      console.log(`WARN: failed to fetch icon: ${icon}`, e);
-      return null;
-    }
+  // popup
+  if (e.features[0].properties.type === "text") return
+  if (e.features[0].geometry.type === "Point") {
+    // don't show tooltips if the sheet/drawer is open
+    if (document.querySelector('#bottom-sheet')) return
   }
 
-  return null;
+  const featureCoordinates = e.features[0].geometry.coordinates.toString()
+  if (window.currentFeatureCoordinates !== featureCoordinates) {
+    window.currentFeatureCoordinates = featureCoordinates
+
+    // Change the cursor style as a UI indicator.
+    if (e.features[0].geometry.type === "Point") wrapper.getCanvas().style.cursor = 'pointer'
+
+    let coordinates = e.features[0].geometry.coordinates.slice()
+    const popupContent = createPopupHTML(e, IS_GALAXY, name)
+
+    // Ensure that if the map is zoomed out such that multiple
+    // copies of the feature are visible, the popup appears
+    // over the copy being pointed to.
+    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+      coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+    }
+    if (e.features[0].geometry.type === "LineString") {
+      if (!e.lngLat) return
+      coordinates = [e.lngLat.lng, e.lngLat.lat]
+    }
+    if (!coordinates) {
+      console.error("failed to get coordinates", coordinates, e)
+    }
+    popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap())
+  }
 }
 
-export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, stargazer, setCrashed, CLICK_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY }) {
+const mouseLeave = (e, wrapper) => {
+  if (hoveredStateId !== null) {
+    wrapper.setFeatureState(
+      { source: 'source', id: window.hoveredStateId },
+      { hover: false }
+    );
+  }
+  window.hoveredStateId = null;
+
+  window.currentFeatureCoordinates = undefined;
+  // wrapper.getCanvas().style.cursor = ''
+  const popupElement = document.querySelector('.maplibregl-popup');
+  if (popupElement) {
+    popupElement.classList.remove('fade-in');
+  }
+  popup.remove()
+}
+
+const mouseDown = (e) => {
+  if (e.originalEvent.button === 2) {
+    window.isMoving = true;
+    window.offset = e.point;
+  }
+}
+
+const territoryClick = (e, wrapper, IGNORE_POLY, IS_GALAXY, name) => {
+  if (IGNORE_POLY?.includes(e.features[0].properties.type)) return
+  const coordinates = e.lngLat;
+  const popupContent = createPopupHTML(e, IS_GALAXY, name)
+  popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap());
+}
+
+// remove popup when moving
+const removePopup = () => {
+  if (popup._container) popup.remove()
+}
+
+export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, CLICK_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
   const { mode } = useMode()
   const recreateListeners = useDraw(s => s.recreateListeners)
+  // get latest state for these values
   const modeRef = useRef(mode)
+  const dataRef = useRef(data)
   useEffect(() => { modeRef.current = mode }, [mode])
+  useEffect(() => { dataRef.current = data }, [data])
+  const mouseMoveRef = useRef(null)
+  const mouseLeaveRef = useRef(null)
+  const territoryClickRef = useRef(null)
+  const locationClickRef = useRef(null)
+  const removePopupRef = useRef(null)
+  const mouseDownRef = useRef(null)
+  const panMoveRef = useRef(null)
+  const mouseUpRef = useRef(null)
+
+
+  function locationClick(e) {
+    const currentMode = modeRef.current
+    if (currentMode === "measure" || (currentMode === "crosshair" && mobile) || locked) {
+      console.log("returning early with loc click")
+      return
+    }
+
+    const clicked = e.features[0];
+
+    // console.log("clicked on", clicked)
+    // Find the group that the clicked location belongs to
+    const group = locationGroups.find(g => g.members.includes(clicked.id))
+
+
+    if (!group) {
+      console.log("ERR: stale group data error")
+      return
+    }
+
+    // Find nearby groups excluding the clicked group
+    const nearbyGroups = locationGroups.filter(g => {
+      if (g === group) return false; // Exclude the clicked group
+      return turf.distance(group.center, g.center) <= (UNIT === "ly" ? 510 : 60);
+    })
+
+    const nearby = nearbyGroups.map(({ center, members }) => {
+      return members.map(id => {
+        return {
+          groupCenter: center,
+          ...dataRef.current.features.find(f => f.id === id)
+        }
+      })
+    })
+
+    const myGroup = group.members.map(id => ({
+      groupCenter: group.center,
+      ...dataRef.current.features.find(f => f.id === id)
+    }))
+
+    // console.log("myGroup", myGroup)
+
+    pan(clicked, myGroup, nearby)
+
+    // remove popup
+    if (popup._container) popup.remove()
+  }
 
   async function pan(d, myGroup, nearbyGroups, fit) {
     if (locked && !fit) return
@@ -137,161 +250,21 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     }
   }
 
-  function listeners({ target: map }) {
-    let currentFeatureCoordinates, hoveredStateId
-
-    const mouseMove = (e) => {
-      // hover
-      if (e.features.length > 0) {
-        if (hoveredStateId) {
-          map.setFeatureState(
-            { source: 'source', id: hoveredStateId },
-            { hover: false }
-          );
-        }
-        hoveredStateId = e.features[0].id
-        map.setFeatureState(
-          { source: 'source', id: hoveredStateId },
-          { hover: true }
-        );
-      }
-
-      // popup
-      if (e.features[0].properties.type === "text") return
-      if (e.features[0].geometry.type === "Point") {
-        // don't show tooltips if the sheet/drawer is open
-        if (document.querySelector('#bottom-sheet')) return
-      }
-
-      const featureCoordinates = e.features[0].geometry.coordinates.toString()
-      if (currentFeatureCoordinates !== featureCoordinates) {
-        currentFeatureCoordinates = featureCoordinates
-
-        // Change the cursor style as a UI indicator.
-        if (e.features[0].geometry.type === "Point") wrapper.getCanvas().style.cursor = 'pointer'
-
-        let coordinates = e.features[0].geometry.coordinates.slice()
-        const popupContent = createPopupHTML(e, IS_GALAXY, name)
-
-        // Ensure that if the map is zoomed out such that multiple
-        // copies of the feature are visible, the popup appears
-        // over the copy being pointed to.
-        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-          coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-        }
-        if (e.features[0].geometry.type === "LineString") {
-          if (!e.lngLat) return
-          coordinates = [e.lngLat.lng, e.lngLat.lat]
-        }
-        if (!coordinates) {
-          console.error("failed to get coordinates", coordinates, e)
-        }
-        popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap())
-      }
-    }
-
-    const mouseLeave = (e) => {
-      if (hoveredStateId !== null) {
-        map.setFeatureState(
-          { source: 'source', id: hoveredStateId },
-          { hover: false }
-        );
-      }
-      hoveredStateId = null;
-
-      currentFeatureCoordinates = undefined;
-      wrapper.getCanvas().style.cursor = ''
-      const popupElement = document.querySelector('.maplibregl-popup');
-      if (popupElement) {
-        popupElement.classList.remove('fade-in');
-      }
-      popup.remove()
-    }
-
-    const territoryClick = (e) => {
-      if (IGNORE_POLY?.includes(e.features[0].properties.type)) return
-      const coordinates = e.lngLat;
-      const popupContent = createPopupHTML(e, IS_GALAXY, name)
-      popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap());
-    }
-
-    function locationClick(e) {
-      const currentMode = modeRef.current
-      if (currentMode === "measure" || (currentMode === "crosshair" && mobile) || locked) return;
-
-      const clicked = e.features[0];
-
-      // Find the group that the clicked location belongs to
-      const group = locationGroups.find(g => g.members.includes(clicked.id))
-
-      if (!group) return
-
-      // Find nearby groups excluding the clicked group
-      const nearbyGroups = locationGroups.filter(g => {
-        if (g === group) return false; // Exclude the clicked group
-        return turf.distance(group.center, g.center) <= (UNIT === "ly" ? 510 : 60);
-      })
-
-      const nearby = nearbyGroups.map(({ center, members }) => {
-        return members.map(id => {
-          return {
-            groupCenter: center,
-            ...data.features.find(f => f.id === id)
-          }
-        })
-      })
-
-      const myGroup = group.members.map(id => ({
-        groupCenter: group.center,
-        ...data.features.find(f => f.id === id)
-      }))
-
-      pan(clicked, myGroup, nearby)
-
-      // remove popup
-      if (popup._container) popup.remove()
-    }
-
-    // remove popup when moving
-    const removePopup = () => {
-      if (popup._container) popup.remove()
-    }
-
-    // RMB panning
-    let offset, isMoving = false
+  useEffect(() => {
+    // local dev testing functions
+    window.localSet = localSet
+    window.localGet = getMaps
 
     // create Listeners
-    map.on("mousedown", (e) => {
-      if (e.originalEvent.button === 2) {
-        isMoving = true;
-        offset = e.point;
-      }
-    });
-    map.on("mousemove", (e) => {
-      if (isMoving) {
-        map.panBy([offset.x - e.point.x, offset.y - e.point.y], {
-          duration: 0,
-        });
-        offset = e.point;
-      }
-    })
-    map.off("move", removePopup)
-    map.off('mousemove', 'location', mouseMove)
-    map.off('mouseleave', 'location', mouseLeave)
-    map.off('mousemove', 'guide', mouseMove)
-    map.off('mouseleave', 'guide', mouseLeave)
-    map.off('click', 'territory', territoryClick)
-    map.off('click', 'location', locationClick)
-
-    map.on("move", removePopup)
-    map.on("mouseup", () => isMoving = false)
-    map.on('mousemove', 'location', mouseMove)
-    map.on('mouseleave', 'location', mouseLeave)
-    map.on('mousemove', 'guide', mouseMove)
-    map.on('mouseleave', 'guide', mouseLeave)
-    map.on('click', 'territory', territoryClick)
-    map.on('click', 'location', locationClick)
-  }
+    mouseMoveRef.current = e => mouseMove(e, wrapper, IS_GALAXY, name)
+    mouseLeaveRef.current = e => mouseLeave(e, wrapper)
+    territoryClickRef.current = e => territoryClick(e, wrapper, IGNORE_POLY, IS_GALAXY, name)
+    locationClickRef.current = locationClick
+    removePopupRef.current = removePopup
+    mouseDownRef.current = mouseDown
+    // panMoveRef.current = panMove
+    // mouseUpRef.current = () => { isMoving = false }
+  }, [])
 
   useEffect(() => {
     if (!wrapper) return
@@ -354,7 +327,17 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
         })
       });
     }
-    listeners({ target: wrapper })
+
+    // wrapper.on("mousemove", panMoveRef.current)
+    // wrapper.on("mouseup", mouseUpRef.current)
+    wrapper.on("mousedown", mouseDownRef.current)
+    wrapper.on("move", removePopupRef.current)
+    wrapper.on("mousemove", "location", mouseMoveRef.current)
+    wrapper.on("mouseleave", "location", mouseLeaveRef.current)
+    wrapper.on("mousemove", "guide", mouseMoveRef.current)
+    wrapper.on("mouseleave", "guide", mouseLeaveRef.current)
+    wrapper.on("click", "territory", territoryClickRef.current)
+    wrapper.on("click", "location", locationClickRef.current)
 
     // crash detection
     const checkWebGLCrash = () => {
@@ -365,14 +348,21 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     }
 
     const interval = setInterval(checkWebGLCrash, 1_500) // check every 1.5s
-    return () => clearInterval(interval)
-  }, [wrapper, recreateListeners, params.get("preview"), mode])
-
-  useEffect(() => {
-    // local dev testing functions
-    window.localSet = localSet
-    window.localGet = windowLocalGet
-  }, [])
+    return () => {
+      clearInterval(interval)
+      // Remove all
+      wrapper.off("move", removePopupRef.current)
+      // wrapper.off("mousedown", mouseDownRef.current)
+      // wrapper.off("mousemove", panMoveRef.current)
+      // wrapper.off("mouseup", mouseUpRef.current)
+      wrapper.off("mousemove", "location", mouseMoveRef.current)
+      wrapper.off("mouseleave", "location", mouseLeaveRef.current)
+      wrapper.off("mousemove", "guide", mouseMoveRef.current)
+      wrapper.off("mouseleave", "guide", mouseLeaveRef.current)
+      wrapper.off("click", "territory", territoryClickRef.current)
+      wrapper.off("click", "location", locationClickRef.current)
+    }
+  }, [wrapper, recreateListeners, params.get("preview"), mode, locationGroups, data])
 
   // add all custom icons
   if (wrapper) {
@@ -525,7 +515,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       <Sheet {...drawerContent} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GENERATE_LOCATIONS={GENERATE_LOCATIONS} />
 
       <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} />
-      {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} stargazer={stargazer} mobile={mobile} />}
+      {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} mobile={mobile} />}
     </>
   )
 }

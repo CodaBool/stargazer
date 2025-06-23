@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { TITLE, REPO } from "@/lib/utils"
 
 export default async function Page({ searchParams }) {
   const { redirect } = await searchParams
@@ -29,8 +30,8 @@ export default async function Page({ searchParams }) {
       </CardHeader>
       <CardContent>
         <div className="max-w-3xl space-y-6">
-          <p>Stargazer is not an official Lancer product; it is a third party work, and is not affiliated with Massif Press. Stargazer is published via the Lancer <a href="https://massifpress.com/legal" className="text-blue-300 hover:underline" target="_blank">Third Party License.</a></p>
-          <p className="text-gray-200">All code written for Stargazer is licensed under GNU General Public License v3.0 and is freely available from the project's <a href="https://github.com/codabool/stargazer" className="text-blue-300 hover:underline" target="_blank">GitHub repository</a>.</p>
+          <p>{TITLE} is not an official Lancer product; it is a third party work, and is not affiliated with Massif Press. {TITLE} is published via the Lancer <a href="https://massifpress.com/legal" className="text-blue-300 hover:underline" target="_blank">Third Party License.</a></p>
+          <p className="text-gray-200">All code written for {TITLE} is licensed under GNU General Public License v3.0 and is freely available from the project's <a href={REPO} className="text-blue-300 hover:underline" target="_blank">GitHub repository</a>.</p>
 
           <hr />
           <h1 className='text-2xl'>Credits</h1>

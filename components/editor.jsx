@@ -5,7 +5,7 @@ import EditorForm from "./forms/editor";
 import randomName from "@scaleway/random-name";
 import { X } from "lucide-react";
 import { useDraw } from "./controls";
-import { localGet, localSet, useStore } from "@/lib/utils";
+import { getMaps, localSet, useStore } from "@/lib/utils";
 
 export default function Editor({ mapName, params, TYPES }) {
   const { map } = useMap()
@@ -42,20 +42,17 @@ export default function Editor({ mapName, params, TYPES }) {
     const mapId = mapName + "-" + params.get('id')
     const geojson = draw.getAll()
     if (!geojson.features.length) return
-    localGet('maps').then(r => {
-      r.onsuccess = () => {
-        const localMaps = r.result || {}
-        localSet("maps", {
-          ...localMaps, [mapId]: {
-            geojson,
-            name: localMaps[mapId]?.name || randomName('', ' '),
-            updated: Date.now(),
-            id: Number(params.get('id')),
-            map: mapName,
-            config: localMaps[mapId]?.config || {},
-          }
-        })
-      }
+    getMaps().then(maps => {
+      localSet("maps", {
+        ...maps, [mapId]: {
+          geojson,
+          name: maps[mapId]?.name || randomName('', ' '),
+          updated: Date.now(),
+          id: Number(params.get('id')),
+          map: mapName,
+          config: maps[mapId]?.config || {},
+        }
+      })
     })
   }, [popup, draw])
 

@@ -1,29 +1,30 @@
 export const dynamic = 'force-static'
-import fs from "fs"
+import fs, { promises } from "fs"
 import path from "path"
 import Cartographer from "@/components/cartographer"
 import { combineAndDownload, getConsts } from "@/lib/utils"
 
 export default async function mapLobby({ params }) {
-  const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");
-
   const { map } = await params
-  const filePath = path.join(dataDir, `${map}.json`)
   if (map === "favicon.ico") return
   if (map === "custom") {
     return <Cartographer name={map} fid={0} data={{ type: "FeatureCollection", features: [] }} />
   }
 
-  const content = await fs.promises.readFile(filePath, 'utf8')
-
-  // WARN: for some reason a path.resolve is needed here otherwise it cannot find the file
-  // even if its just in a console log
-  path.resolve(`app/[map]/topojson/mousewars.json`)
-  path.resolve(`app/[map]/topojson/postwar.json`)
+  // see bottom comments
+  path.resolve(`app/[map]/topojson/fallout.json`)
   path.resolve(`app/[map]/topojson/lancer.json`)
   path.resolve(`app/[map]/topojson/lancer_starwall.json`)
-  const topojson = JSON.parse(content)
+  path.resolve(`app/[map]/topojson/starwars.json`)
 
+  let topojson
+  try {
+    const content = await promises.readFile(`app/[map]/topojson/${map}.json`, 'utf8')
+    topojson = JSON.parse(content)
+  } catch (error) {
+    console.error(`404 map "${map}"`)
+    return
+  }
   const [noIdData, type] = combineAndDownload("geojson", topojson, {})
   const { IMPORTANT } = getConsts(map)
 
@@ -41,7 +42,7 @@ export default async function mapLobby({ params }) {
   return <Cartographer data={data} name={map} fid={fid} />
 }
 
-export async function generateStaticParams() {
+export function generateStaticParams() {
   const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson")
   const files = fs.readdirSync(dataDir).filter(f => fs.statSync(path.join(dataDir, f)))
   return files.map(file => ({ slug: file }))

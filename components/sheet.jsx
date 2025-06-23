@@ -12,7 +12,6 @@ import {
 import { Badge } from '@/components/ui/badge.jsx'
 import Link from "next/link"
 import { genLink } from "@/lib/utils.js"
-import * as SVG from './svg.js'
 import { useMap } from 'react-map-gl/maplibre'
 import { useEffect } from "react"
 import SolarSystemDiagram from "./solarSystem.jsx"

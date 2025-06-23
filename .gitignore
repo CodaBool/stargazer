@@ -7,3 +7,4 @@ junk.*
 /public/svg/fontawesome
 /public/svg/foundry
 /public/svg/lucide
+.DS_Store
