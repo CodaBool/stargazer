@@ -90,8 +90,6 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
     )
   }
 
-  // TODO: there is a preview bug of it not getting added to draw
-  // console.log("added points not", combined.features.length || data.features.length)
   return (
     <>
       <Map

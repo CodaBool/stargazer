@@ -6,7 +6,7 @@ import maplibregl, {
 } from 'maplibre-gl'
 import { useMap, Layer, Source, Popup } from 'react-map-gl/maplibre'
 import { useEffect, useRef, useState } from 'react'
-import { getColorExpression, createPopupHTML, hexToRgb, localSet, getMaps, useStore, useMode, getLocationGroups } from "@/lib/utils.js"
+import { getColorExpression, createPopupHTML, hexToRgb, localSet, getMaps, useStore, useMode } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import SearchBar from './searchbar'
 import * as turf from '@turf/turf'
@@ -128,8 +128,10 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   // get latest state for these values
   const modeRef = useRef(mode)
   const dataRef = useRef(data)
+  const locationGroupsRef = useRef(locationGroups)
   useEffect(() => { modeRef.current = mode }, [mode])
   useEffect(() => { dataRef.current = data }, [data])
+  useEffect(() => { locationGroupsRef.current = locationGroups }, [locationGroups])
   const mouseMoveRef = useRef(null)
   const mouseLeaveRef = useRef(null)
   const territoryClickRef = useRef(null)
@@ -149,9 +151,8 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
     const clicked = e.features[0];
 
-    // console.log("clicked on", clicked)
     // Find the group that the clicked location belongs to
-    const group = locationGroups.find(g => g.members.includes(clicked.id))
+    const group = locationGroupsRef.current.find(g => g.members.includes(clicked.id))
 
 
     if (!group) {
@@ -160,7 +161,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     }
 
     // Find nearby groups excluding the clicked group
-    const nearbyGroups = locationGroups.filter(g => {
+    const nearbyGroups = locationGroupsRef.current.filter(g => {
       if (g === group) return false; // Exclude the clicked group
       return turf.distance(group.center, g.center) <= (UNIT === "ly" ? 510 : 60);
     })
