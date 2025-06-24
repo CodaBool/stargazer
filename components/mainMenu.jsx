@@ -136,18 +136,18 @@ export default function Home({ revalidate, cloudMaps, user, systems }) {
                   }
                 </PopoverContent>
               </Popover>
-              <Link href="/legal">
-                <Button variant="scifi" className="w-full"><Gavel className="w-4 h-4" /> Legal</Button>
-              </Link>
               {REPO &&
-                <Link href={`${REPO}/issues`} target="_blank">
-                  <Button variant="scifi" className="w-full mt-2"><Bug className="w-4 h-4" /> Issues</Button>
-                </Link>
-              }
-              {(USER && REPO) &&
-                <Link href={`https://ko-fi.com/${USER}`} target="_blank">
-                  <Button variant="scifi" className="w-full mt-2"><DollarSign className="w-4 h-4 relative top-[-2px]" /> Donate</Button>
-                </Link>
+                <>
+                  <Link href="/legal">
+                    <Button variant="scifi" className="w-full"><Gavel className="w-4 h-4" /> Legal</Button>
+                  </Link>
+                  <Link href={`${REPO}/issues`} target="_blank">
+                    <Button variant="scifi" className="w-full mt-2"><Bug className="w-4 h-4" /> Issues</Button>
+                  </Link>
+                  <Link href={`https://ko-fi.com/${USER}`} target="_blank">
+                    <Button variant="scifi" className="w-full mt-2"><DollarSign className="w-4 h-4 relative top-[-2px]" /> Donate</Button>
+                  </Link>
+                </>
               }
               <Link href={user ? "/profile" : `/link?callback=/profile`}>
                 <Button variant="scifi" className="w-full mt-2"><User className="w-4 h-4" /> Account</Button>

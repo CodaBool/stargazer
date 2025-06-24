@@ -42,18 +42,21 @@ export default function PlanetBackground() {
   if (!planetSize) return null
 
   return (
-    <StarsBackground>
+    <StarsBackground delay={0} travelTime={4}>
       <div className="fixed inset-0 flex items-center justify-center">
-        <div style={{ width: planetSize, height: planetSize }}>
-          <Suspense fallback={<div className="w-full h-full bg-black rounded" />}>
+        <div style={{ width: planetSize, height: planetSize, background: "grey" }}>
+          {/* <Suspense fallback={<div className="w-full h-full bg-black rounded" />}>
             <LazyThreejsPlanet
               type={type}
               pixels={700}
               disableListeners={true}
               width={planetSize}
               height={planetSize}
+              warpDelay={1000}
+              warpDuration={1500}
+              warpDistance={1}
             />
-          </Suspense>
+          </Suspense> */}
         </div>
       </div>
     </StarsBackground>

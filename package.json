@@ -36,7 +36,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "isomorphic-dompurify": "^2.25.0",
-    "lucide-react": "^0.522.0",
+    "lucide-react": "^0.523.0",
     "maplibre-gl": "^5.6.0",
     "next": "latest",
     "next-auth": "^4.24.11",
