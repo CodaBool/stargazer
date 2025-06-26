@@ -1,0 +1,42 @@
+import { ImageResponse } from 'next/og'
+
+export async function GET(req) {
+  try {
+
+    const now = new Date()
+    const release = new Date('2025-10-31')
+    const diff = Math.ceil((release.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+
+    return new ImageResponse(
+      (
+        <div
+          style={{
+            fontSize: 62,
+            background: 'transparent',
+            color: 'white',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {diff} days
+        </div>
+      ),
+      {
+        width: 300,
+        height: 150,
+      }
+    )
+  } catch (error) {
+    console.error(error)
+    if (typeof error === 'string') {
+      return Response.json({ error }, { status: 400 })
+    } else if (typeof error?.message === "string") {
+      return Response.json({ error: error.message }, { status: 500 })
+    } else {
+      return Response.json(error, { status: 500 })
+    }
+  }
+}
