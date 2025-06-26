@@ -39,9 +39,7 @@ function ThreejsPlanet({
   seed,
   planetSize,
   disableListeners,
-  warpDelay = 1000,
-  warpDuration = 500,
-  warpDistance = 1000,
+  warpDistance,
 }) {
   const containerRef = useRef(null);
 
@@ -120,9 +118,8 @@ function ThreejsPlanet({
     }
 
     sharedCanvas.style.display = 'block';
-    sharedCanvas.style.borderRadius = '50%';
 
-    let animationId;
+    let animationId, cameraStartTime, currentZ;
     let totalX = 0;
     let moveX = 0;
     let holding = false;
@@ -133,19 +130,23 @@ function ThreejsPlanet({
     const maxAccel = 0.01;
     const notLava = type !== "lava";
 
-    const warpStartZ = warpDistance * 300 // Starting far away
-    camera.position.z = warpStartZ
-    let cameraStartTime = null
-    let currentZ = warpStartZ
+    if (warpDistance) {
+      sharedCanvas.style.borderRadius = '50%';
+      const warpStartZ = warpDistance * 300 // Starting far away
+      camera.position.z = warpStartZ
+      currentZ = warpStartZ
+    }
 
 
     const animate = () => {
       animationId = requestAnimationFrame(animate);
 
-      if (!cameraStartTime) cameraStartTime = performance.now()
-      const damping = 0.1 // adjust for slower or snappier zoom
-      currentZ += (warpDistance - currentZ) * damping
-      camera.position.z = currentZ
+      if (warpDistance) {
+        if (!cameraStartTime) cameraStartTime = performance.now()
+        const damping = 0.1 // adjust for slower or snappier zoom
+        currentZ += (warpDistance - currentZ) * damping
+        camera.position.z = currentZ
+      }
 
 
       planetGroup.children.forEach(planet => {
