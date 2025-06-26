@@ -6,7 +6,7 @@ import { debounce } from '@/lib/utils'
 
 const LazyThreejsPlanet = dynamic(() => import('../threejsPlanet'), {
   ssr: false,
-  loading: () => <div className="w-full h-full bg-black rounded" />,
+  loading: () => <div className="w-full h-full bg-transparent rounded-[50%]" />,
 })
 
 const PLANET_TYPES = [
@@ -25,6 +25,7 @@ const type = PLANET_TYPES[randomIndex]
 
 export default function PlanetBackground() {
   const [planetSize, setPlanetSize] = useState()
+  const [beginWarp, setBeginWarp] = useState()
 
   useEffect(() => {
     const computeSize = debounce(() => {
@@ -34,6 +35,10 @@ export default function PlanetBackground() {
       setPlanetSize(size)
     }, 200)
 
+    setTimeout(() => {
+      setBeginWarp(true)
+    }, 600)
+
     computeSize()
     window.addEventListener('resize', computeSize)
     return () => window.removeEventListener('resize', computeSize)
@@ -42,21 +47,22 @@ export default function PlanetBackground() {
   if (!planetSize) return null
 
   return (
-    <StarsBackground delay={0} travelTime={4}>
+    <StarsBackground delay={0} travelTime={1.2}>
       <div className="fixed inset-0 flex items-center justify-center">
-        <div style={{ width: planetSize, height: planetSize, background: "grey" }}>
-          {/* <Suspense fallback={<div className="w-full h-full bg-black rounded" />}>
-            <LazyThreejsPlanet
-              type={type}
-              pixels={700}
-              disableListeners={true}
-              width={planetSize}
-              height={planetSize}
-              warpDelay={1000}
-              warpDuration={1500}
-              warpDistance={1}
-            />
-          </Suspense> */}
+        <div style={{ width: planetSize, height: planetSize, background: "transparent" }}>
+          {beginWarp &&
+            <Suspense fallback={<div className="w-full h-full bg-transparent rounded-[50%]" />}>
+              <LazyThreejsPlanet
+                type={type}
+                pixels={700}
+                disableListeners={true}
+                width={planetSize}
+                height={planetSize}
+                warpDuration={1500}
+                warpDistance={1}
+              />
+            </Suspense>
+          }
         </div>
       </div>
     </StarsBackground>

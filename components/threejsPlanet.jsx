@@ -120,6 +120,7 @@ function ThreejsPlanet({
     }
 
     sharedCanvas.style.display = 'block';
+    sharedCanvas.style.borderRadius = '50%';
 
     let animationId;
     let totalX = 0;
@@ -142,18 +143,9 @@ function ThreejsPlanet({
       animationId = requestAnimationFrame(animate);
 
       if (!cameraStartTime) cameraStartTime = performance.now()
-      const now = performance.now()
-      const cameraElapsed = now - cameraStartTime
-
-      if (cameraElapsed > warpDelay) {
-        // const warpElapsed = Math.min(1, (cameraElapsed - warpDelay) / warpDuration)
-        // const t = warpElapsed
-        // const easeOutExpo = t === 1 ? 1 : 1 - Math.pow(2, -10 * t)
-        // camera.position.z = warpStartZ - (warpStartZ - warpDistance) * easeOutExpo
-        const damping = 0.1 // adjust for slower or snappier zoom
-        currentZ += (warpDistance - currentZ) * damping
-        camera.position.z = currentZ
-      }
+      const damping = 0.1 // adjust for slower or snappier zoom
+      currentZ += (warpDistance - currentZ) * damping
+      camera.position.z = currentZ
 
 
       planetGroup.children.forEach(planet => {
@@ -252,6 +244,8 @@ function ThreejsPlanet({
         aspectRatio: "1 / 1",
         height: "auto",
         display: "flex",
+        // background: "transparent",
+        // borderRadius: "50%",
         justifyContent: disableListeners ? "center" : "normal",
       }}
     />

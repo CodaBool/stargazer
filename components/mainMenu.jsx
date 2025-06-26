@@ -57,6 +57,7 @@ import {
 import Image from 'next/image'
 import { toast } from "sonner"
 import StarsBackground from "@/components/ui/starbackground"
+import StarsBackgroundSimple from "@/components/ui/starbackgroundSimple"
 import { useRouter } from 'next/navigation'
 import { animateText, combineAndDownload, combineLayers, combineLayersForTopoJSON, getDailyMenuQuote, isMobile, localSet, TITLE, REPO, USER, getMaps } from "@/lib/utils"
 
@@ -161,7 +162,7 @@ export default function Home({ revalidate, cloudMaps, user, systems }) {
       <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-40">
         <h1
           className={`text-4xl md:text-6xl font-extrabold text-white drop-shadow-lg opacity-0 animate-[fade-in-down_3s_ease-out_forwards]`}
-          style={{ fontFamily: '"Press Start 2P", monospace' }}
+          style={{ fontFamily: '"Press Start 2P", monospace', animationDelay: '2.8s' }}
         >
           {TITLE}
         </h1>
@@ -367,19 +368,19 @@ export function MainMenu({ cloudMaps, user, revalidate, hash, systems }) {
                 ?
                 <Card className="max-w-[250px] cursor-pointer lg:max-w-[269px] rounded-xl m-1" onClick={() => setSelectedSystem(system)}>
                   <CardContent className="p-2">
-                    <StarsBackground>
+                    <StarsBackgroundSimple>
                       <CardDescription className="text-center w-[225px] h-[225px] lg:w-[243px] lg:h-[243px] hover-grow">
                         <div className="flex items-center justify-center w-full h-full">
                           <span className="text-center text-2xl lg:text-4xl text-white">CUSTOM</span>
                         </div>
                       </CardDescription>
-                    </StarsBackground>
+                    </StarsBackgroundSimple>
                   </CardContent>
                 </Card >
                 :
                 <Card className="max-w-[250px] cursor-pointer lg:max-w-[269px] rounded-xl m-1" onClick={() => setSelectedSystem(system)}>
                   <CardContent className="p-2">
-                    <StarsBackground>
+                    <StarsBackgroundSimple>
                       <Image
                         src={`/systems/${system}.webp`}
                         alt={system}
@@ -387,7 +388,7 @@ export function MainMenu({ cloudMaps, user, revalidate, hash, systems }) {
                         height={200}
                         className="hover-grow rounded-xl"
                       />
-                    </StarsBackground>
+                    </StarsBackgroundSimple>
                   </CardContent>
                 </Card>
               }
