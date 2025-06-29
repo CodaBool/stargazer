@@ -20,8 +20,6 @@ import {
 import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Pencil, User, Ruler, Menu, Crosshair, HeartHandshake, Eye, CircleHelp, House } from "lucide-react"
 import { REPO, TITLE, useMode, USER, useStore } from "@/lib/utils"
 
-// TODO: this should be rewritten to use zustand instead of a Set (called mode)
-
 export default function Hamburger({ name, params, map, mobile }) {
   const { mode, setMode } = useMode()
   const { setTutorial } = useStore()

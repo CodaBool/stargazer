@@ -7,6 +7,7 @@ import randomName from '@scaleway/random-name'
 import { useRouter } from 'next/navigation'
 import { hexToRgb, getMaps, localSet, useStore, isMobile } from '@/lib/utils'
 import { create } from 'zustand'
+import { toast } from 'sonner'
 
 export const useDraw = create(set => ({
   draw: null,
@@ -89,7 +90,6 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
       if (!mapsWithData.length || params.get("new")) {
 
         console.log("no data exists, or given create param", params.get("new"), "maps =", maps)
-        // TODO: consider const uuid = crypto.randomUUID()
         const id = Date.now()
         setMapId(`${name}-${id}`)
 
@@ -115,18 +115,15 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
       // console.log(`Number of saved maps that match the name "${name}":`, matchingMapsCount);
 
       if (params.get("id")) {
-        // TODO: toast system, show a message "restored local map"
-        // console.log("chose map from URL param")
         const mId = `${name}-${params.get("id")}`
         const geojson = maps[mId]?.geojson
-
         if (geojson) {
           setMapId(mId)
           draw.add(geojson)
+          toast.success("restored local map")
           return
         } else {
-          // TODO: give toast message "map not found locally"
-          console.log("could not find map using id", mId)
+          toast.warning("could not find map using id " + mId)
         }
       }
 
@@ -142,8 +139,6 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
         } else {
           daysAgo = daysAgo + " days ago"
         }
-        // console.log("found", mapsWithData.length, "previous maps for", mapName, "from", daysAgo)
-        // TODO: need a way to have multiple stored maps for the same map
         const restore = window.confirm(`${mapsWithData.length === 1 ? "A previous session was found" : mapsWithData.length + " previous sessions found, one"} from ${daysAgo}. Would you like to ${mapsWithData.length === 1 ? "restore this session" : "choose a session to restore"}?`)
         if (restore) {
           if (mapsWithData.length === 1) {
@@ -159,12 +154,10 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
             return
           }
         } else {
-          // TODO: toast system, show a message "fresh map started"
-          console.log("start a new session")
+          toast.success("new session started")
 
           // duplicate of ?new=1 conditional
           const id = Date.now()
-          // TODO: consider const uuid = crypto.randomUUID()
           setMapId(`${name}-${id}`)
           const url = new URL(window.location).toString().split("?")[0] + "?id=" + id
           // console.log("replaced URL to", url)

@@ -64,7 +64,6 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
     if (document.querySelector(".unsaved-text")) {
       document.querySelector(".unsaved-text").style.visibility = 'visible'
     }
-    // TODO: the dialog should close after deleting the row
   }
 
   function handleSave() {

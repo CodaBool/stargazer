@@ -215,7 +215,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
             />
             {(activeBody.source && !activeBody.source?.properties?.userCreated)
               ? <div className="absolute top-[85px] left-[40px] flex flex-col items-center">
-                <Link href={genLink(activeBody.source, name, "href")} className="mb-2">
+                <Link href={genLink(activeBody.source, name, "href")} className="mb-2" target={`${name === "lancer" ? "_self" : "_blank"}`}>
                   {name === "lancer" && <Button className="cursor-pointer rounded" variant="outline">Contribute</Button>}
                   {name === "fallout" && <Button className="cursor-pointer">Wiki</Button>}
                   {name === "starwars" && <Button className="cursor-pointer">Wiki</Button>}

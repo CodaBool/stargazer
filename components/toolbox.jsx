@@ -13,10 +13,30 @@ const linestring = {
 }
 let text, tutorial, crosshairX, crosshairY
 
-// TODO: consider useMap
-export default function Toolbox({ map, width, params, height, mobile, name, IS_GALAXY, DISTANCE_CONVERTER }) {
+export default function Toolbox({ map, width, params, height, mobile, name, IS_GALAXY, DISTANCE_CONVERTER, UNIT }) {
   const { mode, setMode } = useMode()
   const router = useRouter()
+
+  // Projects [lng, lat] to Mercator meters, using projection EPSG:3857
+  function mercatorLength(lineString) {
+    const R_MAJOR = 6378137.0
+    function project([lng, lat]) {
+      const x = R_MAJOR * (lng * Math.PI / 180)
+      const y = R_MAJOR * Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI / 180) / 2))
+      return [x, y]
+    }
+    const coords = lineString.geometry.coordinates.map(project)
+    let length = 0
+    for (let i = 1; i < coords.length; i++) {
+      const [x1, y1] = coords[i - 1]
+      const [x2, y2] = coords[i]
+      const dx = x2 - x1
+      const dy = y2 - y1
+      length += Math.sqrt(dx * dx + dy * dy)
+    }
+    // return in kilometers (since meters by default)
+    return length / 1000
+  }
 
   function handleClick(e) {
     if (mode !== "measure" || !map) return
@@ -62,19 +82,45 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       )
 
       geojson.features.push(linestring)
-      const km = turf.length(linestring)
+
+      let km
+      if (IS_GALAXY) {
+        km = mercatorLength(linestring)
+      } else {
+        km = turf.length(linestring)
+      }
       const distance = km * DISTANCE_CONVERTER
-      if (name === "fallout") {
+
+      /*
+      distance explaination:
+      - STARWARS: FFG has covering whole galaxy in 14 days for class 1.0
+      */
+
+      if (UNIT === "miles" || UNIT === "mi") {
         const walkingSpeedMph = 3 // average walking speed in miles per hour
-        const walkingTimeHours = distance / walkingSpeedMph;
-        text.textContent = `${distance.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`;
-      } else if (name.includes("lancer")) {
-        const relativeTime = (distance / Math.sinh(Math.atanh(0.995))).toFixed(1);
-        text.textContent = `${distance.toFixed(1)}ly | ${relativeTime} rel. years (.995u) | ${(distance / 0.995).toFixed(1)} observer years`;
-      } else if (name === "starwars") {
-        // TODO: find a conversion and research how hyperspace works
-        const relativeTime = (distance / Math.sinh(Math.atanh(0.995))).toFixed(1);
-        text.textContent = `${distance.toFixed(1)}ly | ${relativeTime} rel. years (.995u) | ${(distance / 0.995).toFixed(1)} observer years`;
+        const walkingTimeHours = distance / walkingSpeedMph
+        text.textContent = `${distance.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`
+      } else if (UNIT === "ly") {
+        if (name === "starwars") {
+          const vehicleSpeedLyPerHour = 300
+          let relativeTime = (distance / vehicleSpeedLyPerHour) / 24
+          let relTimeUnit = "days"
+          if (relativeTime < 1) {
+            relativeTime = relativeTime * 24
+            relTimeUnit = "hours"
+          }
+          text.textContent = `${distance.toFixed(1)}${UNIT} | ${relativeTime.toFixed(1)} ${relTimeUnit} | class 1.0`
+        } else {
+          let relativeTime = (distance / Math.sinh(Math.atanh(0.995))).toFixed(1)
+          let relTimeUnit = "years"
+          if (relativeTime < 1) {
+            relativeTime = (relativeTime * 12).toFixed(1);
+            relTimeUnit = "months";
+          }
+          text.textContent = `${distance.toFixed(1)}${UNIT} | ${relativeTime} rel. ${relTimeUnit} (.995u) | ${(distance / 0.995).toFixed(1)} observer years`
+        }
+      } else {
+        text.textContent = `${distance.toFixed(1)}${UNIT}`
       }
       text.style.visibility = 'visible'
 
@@ -218,16 +264,40 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
 
       geojson.features.push(liveLine)
 
-      const km = turf.length(liveLine)
+      let km
+      if (IS_GALAXY) {
+        km = mercatorLength(liveLine)
+      } else {
+        km = turf.length(liveLine)
+      }
       const distance = km * DISTANCE_CONVERTER
+      // console.log("km", km)
 
-      if (name === "fallout") {
-        const walkingSpeedMph = 3
+      if (UNIT === "miles" || UNIT === "mi") {
+        const walkingSpeedMph = 3 // average walking speed in miles per hour
         const walkingTimeHours = distance / walkingSpeedMph
         text.textContent = `${distance.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`
-      } else if (name.includes("lancer") || name === "starwars") {
-        const relativeTime = (distance / Math.sinh(Math.atanh(0.995))).toFixed(1)
-        text.textContent = `${distance.toFixed(1)}ly | ${relativeTime} rel. years (.995u) | ${(distance / 0.995).toFixed(1)} observer years`
+      } else if (UNIT === "ly") {
+        if (name === "starwars") {
+          const vehicleSpeedLyPerHour = 300
+          let relativeTime = (distance / vehicleSpeedLyPerHour) / 24
+          let relTimeUnit = "days"
+          if (relativeTime < 1) {
+            relativeTime = relativeTime * 24
+            relTimeUnit = "hours"
+          }
+          text.textContent = `${distance.toFixed(1)}${UNIT} | ${relativeTime.toFixed(1)} ${relTimeUnit} | class 1.0`
+        } else {
+          let relativeTime = (distance / Math.sinh(Math.atanh(0.995))).toFixed(1)
+          let relTimeUnit = "years"
+          if (relativeTime < 1) {
+            relativeTime = (relativeTime * 12).toFixed(1);
+            relTimeUnit = "months";
+          }
+          text.textContent = `${distance.toFixed(1)}${UNIT} | ${relativeTime} rel. ${relTimeUnit} (.995u) | ${(distance / 0.995).toFixed(1)} observer years`
+        }
+      } else {
+        text.textContent = `${distance.toFixed(1)}${UNIT}`
       }
 
       text.style.visibility = 'visible'

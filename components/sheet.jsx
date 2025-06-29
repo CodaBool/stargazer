@@ -186,12 +186,12 @@ function generateLocations(group) {
 }
 
 const tintMap = {
-  ice: "blue",
+  ice_planet: "blue",
   terrestrial: "green",
   jovian: "brown",
-  lava: "red",
-  desert: "yellow",
-  ocean: "blue",
+  lava_planet: "red",
+  desert_planet: "yellow",
+  ocean_planet: "blue",
   gate: "purple",
   "red dwarf": "red",
   "white dwarf": "white",
@@ -269,11 +269,11 @@ function generateLocation(seed, isMoon) {
   const rng = seedrandom(seed)
   const random = () => rng()
 
-  const types = ['barren', 'ice', 'terrestrial', 'jovian', 'lava', 'desert', 'ocean', 'dwarf', 'supermassive', 'asteroid']
+  const types = ['barren_planet', 'ice_planet', 'terrestrial', 'jovian', 'lava_planet', 'desert_planet', 'ocean_planet', 'dwarf', 'supermassive', 'asteroid']
   const rand = random()
   let type, ringed, sizeMod = 1
   if (isMoon) {
-    const moonTypes = ['barren', 'ice', 'terrestrial', 'lava', 'desert', 'ocean', 'asteroid']
+    const moonTypes = ['barren_planet', 'ice_planet', 'terrestrial', 'lava_planet', 'desert_planet', 'ocean_planet', 'asteroid']
     type = moonTypes[Math.floor(rand * moonTypes.length)]
     sizeMod = 0.3
   } else {
@@ -282,12 +282,12 @@ function generateLocation(seed, isMoon) {
 
   const sub = (Math.floor(Math.abs(rand) * 100) % 10) / 10
   if (type === "dwarf") {
-    const dwarf = ["barren", "ice"];
+    const dwarf = ["barren_planet", "ice_planet"];
     const subIndex = Math.floor(sub * dwarf.length)
     type = dwarf[subIndex]
     sizeMod = 0.5
   } else if (type === "supermassive") {
-    const supermassive = ["ice", "terrestrial", "jovian", "lava", "desert", "ocean"];
+    const supermassive = ["ice_planet", "terrestrial", "jovian", "lava_planet", "desert_planet", "ocean_planet"];
     const subIndex = Math.floor(sub * supermassive.length);
     type = supermassive[subIndex]
     sizeMod = 2
@@ -368,7 +368,7 @@ function checkRings(radius, random) {
 
 // Planet data structure
 const planetData = {
-  barren: {
+  barren_planet: {
     gravity: [90, 1050],
     pressure: [0, 1],
     temperature: [-200, 350],
@@ -378,7 +378,7 @@ const planetData = {
     ice: [0, 30],
     chemical: ["iron", "silicate", "carbon", "sulfur", "oxygen"]
   },
-  ice: {
+  ice_planet: {
     gravity: [300, 1320],
     pressure: [7, 5802],
     temperature: [-250, -14],
@@ -414,7 +414,7 @@ const planetData = {
     ice: [0, 0],
     chemical: ["hydrogen", "helium", "methane", "ammonia", "sulfur", "carbon", "oxygen"]
   },
-  lava: {
+  lava_planet: {
     gravity: [1000, 2400],
     pressure: [500, 100000],
     temperature: [400, 3000],
@@ -422,12 +422,12 @@ const planetData = {
     year: [200, 1000],
     day: [10, 35],
     // use hydro as a lava proxy, lower is more lava
-    // TODO: this seems bugged
+    // TODO: this seems bugged, the percentage does not work as expected
     hydro: [50, 64],
     cloud: [30, 100],
     chemical: ["oxygen", "iron", "silicate", "sulfur", "carbon", "hydrogen"]
   },
-  desert: {
+  desert_planet: {
     gravity: [700, 1600],
     pressure: [50, 2000],
     temperature: [30, 90],
@@ -439,7 +439,7 @@ const planetData = {
     ice: [0, 2],
     chemical: ["silicate", "oxygen", "iron", "carbon", "sulfur"]
   },
-  ocean: {
+  ocean_planet: {
     gravity: [800, 1600],
     pressure: [500, 3000],
     temperature: [-10, 40],

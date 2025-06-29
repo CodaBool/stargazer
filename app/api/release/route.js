@@ -41,6 +41,10 @@ export async function GET(req) {
             weight: 700,
           },
         ],
+        headers: {
+          // 'cache-control': 'no-store',
+          'cache-control': 'public, max-age=0, s-maxage=86400'
+        },
       }
     )
   } catch (error) {

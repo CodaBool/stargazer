@@ -105,8 +105,9 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
         style={{ width: size.width, height: size.height }}
         mapStyle={config.STYLE}
         pixelRatio={2}
-        // good to view what kind of distortion is happening
-        projection={config.IS_GALAXY === false}
+      // good to view what kind of distortion is happening
+      // projection="vertical-perspective"
+      // projection={config.IS_GALAXY === false ? "mercator" : "globe"}
       >
         <MapComponent locationGroups={locationGroups} width={size.width} height={size.height} name={name} data={combined || data} mobile={mobile} params={params} locked={locked} setCrashed={setCrashed} {...config} />
         {showControls && <Controls name={name} params={params} setSize={setSize} TYPES={config.TYPES} STYLES={config.STYLES} />}
