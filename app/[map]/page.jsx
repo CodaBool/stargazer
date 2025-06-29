@@ -16,6 +16,7 @@ export default async function mapLobby({ params }) {
   path.resolve(`app/[map]/topojson/lancer.json`)
   path.resolve(`app/[map]/topojson/lancer_starwall.json`)
   path.resolve(`app/[map]/topojson/starwars.json`)
+  path.resolve(`app/[map]/topojson/warhammer.json`)
 
   let topojson
   try {

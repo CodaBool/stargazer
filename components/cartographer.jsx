@@ -89,6 +89,8 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
     )
   }
 
+  console.log(data)
+
   return (
     <>
       <Map
