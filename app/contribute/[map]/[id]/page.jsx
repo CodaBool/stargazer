@@ -22,6 +22,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import db from "@/lib/db"
 import { ArrowLeft, Star, CircleX } from "lucide-react"
 import style from "../md.module.css"
+import { bbox } from '@turf/turf'
+
 // import MiniMap from "@/components/minimap"
 
 export default async function Location({ params, searchParams }) {
@@ -115,21 +117,16 @@ export default async function Location({ params, searchParams }) {
 
   let panX = "wow such NaN"
   let panY = "wow such NaN"
-  let type = "location"
   let coordPretty = "complex, see map"
   if (location.coordinates.includes(",")) {
     // console.log("coord setup", location.coordinates)
     panX = Number(location.coordinates.split(",")[0].trim())
     panY = Number(location.coordinates.split(",")[1].trim())
-    if (location.geometry.includes("Poly")) {
-      type = "territory"
-    } else if (location.geometry === "LineString") {
-      type = "guide"
-    } else {
+    if (location.geometry === "Point") {
       coordPretty = Math.floor(Number(panY)) + " " + Math.floor(panX)
     }
   }
-  console.log("open", `/${map}?locked=1&lng=${panX}&lat=${panY}&name=${encodeURIComponent(location.name)}&type=${type}&search=0&hamburger=0`)
+  console.log("open", `/${map}?locked=1&lng=${panX}&lat=${panY}&name=${encodeURIComponent(location.name)}&type=${location.geometry}&search=0&hamburger=0`)
 
   return (
     <div className="mx-auto my-4 flex justify-center flex-col md:container select-text">
@@ -171,7 +168,7 @@ export default async function Location({ params, searchParams }) {
                 ? <div>
                   <CircleX className="mx-auto" /> Invalid Coordinates
                 </div>
-                : <iframe src={`/${map}?locked=1&lng=${panX}&lat=${panY}&z=4&name=${encodeURIComponent(location.name)}&type=${type}&search=0&hamburger=0&zoom=0`} width="600" height="400" style={{ border: "none" }}></iframe>
+                : <iframe src={`/${map}?locked=1&lng=${panX}&lat=${panY}&z=${map.includes("lancer") ? 4 : 8}&name=${encodeURIComponent(location.name)}&type=${location.geometry}&search=0&hamburger=0&zoom=0`} width="600" height="400" style={{ border: "none" }}></iframe>
               }
             </AccordionContent>
           </AccordionItem>

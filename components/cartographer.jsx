@@ -47,7 +47,6 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
 
       if (!map || !params.get("id")) {
         console.log("map not found or new map, skip local map read")
-        console.log("map", map)
         setConfig(CONFIG)
         // duplicate code to below
         setLocationGroups(getLocationGroups(data.features.filter(f =>

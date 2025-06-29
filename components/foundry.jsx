@@ -1,7 +1,6 @@
 
 import { useEffect } from "react"
 import { useMap } from 'react-map-gl/maplibre'
-// import { geoPath, geoMercator, geoTransform } from 'd3-geo'
 import distance from '@turf/distance'
 import { point as turfPoint } from '@turf/helpers'
 import maplibregl from 'maplibre-gl'

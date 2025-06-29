@@ -116,6 +116,22 @@ export default function MenuComponent({ map, data, mobile, name, pan, locationGr
     }
   }, [active])
 
+  useEffect(() => {
+    const root = input.current?.closest("[cmdk-root]")
+    if (!root) return
+
+    function handleFocusOut() {
+      requestAnimationFrame(() => {
+        if (!root.contains(document.activeElement)) {
+          setActive(false)
+        }
+      })
+    }
+
+    root.addEventListener("focusout", handleFocusOut)
+    return () => root.removeEventListener("focusout", handleFocusOut)
+  }, [input])
+
   return (
     <div className="flex mt-5 w-full justify-center absolute z-10 pointer-events-none" >
       <Command className="rounded-lg border shadow-md w-[75%] searchbar pointer-events-auto" style={{ borderColor: darkenColor(STYLES.MAIN_COLOR, 13), backgroundColor: darkenColor(STYLES.MAIN_COLOR, 19) }}>
@@ -127,7 +143,7 @@ export default function MenuComponent({ map, data, mobile, name, pan, locationGr
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup ref={cmd} heading="Suggestions">
               {data.features.map((d, index) => (
-                <CommandItem key={index} value={d.properties.name} className="cursor-pointer z-100" onMouseDown={e => search(e, d)} onSelect={e => search(e, d)} onTouchEnd={e => search(e, d)}>
+                <CommandItem key={index} value={d.properties.name} className="cursor-pointer z-100" onMouseDown={e => search(e, d)} onSelect={e => search(e, d)}>
                   {d.properties.name}
                 </CommandItem>
               ))}

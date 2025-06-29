@@ -17,13 +17,11 @@ const Command = React.forwardRef(({ className, ...props }, ref) => (
 ))
 Command.displayName = CommandPrimitive.displayName
 
-const CommandDialog = ({
-  children,
-  ...props
-}) => {
+const CommandDialog = ({ open, onOpenChange, children }) => {
   return (
-    (<Dialog {...props}>
-      <DialogContent className="overflow-hidden p-0 shadow-lg">
+    (<Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="overflow-hidden p-0 shadow-lg"
+      >
         <Command
 
           className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-slate-500 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5 dark:[&_[cmdk-group-heading]]:text-slate-400">
@@ -35,10 +33,24 @@ const CommandDialog = ({
 }
 
 const CommandInput = React.forwardRef(({ className, ...props }, ref) => (
-  <div className="flex items-center px-3" cmdk-input-wrapper="" style={{ borderBottom: `1px solid ${props.borderbottomcolor}` }}>
+  <div className="flex items-center px-3" cmdk-input-wrapper="" style={{ borderBottom: `1px solid ${props.borderbottomcolor}` }}
+
+  // onInteractOutside={() => { console.log("interact outsid 1e") }}
+  >
     <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
     <CommandPrimitive.Input
       ref={ref}
+      onBlur={(e) => {
+        const target = e.currentTarget
+        requestAnimationFrame(() => {
+          // Avoid error if target is already detached
+          if (!target) return
+          if (!target.closest('[cmdk-root]')?.contains(document.activeElement)) {
+            props.onBlur?.(e)
+            props.onClose?.()
+          }
+        })
+      }}
       className={cn(
         "flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-hidden placeholder:text-slate-500 disabled:cursor-not-allowed disabled:opacity-50 dark:placeholder:text-slate-400",
         className

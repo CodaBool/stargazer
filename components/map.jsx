@@ -145,7 +145,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   function locationClick(e) {
     const currentMode = modeRef.current
     if (currentMode === "measure" || (currentMode === "crosshair" && mobile) || locked) {
-      console.log("returning early with loc click")
       return
     }
 
@@ -179,8 +178,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       groupCenter: group.center,
       ...dataRef.current.features.find(f => f.id === id)
     }))
-
-    // console.log("myGroup", myGroup)
 
     pan(clicked, myGroup, nearby)
 
@@ -364,6 +361,36 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       wrapper.off("click", "location", locationClickRef.current)
     }
   }, [wrapper, recreateListeners, params.get("preview"), mode, locationGroups, data])
+
+  useEffect(() => {
+    if (!wrapper || !params.get("type") || !params.get("name")) return
+    const feature = data.features.find(f => {
+      if (f.geometry.type !== params.get("type")) return
+      if (f.properties.name !== params.get("name")) return
+      let coord = f.geometry.coordinates.join(",")
+      if (f.geometry.type.includes("Poly") || f.geometry.type === "LineString") {
+        const centroid = turf.centroid(f)
+        coord = centroid.geometry.coordinates.join(",")
+      }
+      if (coord !== `${params.get("lng")},${params.get("lat")}`) return
+      return true
+    })
+    if (!feature) return
+    if (feature.geometry.type !== "Point") {
+      const bounds = turf.bbox(feature)
+      wrapper.fitBounds([
+        [bounds[0], bounds[1]], // bottom-left corner
+        [bounds[2], bounds[3]], // top-right corner
+      ], {
+        duration: 800,
+        padding: { top: 50, bottom: 50, left: 50, right: 50 },
+      })
+    }
+    wrapper.setFeatureState(
+      { source: 'source', id: feature.id },
+      { hover: true }
+    );
+  }, [wrapper, params.get("name"), params.get("lat"), params.get("lng"), data, params.get("type")])
 
   // add all custom icons
   if (wrapper) {

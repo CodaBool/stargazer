@@ -177,6 +177,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
             }}
           >
             <DialogTitle>{(activeBody.name || "") + `${activeBody.variant ? ` (${activeBody.variant})` : ""}`} - {activeBody.type.replaceAll("_", " ")}</DialogTitle>
+            <div className="threejs-planet-dialog"></div>
             <ThreejsPlanet
               sharedCanvas={sharedCanvas}
               sharedRenderer={sharedRenderer}

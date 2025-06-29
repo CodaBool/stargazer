@@ -77,9 +77,9 @@ function ThreejsPlanet({
 
     // const camera = new PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 100000);
     const clock = new Clock();
-    const planetGroup = new Group();
+    const planetGroup = new Group()
 
-    planetGroup.add(generatePlanetByType({
+    const planet = generatePlanetByType({
       pixels: pixels ? Number(pixels) : undefined,
       colors: {
         base: baseColors || undefined,
@@ -97,7 +97,21 @@ function ThreejsPlanet({
       lakes: lakes ? Number(lakes) : undefined,
       rivers: rivers ? Number(rivers) : undefined,
       seed: seed ? Number(seed) : undefined,
-    }));
+    })
+
+    if (!planet) {
+      // fallback to text if no model for this type
+      const dialog = document.querySelector('.threejs-planet-dialog');
+      if (dialog) {
+        dialog.style.textAlign = 'center';
+        dialog.style.fontSize = '2em';
+        dialog.style.paddingTop = '6em';
+        dialog.textContent = `No preview available for ${type.replaceAll("_", " ")}`;
+      }
+      return
+    }
+
+    planetGroup.add(planet);
     scene.add(planetGroup);
 
     let starGroup;
@@ -275,6 +289,9 @@ function generatePlanetByType(params) {
     case "jovian":
       // duplicate of gas
       return createGasGiant(params)
+    case "ringed_planet":
+      // duplicate of ring
+      return createGasGiantRing(params)
     case "ring":
       return createGasGiantRing(params)
     case "comet":

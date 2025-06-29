@@ -197,7 +197,6 @@ body {
   height: 140px !important;
 }
 
-/* full maplibre switch */
 .maplibregl-popup {
   color: white;
   overflow: hidden;

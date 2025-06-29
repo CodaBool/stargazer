@@ -23,7 +23,7 @@ const MAX_GEN_LOCATIONS = 8
 
 export default function SheetComponent({ drawerContent, setDrawerContent, myGroup, nearbyGroups, coordinates, name, selectedId, height, IS_GALAXY, GENERATE_LOCATIONS }) {
   const { map } = useMap()
-  const GROUP_NAME = IS_GALAXY ? "Solar Systems" : "Locations"
+  const GROUP_NAME = IS_GALAXY ? "Solar Systems" : "Regions"
 
   useEffect(() => {
     // scroll SheetContent to top
@@ -106,7 +106,7 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
               <Crosshair onClick={() => panToGroup(local)} className="inline mr-2 mb-1 cursor-pointer" />
               <span className="text-gray-400">{coordinates ? `${IS_GALAXY ? "Y" : "lat"}: ${Math.floor(coordinates[1])}, ${IS_GALAXY ? "X" : "lng"}: ${Math.floor(coordinates[0])}` : 'unknown'}</span>
             </SheetTitle>
-            {nearby.length > 1 && <SheetDescription className="text-center" >{nearby.length} Nearby {GROUP_NAME}</SheetDescription>}
+            {nearby.length > 1 && <SheetDescription className="text-center text-xs md:text-sm" >{nearby.length} Nearby {GROUP_NAME}</SheetDescription>}
           </SheetHeader >
           {IS_GALAXY
             ? <SolarSystemDiagram group={local} height={height} isGalaxy={IS_GALAXY} map={map} selectedId={selectedId} name={name} />
@@ -115,11 +115,11 @@ export default function SheetComponent({ drawerContent, setDrawerContent, myGrou
           <hr />
           {nearby.length > 0 && (
             <>
-              <h1 className="text-center text-2xl my-4">Nearby {GROUP_NAME}</h1>
+              <h1 className="text-center mt-2 text-sm md:text-2xl md:mt-4">Nearby {GROUP_NAME}</h1>
               {nearby.map((group, index) => {
                 return (
                   <div key={index} className="flex flex-col">
-                    <div className="mx-auto">
+                    <div className="mx-auto mt-2">
                       <Crosshair onClick={() => panToGroup(group)} className="cursor-pointer inline" />
                       <span className="ml-2 text-gray-400">
                         {`${IS_GALAXY ? "Y" : "lat"}: ${Math.floor(group[0].groupCenter[1])}, ${IS_GALAXY ? "X" : "lng"}: ${Math.floor(group[0].groupCenter[0])}`}

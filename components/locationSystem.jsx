@@ -1,10 +1,22 @@
 'use client';
 import { genLink } from "@/lib/utils";
 import { Badge } from "./ui/badge"
+import { useEffect, useRef } from "react";
 
 const svgBase = "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/svg/";
 
 export default function SolarSystemDiagram({ group, selectedId, map, name }) {
+  const selectedRef = useRef(null)
+
+  useEffect(() => {
+    if (selectedRef.current) {
+      selectedRef.current.scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+      });
+    }
+  }, [selectedId]);
+
   function handleMouseOver(d) {
     if (!d) return
     map.setFeatureState(
@@ -20,6 +32,7 @@ export default function SolarSystemDiagram({ group, selectedId, map, name }) {
       { hover: false }
     )
   }
+
 
   function panTo(feat) {
     if (feat.geometry.type !== "Point") return
@@ -45,7 +58,7 @@ export default function SolarSystemDiagram({ group, selectedId, map, name }) {
           {group.map((body, index) => {
             const selected = (body.id === selectedId) && typeof selectedId !== "undefined"
             return (
-              <div key={index} className="flex flex-col items-center relative min-w-[40px]">
+              <div key={index} ref={selected ? selectedRef : null} className="flex flex-col items-center relative min-w-[40px]">
                 <img
                   src={`${svgBase + name}/${body.properties.type}.svg`}
                   alt={body.properties.name}

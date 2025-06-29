@@ -157,7 +157,7 @@ function Credits({ name }) {
               <span><Sparkles className="inline pr-2" /> Starwall</span><br />
             </>
             : <>
-              <span><Sparkles className="inline pr-2" /> <a href="https://github.com/MeepChangeling" target="_blank"> MeepChangeling <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
+              <span className="text-xs md:text-md"><Sparkles className="inline pr-2" /> <a href="https://github.com/MeepChangeling" target="_blank"> MeepChangeling <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
             </>
           }
         </span>
