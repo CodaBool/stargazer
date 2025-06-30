@@ -270,59 +270,38 @@ function ThreejsPlanet({
 function generatePlanetByType(params) {
   switch (params.type) {
     case "barren_planet":
-      return createNoAtmospherePlanet(params)
+    case "moon":
     case "barren":
       return createNoAtmospherePlanet(params)
     case "gate":
       return createGate(params)
     case "station":
       return createStation(params)
-    case "moon":
-      // duplicate of barren
-      return createNoAtmospherePlanet(params)
     case "ice_planet":
-      return createIcePlanet(params)
     case "ice":
       return createIcePlanet(params)
     case "gas":
-      return createGasGiant(params)
     case "jovian":
-      // duplicate of gas
       return createGasGiant(params)
     case "ringed_planet":
-      // duplicate of ring
-      return createGasGiantRing(params)
     case "ring":
       return createGasGiantRing(params)
     case "comet":
-      // lightPos = new Vector2(0.39, 0.7), colors, rotation = 0.0, pixels, seed, size
-      return createAsteroid(undefined, params.colors, undefined, params.pixels, params.seed, params.size)
     case "asteroid":
-      // lightPos = new Vector2(0.39, 0.7), colors, rotation = 0.0, pixels, seed, size
-      return createAsteroid(undefined, params.colors, undefined, params.pixels, params.seed, params.size)
     case "asteroids":
-      // duplicate of asteroid
-      // lightPos = new Vector2(0.39, 0.7), colors, rotation = 0.0, pixels, seed, size
       return createAsteroid(undefined, params.colors, undefined, params.pixels, params.seed, params.size)
     case "neutron_star":
-      return createStarPlanet(params)
     case "star":
       return createStarPlanet(params)
     case "lava_planet":
-      return createLavaPlanet(params)
     case "lava":
       return createLavaPlanet(params)
     case "desert_planet":
-      // ightPos = new Vector2(0.39, 0.7), colors, rotationSpeed = 0.1, rotation = 0.0, pixels, seed
-      return createDryPlanet(undefined, params.colors, undefined, undefined, params.pixels, params.seed)
     case "desert":
       // ightPos = new Vector2(0.39, 0.7), colors, rotationSpeed = 0.1, rotation = 0.0, pixels, seed
       return createDryPlanet(undefined, params.colors, undefined, undefined, params.pixels, params.seed)
     case "terrestrial":
-      return createEarthPlanet(params)
     case "ocean_planet":
-      // duplicate of terrestrial
-      return createEarthPlanet(params)
     case "ocean":
       // duplicate of terrestrial
       return createEarthPlanet(params)

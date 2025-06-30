@@ -40,6 +40,7 @@ export default async function mapLobby({ params }) {
     f.id = fid++
   })
 
+
   return <Cartographer data={data} name={map} fid={fid} />
 }
 
