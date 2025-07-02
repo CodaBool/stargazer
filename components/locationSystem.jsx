@@ -1,9 +1,7 @@
 'use client';
-import { genLink } from "@/lib/utils";
+import { genLink, svgBase } from "@/lib/utils";
 import { Badge } from "./ui/badge"
 import { useEffect, useRef } from "react";
-
-const svgBase = "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/svg/";
 
 export default function SolarSystemDiagram({ group, selectedId, map, name }) {
   const selectedRef = useRef(null)

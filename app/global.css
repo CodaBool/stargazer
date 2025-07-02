@@ -141,6 +141,7 @@ body {
   /* IE10+/Edge */
   -ms-user-select: none;
   user-select: none;
+  pointer-events: auto !important;
 }
 
 /* landing page */

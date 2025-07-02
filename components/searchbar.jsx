@@ -9,10 +9,9 @@ import {
 } from "@/components/ui/command"
 import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Sparkle, BookOpen, Bug, Pencil, Plus, MapPin, RectangleHorizontal, Map, ArrowRightFromLine, Hexagon, ListCollapse, User, LogOut, Ruler, CodeXml, Menu, Crosshair } from "lucide-react"
 import { darkenColor, useStore } from "@/lib/utils.js"
-import * as turf from '@turf/turf'
 import { useEffect, useRef, useState } from "react"
 
-export default function MenuComponent({ map, data, mobile, name, pan, locationGroups, UNIT, STYLES }) {
+export default function MenuComponent({ map, data, mobile, name, pan, groups, UNIT, STYLES }) {
   const [active, setActive] = useState()
   const [previousFeatureId, setPreviousFeatureId] = useState(null)
   const { editorTable } = useStore()
@@ -43,46 +42,26 @@ export default function MenuComponent({ map, data, mobile, name, pan, locationGr
     // Update the previousFeatureId state
     setPreviousFeatureId(d.id)
 
-
-
     // duplcate of what's in locationClick in map.jsx
+    const [lng, lat] = d.geometry.coordinates
+    const buffer = UNIT === "ly" ? 2 : 0.5 // ~adjust for scale in degrees
 
-    // Find the group that the clicked location belongs to
-    const group = locationGroups.find(g => g.members.includes(d.id))
-
-
-
-    if (!group) {
-      pan(d, [], [], true)
-      return
-    }
-
-    // Find nearby groups excluding the clicked group
-    const nearbyGroups = locationGroups.filter(g => {
-      if (g === group) return false; // Exclude the clicked group
-      return turf.distance(group.center, g.center) <= (UNIT === "ly" ? 510 : 60);
-    })
-    // console.log("pre nearbyGroups", nearbyGroups)
-
-    const nearby = nearbyGroups.map(({ center, members }) => {
-      return members.map(id => {
-        return {
-          groupCenter: center,
-          ...data.features.find(f => f.id === id)
-        }
-      })
+    // rbush uses a square but that's fine
+    const rawNearby = groups.search({
+      minX: lng - buffer,
+      minY: lat - buffer,
+      maxX: lng + buffer,
+      maxY: lat + buffer
     })
 
-    // const myGroup = group.members.map(id => data.features.find(f => f.id === id))
-    const myGroup = group.members.map(id => ({
-      groupCenter: group.center,
-      ...data.features.find(f => f.id === id)
-    }))
+    const myGroup = rawNearby
+      .filter(item => item.feature.id !== d.id)
+      .map(item => ({
+        groupCenter: [lng, lat],
+        ...item.feature
+      }))
 
-    // console.log("click group", group)
-    // console.log("Nearby groups (excluding clicked group)", nearby)
-
-    pan(d, myGroup, nearby, true)
+    pan(d, myGroup, true)
   }
 
   useEffect(() => {

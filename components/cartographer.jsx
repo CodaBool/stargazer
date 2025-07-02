@@ -6,13 +6,14 @@ import Map from 'react-map-gl/maplibre'
 import Controls from './controls.jsx'
 import Editor from './editor'
 import { useSearchParams } from 'next/navigation'
+import RBush from 'rbush'
 
 export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
   const CONFIG = getConsts(name)
   const [crashed, setCrashed] = useState() // crash reloading
   const [size, setSize] = useState()
   const [combined, setCombined] = useState()
-  const [locationGroups, setLocationGroups] = useState()
+  const [groups, setGroups] = useState()
   const [config, setConfig] = useState()
   const params = useSearchParams()
   const mobile = isMobile()
@@ -49,9 +50,18 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
         console.log("map not found or new map, skip local map read")
         setConfig(CONFIG)
         // duplicate code to below
-        setLocationGroups(getLocationGroups(data.features.filter(f =>
+        const index = new RBush()
+        const features = data.features.filter(f =>
           f.geometry.type === "Point" && f.properties.type !== "text"
-        )))
+        ).map(f => ({
+          minX: f.geometry.coordinates[0],
+          minY: f.geometry.coordinates[1],
+          maxX: f.geometry.coordinates[0],
+          maxY: f.geometry.coordinates[1],
+          feature: f
+        }))
+        index.load(features)
+        setGroups(index)
         return
       }
       // console.log("read local map", map)
@@ -72,16 +82,25 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
         ...map.config,
       })
       // what's better than 2 race conditions...3!
-      setLocationGroups(getLocationGroups((combined || data).features.filter(f =>
-        f.geometry.type === "Point" && f.properties.type !== "text"
-      )))
+      const index = new RBush()
+      const features = (combined || data).features.filter(f =>
+        f.geometry?.type === "Point" && f.properties.type !== "text"
+      ).map(f => ({
+        minX: f.geometry.coordinates[0],
+        minY: f.geometry.coordinates[1],
+        maxX: f.geometry.coordinates[0],
+        maxY: f.geometry.coordinates[1],
+        feature: f
+      }))
+      index.load(features)
+      setGroups(index)
     })();
 
     // cleanup
     return () => window.removeEventListener('resize', handleResize)
   }, [params])
 
-  if (!size || !config || !locationGroups) {
+  if (!size || !config || !groups) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent text-indigo-900 rounded-full" />
@@ -110,7 +129,7 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
       // projection="vertical-perspective"
       // projection={config.IS_GALAXY === false ? "mercator" : "globe"}
       >
-        <MapComponent locationGroups={locationGroups} width={size.width} height={size.height} name={name} data={combined || data} mobile={mobile} params={params} locked={locked} setCrashed={setCrashed} {...config} />
+        <MapComponent locationGroups={groups} width={size.width} height={size.height} name={name} data={combined || data} mobile={mobile} params={params} locked={locked} setCrashed={setCrashed} {...config} />
         {showControls && <Controls name={name} params={params} setSize={setSize} TYPES={config.TYPES} STYLES={config.STYLES} />}
       </Map>
       {showEditor && <Editor mapName={name} params={params} TYPES={config.TYPES} />}

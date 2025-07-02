@@ -17,6 +17,7 @@ import Sheet from './sheet'
 import Tutorial from './tutorial'
 import { useDraw } from "./controls";
 import { Calibrate, Link } from './foundry'
+import Drawer from './drawer'
 
 let popup = new maplibregl.Popup({
   closeButton: false,
@@ -143,49 +144,39 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
 
   function locationClick(e) {
-    const currentMode = modeRef.current
-    if (currentMode === "measure" || (currentMode === "crosshair" && mobile) || locked) {
+    if (modeRef.current === "measure" || (modeRef.current === "crosshair" && mobile) || locked) return
+
+    const clicked = e.features[0]
+    const index = locationGroupsRef.current
+    if (!index) {
+      console.error("ERR: spatial index failed")
       return
     }
 
-    const clicked = e.features[0];
+    const [lng, lat] = clicked.geometry.coordinates
+    const buffer = UNIT === "ly" ? 2 : 0.5 // ~adjust for scale in degrees
 
-    // Find the group that the clicked location belongs to
-    const group = locationGroupsRef.current.find(g => g.members.includes(clicked.id))
-
-
-    if (!group) {
-      console.log("ERR: stale group data error")
-      return
-    }
-
-    // Find nearby groups excluding the clicked group
-    const nearbyGroups = locationGroupsRef.current.filter(g => {
-      if (g === group) return false; // Exclude the clicked group
-      return turf.distance(group.center, g.center) <= (UNIT === "ly" ? 510 : 60);
+    // rbush uses a square but that's fine
+    const rawNearby = index.search({
+      minX: lng - buffer,
+      minY: lat - buffer,
+      maxX: lng + buffer,
+      maxY: lat + buffer
     })
 
-    const nearby = nearbyGroups.map(({ center, members }) => {
-      return members.map(id => {
-        return {
-          groupCenter: center,
-          ...dataRef.current.features.find(f => f.id === id)
-        }
-      })
-    })
+    const myGroup = rawNearby
+      .filter(item => item.feature.id !== clicked.id)
+      .map(item => ({
+        groupCenter: [lng, lat],
+        ...item.feature
+      }))
 
-    const myGroup = group.members.map(id => ({
-      groupCenter: group.center,
-      ...dataRef.current.features.find(f => f.id === id)
-    }))
+    pan(clicked, myGroup)
 
-    pan(clicked, myGroup, nearby)
-
-    // remove popup
     if (popup._container) popup.remove()
   }
 
-  async function pan(d, myGroup, nearbyGroups, fit) {
+  async function pan(d, myGroup, fit) {
     if (locked && !fit) return
     let fly = true, lat, lng, bounds, coordinates = d.geometry.coordinates
     let zoomedOut = wrapper.getZoom() < 6
@@ -244,7 +235,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     }
 
     if (d.geometry.type === "Point") {
-      setDrawerContent({ coordinates, selectedId: d.id, myGroup, nearbyGroups })
+      setDrawerContent({ coordinates, selectedId: d.id, myGroup, d })
     }
   }
 
@@ -533,14 +524,14 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
         <ZoomIn size={34} onClick={() => wrapper.zoomIn()} className='m-2 hover:stroke-blue-200' />
         <ZoomOut size={34} onClick={() => wrapper.zoomOut()} className='m-2 mt-4 hover:stroke-blue-200' />
       </div>}
-      {params.get("search") !== "0" && <SearchBar map={wrapper} name={name} data={data} pan={pan} mobile={mobile} locationGroups={locationGroups} UNIT={UNIT} STYLES={STYLES} />}
+      {params.get("search") !== "0" && <SearchBar map={wrapper} name={name} data={data} pan={pan} mobile={mobile} groups={locationGroups} UNIT={UNIT} STYLES={STYLES} />}
 
       {/* FOUNDRY */}
       {params.get("secret") && <Link width={width} height={height} mobile={mobile} name={name} params={params} />}
       {params.get("calibrate") && <Calibrate width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}
 
       <Tutorial name={name} IS_GALAXY={IS_GALAXY} />
-      <Sheet {...drawerContent} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GENERATE_LOCATIONS={GENERATE_LOCATIONS} />
+      <Drawer {...drawerContent} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GENERATE_LOCATIONS={GENERATE_LOCATIONS} mobile={mobile} />
 
       <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} />
       {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} mobile={mobile} />}
