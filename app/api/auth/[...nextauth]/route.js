@@ -1,5 +1,6 @@
 import NextAuth from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
+import DiscordProvider from "next-auth/providers/discord"
 import db from "@/lib/db"
 import { TITLE } from "@/lib/utils"
 
@@ -33,13 +34,19 @@ export const authOptions = {
     strategy: "jwt",
     maxAge: 31556952, // in seconds (31,556,952 = 1 year)
   },
-  providers: [{
-    id: "http-email",
-    name: "Email",
-    type: "email",
-    maxAge: 60 * 60 * 24, // Email link will expire in 24 hours
-    sendVerificationRequest,
-  }],
+  providers: [
+    {
+      id: "http-email",
+      name: "Email",
+      type: "email",
+      maxAge: 60 * 60 * 24, // Email link will expire in 24 hours
+      sendVerificationRequest,
+    },
+    DiscordProvider({
+      clientId: "1390112243810828418",
+      clientSecret: process.env.DISCORD_SECRET,
+    }),
+  ],
   theme: {
     colorScheme: "dark",
   }

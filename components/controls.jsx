@@ -18,7 +18,7 @@ export const useDraw = create(set => ({
 
 export default function Controls({ name, params, setSize, TYPES, STYLES }) {
   const [saveTrigger, setSaveTrigger] = useState()
-  const { setTutorial } = useStore()
+  // const { setTutorial, tutorial } = useStore()
   const [mapId, setMapId] = useState()
   const mobile = isMobile()
   const draw = useDraw(d => d.draw)
@@ -59,11 +59,6 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
     })
 
     getMaps().then(maps => {
-      // if this is the first time, show a tutorial
-      if (Object.keys(maps).length === 0 && !localStorage.getItem("noTutorial") && !mobile) {
-        setTutorial(true)
-      }
-
       localSet("maps", {
         ...maps, [mapId]: {
           geojson,

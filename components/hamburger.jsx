@@ -84,7 +84,7 @@ export default function Hamburger({ name, params, map, mobile }) {
               </Link>
             }
             {!mobile &&
-              <DropdownMenuItem className="cursor-pointer" onClick={() => setTutorial(true)}>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => setTutorial("faq")}>
                 <CircleHelp className="ml-[.6em] inline" /> <span className="ml-[5px]">Help</span>
               </DropdownMenuItem>
             }
