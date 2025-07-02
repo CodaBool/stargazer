@@ -43,7 +43,7 @@ export const authOptions = {
       sendVerificationRequest,
     },
     DiscordProvider({
-      clientId: "1390112243810828418",
+      clientId: process.env.DISCORD_APP_ID,
       clientSecret: process.env.DISCORD_SECRET,
     }),
   ],
