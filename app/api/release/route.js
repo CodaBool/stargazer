@@ -1,52 +1,49 @@
-import { ImageResponse } from 'next/og'
 
-export const runtime = 'edge'
+
+export const runtime = 'edge';
 export async function GET(req) {
   try {
 
-    const now = new Date()
-    const release = new Date('2025-10-31')
-    const diff = Math.ceil((release.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    const now = new Date();
+    const release = new Date('2025-10-31');
+    const diff = Math.ceil((release.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-    const font = await fetch(
-      new URL('../../../public/font/PressStart2P-Regular.ttf', import.meta.url)
-    ).then(res => res.arrayBuffer())
-
-    return new ImageResponse(
-      (
-        <div
-          style={{
-            fontFamily: 'Press Start 2P',
-            fontSize: 62,
-            background: 'transparent',
-            color: 'white',
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-          }}
-        >
-          {diff} days
-        </div>
-      ),
+    return new Response(
+      `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Release Countdown</title>
+            <style>
+                body {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                    margin: 0;
+                    font-family: monospace, sans-serif;
+                    background-color: black;
+                    color: white;
+                    text-align: center;
+                    font-size: 2em;
+                    font
+                }
+            </style>
+        </head>
+        <body>
+            <div>${diff} days until Stargazer release</div>
+        </body>
+        </html>
+        `,
       {
-        width: 300,
-        height: 150,
-        fonts: [
-          {
-            name: 'Press Start 2P',
-            data: font,
-            weight: 700,
-          },
-        ],
         headers: {
-          'cache-control': 'no-store',
-          // 'cache-control': 'public, max-age=0, s-maxage=86400'
+          'Content-Type': 'text/html',
+          'Cache-Control': 'no-store',
         },
       }
-    )
+    );
   } catch (error) {
     console.error(error)
     if (typeof error === 'string') {
