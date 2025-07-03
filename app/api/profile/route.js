@@ -22,7 +22,7 @@ export async function PUT(req) {
 
     await db.user.update({
       where: { id: user.id },
-      data: { alias: body.alias }
+      data: { name: body.name }
     })
 
     return Response.json({ msg: "success" })

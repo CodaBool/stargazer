@@ -8,6 +8,9 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// most values are gotten from the auth docs
+// https://authjs.dev/getting-started/adapters/prisma
+
 model Comment {
   id         Int      @id @default(autoincrement())
   createdAt  DateTime @default(now()) @db.Timestamp(6)
@@ -67,10 +70,44 @@ model User {
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   emailVerified DateTime?
-  alias         String?    @unique @db.VarChar(16)
+  image         String?
+  name          String?    @db.VarChar(16)
   comments      Comment[]
   locations     Location[]
   maps          Map[]
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model VerificationToken {

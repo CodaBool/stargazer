@@ -68,7 +68,7 @@ export default async function Location({ params, searchParams }) {
     },
     select: {
       id: true,
-      alias: true,
+      name: true,
       email: true,
       vip: true,
     }
@@ -111,7 +111,7 @@ export default async function Location({ params, searchParams }) {
   // sanitize comment HTML
   location.comments.forEach(comment => {
     const commenter = commenters.find(user => user.id === comment.userId)
-    comment.alias = commenter.alias ? commenter.alias : commenter.email.split('@')[0]
+    comment.name = commenter.name ? commenter.name : commenter.email.split('@')[0]
     comment.content = DOMPurify.sanitize(comment.content)
   })
 
@@ -194,7 +194,7 @@ export default async function Location({ params, searchParams }) {
                     }
                     <Avatar
                       size={25}
-                      name={comment.alias}
+                      name={comment.name}
                       variant="beam"
                       colors={[
                         '#DBD9B7',
@@ -204,7 +204,7 @@ export default async function Location({ params, searchParams }) {
                         '#615566',
                       ]}
                     />
-                    <h2 className="font-bold text-lg mx-2">{comment.alias}</h2>
+                    <h2 className="font-bold text-lg mx-2">{comment.name}</h2>
                     {!comment.published && <Badge variant="secondary">Pending Review</Badge>}
                     {(vip.includes(comment.userId) && (adminId !== comment.userId)) && <Badge variant="outline" className="mx-2"><Star size={12} className="mr-1" /> Valued Member</Badge>}
                   </div>

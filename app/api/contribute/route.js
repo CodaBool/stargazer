@@ -56,7 +56,7 @@ export async function POST(req) {
       const urlParams = new URLSearchParams({
         subject: `New ${body.map} ${body.table} for review`,
         to: process.env.EMAIL,
-        name: user.alias ? user.alias : user.email,
+        name: user.name ? user.name : user.email,
         from: user.email,
         secret: process.env.EMAIL_SECRET,
       }).toString()
@@ -67,7 +67,7 @@ export async function POST(req) {
         <h1>User</h1>
         <p><strong>userId:</strong> ${user.id}</p>
         <p><strong>email:</strong> ${session.user.email}</p>
-        <p><strong>alias:</strong> ${user.alias}</p>
+        <p><strong>name:</strong> ${user.name}</p>
         <p><strong>number of published comments:</strong> ${publishedComments.length}</p>
       `
       if (body.table === "comment") {

@@ -13,7 +13,7 @@ export async function GET(req) {
     if (!secret) return Response.json({ error: 'no secret' })
     const user = await db.user.findUnique({ where: { secret } })
     if (!user) return Response.json({ exists: false })
-    return Response.json({ exists: true, alias: user.alias || user.email.split("@")[0] })
+    return Response.json({ exists: true, name: user.name || user.email.split("@")[0] })
   } catch (error) {
     console.error(error)
     if (typeof error === 'string') {

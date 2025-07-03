@@ -32,10 +32,10 @@ export default function CreateLocation({ user }) {
   const form = useForm()
 
   async function submit(body) {
-    if (!body.alias?.trim()) {
-      form.setError("alias", {
+    if (!body.name?.trim()) {
+      form.setError("name", {
         type: "manual",
-        message: "Your alias must have content",
+        message: "Your name must have content",
       })
       return
     }
@@ -43,7 +43,7 @@ export default function CreateLocation({ user }) {
     const res = await fetch('/api/profile', {
       method: 'PUT',
       body: JSON.stringify({
-        alias: body.alias?.trim(),
+        name: body.name?.trim(),
       })
     })
     const response = await res.json()
@@ -57,7 +57,7 @@ export default function CreateLocation({ user }) {
     }
   }
 
-  const name = user.alias ? user.alias : user.email.split('@')[0]
+  const name = user.name ? user.name : user.email.split('@')[0]
 
   return (
     <Form {...form}>
@@ -93,22 +93,22 @@ export default function CreateLocation({ user }) {
             />
             <FormField
               control={form.control}
-              name="alias"
+              name="name"
               rules={{
-                required: "Alias is required",
+                required: "Name is required",
                 maxLength: {
                   value: 16,
-                  message: "Alias cannot exceed 16 characters",
+                  message: "Name cannot exceed 16 characters",
                 },
                 pattern: {
                   value: /^[a-zA-Z0-9 _-]*$/,
-                  message: "Alias can only contain letters, numbers, spaces, underscores, and dashes",
+                  message: "Name can only contain letters, numbers, spaces, underscores, and dashes",
                 },
               }}
               defaultValue={name}
               render={({ field }) => (
                 <FormItem className="py-4">
-                  <FormLabel><User size={18} className="inline" /> Alias</FormLabel>
+                  <FormLabel><User size={18} className="inline" /> Name</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
