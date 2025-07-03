@@ -161,7 +161,7 @@ export default function Home({ revalidate, cloudMaps, user, systems }) {
       {/* Title */}
       <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-40">
         <h1
-          className={`text-4xl md:text-6xl font-extrabold text-white drop-shadow-lg opacity-0 animate-[fade-in-down_3s_ease-out_forwards]`}
+          className={`text-3xl md:text-6xl font-extrabold text-white drop-shadow-lg opacity-0 animate-[fade-in-down_3s_ease-out_forwards]`}
           style={{ fontFamily: '"Press Start 2P", monospace', animationDelay: '2.8s' }}
         >
           {TITLE}

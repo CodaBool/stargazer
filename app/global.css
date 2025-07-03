@@ -141,6 +141,7 @@ body {
   /* IE10+/Edge */
   -ms-user-select: none;
   user-select: none;
+  /* bug fix for vaul drawer, which sets this to none like a dummy */
   pointer-events: auto !important;
 }
 
