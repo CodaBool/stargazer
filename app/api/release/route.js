@@ -42,8 +42,8 @@ export async function GET(req) {
           },
         ],
         headers: {
-          // 'cache-control': 'no-store',
-          'cache-control': 'public, max-age=0, s-maxage=86400'
+          'cache-control': 'no-store',
+          // 'cache-control': 'public, max-age=0, s-maxage=86400'
         },
       }
     )
