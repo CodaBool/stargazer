@@ -119,7 +119,10 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
         dragPan={!locked}
         doubleClickZoom={!locked}
         attributionControl={false}
-        initialViewState={config.VIEW}
+        initialViewState={{
+          ...config.VIEW,
+          // renderWorldCopies: false
+        }}
         maxZoom={config.MAX_ZOOM}
         minZoom={config.MIN_ZOOM}
         style={{ width: size.width, height: size.height }}
@@ -127,6 +130,7 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
         pixelRatio={2}
       // good to view what kind of distortion is happening
       // projection="vertical-perspective"
+      // projection="globe"
       // projection={config.IS_GALAXY === false ? "mercator" : "globe"}
       >
         <MapComponent locationGroups={groups} width={size.width} height={size.height} name={name} data={combined || data} mobile={mobile} params={params} locked={locked} setCrashed={setCrashed} {...config} />

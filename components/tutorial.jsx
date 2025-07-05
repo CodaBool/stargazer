@@ -91,7 +91,7 @@ export default function Tutorial({ name }) {
                             <ol className="list-decimal">
                               <li>Sign in using a magic link</li>
                               <li>upload a local map</li>
-                              <li>Your map will be publicly accessible at /mapName/yourUniqueMapID</li>
+                              <li>Your map will be publicly accessible at /{name}/yourUniqueMapID</li>
                             </ol>
                             <br />
                             <p>Downloading is done straight from the home page.</p>
@@ -161,27 +161,28 @@ export default function Tutorial({ name }) {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div className="flex flex-col items-center">
-                            <video src="/tutorial/line.webm" className="cursor-pointer" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/line.webm", title: "Create a Line", desc: "Add points with a single click. Use a double click to finish the line." })} />
+                            <video src="/tutorial/line.webm" className="cursor-pointer min-h-[150px] bg-gray-900 animate-pulse" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/line.webm", title: "Create a Line", desc: "Add points with a single click. Use a double click to finish the line." })} />
                             <p className="text-center mt-2">Create a Line</p>
                           </div>
                           <div className="flex flex-col items-center">
-                            <video src="/tutorial/point.webm" className="cursor-pointer" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/point.webm", title: "Create a Point", desc: "Add a point with a single click" })} />
+                            <video src="/tutorial/point.webm" className="cursor-pointer min-h-[150px] bg-gray-900 animate-pulse" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/point.webm", title: "Create a Point", desc: "Add a point with a single click" })} />
                             <p className="text-center mt-2">Create a Point</p>
                           </div>
                           <div className="flex flex-col items-center">
-                            <video src="/tutorial/poly_create.webm" className="cursor-pointer" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/poly_create.webm", title: "Create a Polygon", desc: "Add points with a single click. Use a double click to finish the polygon." })} />
+                            <video src="/tutorial/poly_create.webm" className="cursor-pointer min-h-[150px] bg-gray-900 animate-pulse" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/poly_create.webm", title: "Create a Polygon", desc: "Add points with a single click. Use a double click to finish the polygon." })} />
                             <p className="text-center mt-2">Create a Polygon</p>
                           </div>
                           <div className="flex flex-col items-center">
-                            <video src="/tutorial/move.webm" className="cursor-pointer" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/move.webm", title: "Move a Feature", desc: "Click to select and then click and drag to move." })} />
+                            <video src="/tutorial/move.webm" className="cursor-pointer min-h-[150px] bg-gray-900 animate-pulse" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/move.webm", title: "Move a Feature", desc: "Click to select and then click and drag to move." })} />
                             <p className="text-center mt-2">Move</p>
                           </div>
                           <div className="flex flex-col items-center">
-                            <video src="/tutorial/poly_edit.webm" className="cursor-pointer" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/poly_edit.webm", title: "Edit a Polygon", desc: "Double click a polygon to edit. Click any midpoint to add a new point. Click and drag an existing point to move it." })} />
+                            <video src="/tutorial/poly_edit.webm" className="cursor-pointer min-h-[150px] bg-gray-900 animate-pulse" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/poly_edit.webm", title: "Edit a Polygon", desc: "Double click a polygon to edit. Click any midpoint to add a new point. Click and drag an existing point to move it." })} />
                             <p className="text-center mt-2">Edit a Polygon</p>
                           </div>
                           <div className="flex flex-col items-center">
-                            <video src="/tutorial/delete.webm" className="cursor-pointer" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/delete.webm", title: "Delete a Feature", desc: 'Select a shape and click the delete button. The "delete" key on your keyboard will also delete the selected shape.' })} />
+
+                            <video src="/tutorial/delete.webm" className="cursor-pointer min-h-[150px] bg-gray-900 animate-pulse" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/delete.webm", title: "Delete a Feature", desc: 'Select a shape and click the delete button. The "delete" key on your keyboard will also delete the selected shape.' })} />
                             <p className="text-center mt-2">Delete</p>
                           </div>
                         </div>
