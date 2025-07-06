@@ -13,7 +13,6 @@ import * as turf from '@turf/turf'
 import Hamburger from './hamburger'
 import Toolbox from './toolbox'
 import Starfield from './starfield'
-import Sheet from './sheet'
 import Tutorial from './tutorial'
 import { useDraw } from "./controls";
 import { Calibrate, Link } from './foundry'
@@ -28,7 +27,7 @@ let popup = new maplibregl.Popup({
   className: "fade-in"
 })
 
-const mouseMove = (e, wrapper, IS_GALAXY, name) => {
+const mouseMove = (e, wrapper, IS_GALAXY, name, IGNORE_POLY) => {
   if (window.isMoving) {
     wrapper.panBy([offset.x - e.point.x, offset.y - e.point.y], {
       duration: 0,
@@ -37,6 +36,7 @@ const mouseMove = (e, wrapper, IS_GALAXY, name) => {
   }
   // hover
   if (e.features.length > 0) {
+    if (IGNORE_POLY.includes(e.features[0].properties.type)) return
     if (window.hoveredStateId) {
       wrapper.setFeatureState(
         { source: 'source', id: window.hoveredStateId },
@@ -85,6 +85,7 @@ const mouseMove = (e, wrapper, IS_GALAXY, name) => {
 }
 
 const mouseLeave = (e, wrapper) => {
+  if (typeof hoveredStateId === "undefined") return
   if (hoveredStateId !== null) {
     wrapper.setFeatureState(
       { source: 'source', id: window.hoveredStateId },
@@ -244,7 +245,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     window.localGet = getMaps
 
     // create Listeners
-    mouseMoveRef.current = e => mouseMove(e, wrapper, IS_GALAXY, name)
+    mouseMoveRef.current = e => mouseMove(e, wrapper, IS_GALAXY, name, IGNORE_POLY)
     mouseLeaveRef.current = e => mouseLeave(e, wrapper)
     territoryClickRef.current = e => territoryClick(e, wrapper, IGNORE_POLY, IS_GALAXY, name)
     locationClickRef.current = locationClick
@@ -492,12 +493,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
           type="line"
           id="guide"
           paint={{
-            "line-color": [
-              'case',
-              ['boolean', ['feature-state', 'hover'], false],
-              STYLES.HIGHLIGHT_COLOR,
-              getColorExpression(name, "stroke", "LineString")
-            ],
+            "line-color": getColorExpression(name, "stroke", "LineString"),
             "line-width": 2,
             "line-dasharray": [10, 4],
           }}
@@ -523,7 +519,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
         <ZoomIn size={34} onClick={() => wrapper.zoomIn()} className='m-2 hover:stroke-blue-200' />
         <ZoomOut size={34} onClick={() => wrapper.zoomOut()} className='m-2 mt-4 hover:stroke-blue-200' />
       </div>}
-      {params.get("search") !== "0" && <SearchBar map={wrapper} name={name} data={data} pan={pan} mobile={mobile} groups={locationGroups} UNIT={UNIT} STYLES={STYLES} />}
+      {params.get("search") !== "0" && <SearchBar map={wrapper} name={name} data={data} pan={pan} mobile={mobile} groups={locationGroups} UNIT={UNIT} STYLES={STYLES} SEARCH_SIZE={SEARCH_SIZE} />}
 
       {/* FOUNDRY */}
       {params.get("secret") && <Link width={width} height={height} mobile={mobile} name={name} params={params} />}

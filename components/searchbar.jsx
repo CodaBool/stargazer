@@ -11,7 +11,7 @@ import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOu
 import { darkenColor, useStore } from "@/lib/utils.js"
 import { useEffect, useRef, useState } from "react"
 
-export default function MenuComponent({ map, data, mobile, name, pan, groups, UNIT, STYLES }) {
+export default function SearchBar({ map, data, mobile, name, pan, groups, UNIT, STYLES, SEARCH_SIZE }) {
   const [active, setActive] = useState()
   const [previousFeatureId, setPreviousFeatureId] = useState(null)
   const { editorTable } = useStore()
@@ -48,10 +48,10 @@ export default function MenuComponent({ map, data, mobile, name, pan, groups, UN
 
     // rbush uses a square but that's fine
     const rawNearby = groups.search({
-      minX: lng - buffer,
-      minY: lat - buffer,
-      maxX: lng + buffer,
-      maxY: lat + buffer
+      minX: lng - SEARCH_SIZE,
+      minY: lat - SEARCH_SIZE,
+      maxX: lng + SEARCH_SIZE,
+      maxY: lat + SEARCH_SIZE
     })
 
     const myGroup = rawNearby
