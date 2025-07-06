@@ -111,6 +111,10 @@ export default function MenuComponent({ map, data, mobile, name, pan, groups, UN
     return () => root.removeEventListener("focusout", handleFocusOut)
   }, [input])
 
+  useEffect(() => {
+    console.log("missing name", data.features.filter(n => !n.properties.name))
+  }, [])
+
   return (
     <div className="flex mt-5 w-full justify-center absolute z-10 pointer-events-none" >
       <Command className="rounded-lg border shadow-md w-[75%] searchbar pointer-events-auto" style={{ borderColor: darkenColor(STYLES.MAIN_COLOR, 13), backgroundColor: darkenColor(STYLES.MAIN_COLOR, 19) }}>

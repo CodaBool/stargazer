@@ -23,7 +23,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
   useEffect(() => {
     const updateSize = () => {
       const vmin = Math.min(window.innerWidth, window.innerHeight);
-      setSquareSize(Math.min(900, vmin * 0.99));
+      setSquareSize(Math.min(700, vmin * 0.99));
     };
     updateSize();
     window.addEventListener("resize", updateSize);
