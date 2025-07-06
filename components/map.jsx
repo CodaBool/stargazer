@@ -121,7 +121,7 @@ const removePopup = () => {
   if (popup._container) popup.remove()
 }
 
-export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, CLICK_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY }) {
+export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, CLICK_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
   const { mode } = useMode()
@@ -154,14 +154,13 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     }
 
     const [lng, lat] = clicked.geometry.coordinates
-    const buffer = UNIT === "ly" ? 2 : 0.5 // ~adjust for scale in degrees
 
     // rbush uses a square but that's fine
     const rawNearby = index.search({
-      minX: lng - buffer,
-      minY: lat - buffer,
-      maxX: lng + buffer,
-      maxY: lat + buffer
+      minX: lng - SEARCH_SIZE,
+      minY: lat - SEARCH_SIZE,
+      maxX: lng + SEARCH_SIZE,
+      maxY: lat + SEARCH_SIZE
     })
 
     const myGroup = rawNearby
