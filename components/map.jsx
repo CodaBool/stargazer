@@ -348,9 +348,9 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
           id: 'custom-image-layer',
           type: 'raster',
           source: 'custom-image',
-          paint: {
-            'raster-opacity': 0.2
-          }
+          // paint: {
+          //   'raster-opacity': 1
+          // }
         })
       }
     }
