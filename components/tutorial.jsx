@@ -137,16 +137,19 @@ export default function Tutorial({ name }) {
                             <h3 className="text-lg">Advanced level</h3>
                             <p>All maps have settings. You can define things like the bounds of the map. Toggle the pregenerated planets. Or even if its set on Earth's surface! This can be found on the home page. </p>
                             <hr className="my-2 mt-4" />
-                            <h3 className="text-lg">Expert script kitty coding socks vibe coder level</h3>
+
+                            <h3 className="text-lg">Expert script kitty <span style={{ color: "#5BCEFA" }}>co</span><span style={{ color: "#F5A9B8" }}>di</span><span style={{ color: "#FFFFFF" }}>ng</span><span style={{ color: "#F5A9B8" }}> so</span><span style={{ color: "#5BCEFA" }}>cks</span> vibe coder level</h3>
                             <p>All the code is open source and under a copyleft license. Feel free to fork and tweak as desired (I can write a wiki guide on GitHub, just ping me using an issue. Then I will write on up for you). I do expose some Maplibre settings like the style spec and layout overrides for the symbol layer. Find those configs in any map settings page.</p>
                           </CollapsibleContent>
                         </Collapsible>
-                        <Collapsible>
-                          <CollapsibleTrigger>Can you add a map for my favorite universe?</CollapsibleTrigger>
-                          <CollapsibleContent className="text-white my-4">
-                            <p>Due to copyright, I have no plans to add other maps.</p>
-                          </CollapsibleContent>
-                        </Collapsible>
+                        {process.env.NEXT_PUBLIC_REPO &&
+                          <Collapsible>
+                            <CollapsibleTrigger>Can you add a map for my favorite universe?</CollapsibleTrigger>
+                            <CollapsibleContent className="text-white my-4">
+                              <p>Due to copyright, I have no plans to add other maps.</p>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        }
                         {name !== "custom" &&
                           <Collapsible>
                             <CollapsibleTrigger>How can I edit the base {name} map?</CollapsibleTrigger>
