@@ -18,6 +18,7 @@ export default async function mapLobby({ params }) {
   path.resolve(`app/[map]/topojson/starwars.json`)
   path.resolve(`app/[map]/topojson/warhammer.json`)
   path.resolve(`app/[map]/topojson/alien.json`)
+  path.resolve('app/[map]/topojson/cyberpunk.json')
 
   let topojson
   try {
