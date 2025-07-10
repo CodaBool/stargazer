@@ -329,28 +329,30 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     wrapper.on("click", "location", locationClickRef.current)
 
 
-    if (!wrapper.getMap().getSource('custom-image')) {
-      wrapper.getMap().addSource('custom-image', {
-        type: 'image',
-        url: 'https://img.codabool.com/night_city.webp',
-        coordinates: [
-          [-80.425, 46.437], // top left
-          [-71.516, 46.437], // top right
-          [-71.516, 37.936], // bottom right
-          [-80.425, 37.936], // bottom left
-        ]
-      })
-    }
+    if (name === "cyberpunk") {
+      if (!wrapper.getMap().getSource('custom-image')) {
+        wrapper.getMap().addSource('custom-image', {
+          type: 'image',
+          url: 'https://img.codabool.com/night_city.webp',
+          "coordinates": [
+            [-5, 5], // top left
+            [4, 5], // top right
+            [4, -4], // bottom right
+            [-5, -4], // bottom left
+          ]
+        })
+      }
 
-    if (!wrapper.getMap().getLayer('custom-image-layer')) {
-      wrapper.getMap().addLayer({
-        id: 'custom-image-layer',
-        type: 'raster',
-        source: 'custom-image',
-        paint: {
-          'raster-opacity': 0.75
-        }
-      })
+      if (!wrapper.getMap().getLayer('custom-image-layer')) {
+        wrapper.getMap().addLayer({
+          id: 'custom-image-layer',
+          type: 'raster',
+          source: 'custom-image',
+          paint: {
+            'raster-opacity': 0.2
+          }
+        })
+      }
     }
 
 
