@@ -149,13 +149,34 @@ function Credits({ name }) {
           </svg>
         </span>
         <span className="flex-1 text-left">
-          {name.includes("lancer")
-            ? <>
+          {name.includes("lancer") &&
+            <>
               <span><Sparkles className="inline pr-2" /><a href="https://janederscore.tumblr.com" target="_blank"> Janederscore <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
               <span><Sparkles className="inline pr-2" /> Starwall</span><br />
-            </>
-            : <>
+            </>}
+          {name === "fallout" &&
+            <>
               <span className="text-xs md:text-md"><Sparkles className="inline pr-2" /> <a href="https://github.com/MeepChangeling" target="_blank"> MeepChangeling <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
+            </>
+          }
+          {name === "alien" &&
+            <>
+              <span className="text-xs md:text-md"><Sparkles className="inline pr-2" /> <a href="https://github.com/claydegruchy" target="_blank"> Clay DeGrunchy <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
+            </>
+          }
+          {name === "warhammer" &&
+            <>
+              <span className="text-xs md:text-md"><Sparkles className="inline pr-2" /> <a href="https://jambonium.co.uk/horus-heresy-map-project" target="_blank"> Michelle Janion <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
+            </>
+          }
+          {name === "cyberpunk" &&
+            <>
+              <span className="text-xs md:text-md"><Sparkles className="inline pr-2" /> <a href="https://www.reddit.com/user/devianaut" target="_blank"> Devianaut <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
+            </>
+          }
+          {name === "starwars" &&
+            <>
+              <span className="text-[0.7em] md:text-md"><Sparkles className="inline pr-2" /> <a href="https://github.com/jennygrahamjones" target="_blank"> Jenny Graham-Jones <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
             </>
           }
         </span>

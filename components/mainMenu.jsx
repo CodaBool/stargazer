@@ -366,27 +366,27 @@ export function MainMenu({ cloudMaps, user, revalidate, hash, systems }) {
             <div key={system}>
               {system === "custom"
                 ?
-                <Card className="max-w-[250px] cursor-pointer lg:max-w-[269px] rounded-xl m-1" onClick={() => setSelectedSystem(system)}>
-                  <CardContent className="p-2">
+                <Card className="w-[250px] h-[250px] lg:w-[269px] lg:h-[269px] cursor-pointer rounded-xl" onClick={() => setSelectedSystem(system)}>
+                  <CardContent className="p-2 w-full h-full">
                     <StarsBackgroundSimple>
                       <CardDescription className="text-center w-[225px] h-[225px] lg:w-[243px] lg:h-[243px] hover-grow">
                         <div className="flex items-center justify-center w-full h-full">
-                          <span className="text-center text-2xl lg:text-4xl text-white">CUSTOM</span>
+                          <span className="text-center text-3xl lg:text-4xl text-white">CUSTOM</span>
                         </div>
                       </CardDescription>
                     </StarsBackgroundSimple>
                   </CardContent>
                 </Card >
                 :
-                <Card className="max-w-[250px] cursor-pointer lg:max-w-[269px] rounded-xl m-1" onClick={() => setSelectedSystem(system)}>
-                  <CardContent className="p-2">
+                <Card className="w-[250px] h-[250px] lg:w-[269px] lg:h-[269px] cursor-pointer rounded-xl" onClick={() => setSelectedSystem(system)}>
+                  <CardContent className="p-2 w-full h-full">
                     <StarsBackgroundSimple>
                       <Image
                         src={`/systems/${system}.webp`}
                         alt={system}
                         width={200}
                         height={200}
-                        className="hover-grow rounded-xl"
+                        className="object-cover w-full h-full hover-grow rounded-xl"
                       />
                     </StarsBackgroundSimple>
                   </CardContent>
