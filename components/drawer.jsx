@@ -80,7 +80,7 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
       open={!!drawerContent}
       onOpenChange={() => setDrawerContent(null)}
       modal={false}
-      snapPoints={[0.3, 0.6]}
+      snapPoints={[0.4, 0.6]}
     >
       <DrawerContent>
         <DrawerHeader>
@@ -114,7 +114,6 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
 
           <div className="flex flex-col items-center">
             {d.properties.unofficial && <Badge variant="destructive" className="mx-auto">Unofficial</Badge>}
-            {d.properties.capital && <Badge variant="secondary" className="mx-auto">Capital</Badge>}
             {d.properties.faction && <Badge variant="secondary" className="mx-auto">{d.properties.faction}</Badge>}
             {d.properties.destroyed && <Badge variant="secondary" className="mx-auto">Destroyed</Badge>}
           </div>
@@ -150,7 +149,12 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
   )
 }
 
-
+// [{
+//   geometry
+//   id
+//   groupCenter: [lng, lat]
+//   properties
+// }]
 function generateLocations(group, coordinates) {
   const seed = coordinates.toString()
   const rng = seedrandom(seed)
