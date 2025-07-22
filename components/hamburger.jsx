@@ -167,6 +167,7 @@ function Credits({ name }) {
           {name === "warhammer" &&
             <>
               <span className="text-xs md:text-md"><Sparkles className="inline pr-2" /> <a href="https://jambonium.co.uk/horus-heresy-map-project" target="_blank"> Michelle Janion <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
+              <span className="text-[0.7em] md:text-md"><Sparkles className="inline pr-2" /> <a href="https://wyrmlog.wyrmworld.com" target="_blank"> Purple Wyrm (icons) <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
             </>
           }
           {name === "cyberpunk" &&

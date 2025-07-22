@@ -7,7 +7,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { Button } from "./ui/button"
 import { Badge } from '@/components/ui/badge.jsx'
 import Link from "next/link"
@@ -17,18 +17,12 @@ import SolarSystemDiagram from "./solarSystem.jsx"
 import LocationSystem from "./locationSystem.jsx"
 import seedrandom from 'seedrandom'
 import { Crosshair, Link as LinkIcon } from "lucide-react"
-import ThreejsPlanet from "./threejsPlanet"
 
 const MAX_GEN_LOCATIONS = 8
-let sharedRenderer = null;
-let sharedCanvas = null;
 
 export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GALAXY, coordinates, GENERATE_LOCATIONS, name, height, selectedId, mobile, d, myGroup }) {
   const { map } = useMap()
   const GROUP_NAME = IS_GALAXY ? "Celestial Bodies" : "Locations"
-
-  const [squareSize, setSquareSize] = useState()
-  const [display, setDisplay] = useState(fillMissingData(d))
 
   useEffect(() => {
     // move editor table
@@ -60,26 +54,14 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
     }
   }, [drawerContent])
 
-  useEffect(() => {
-    setDisplay(fillMissingData(d))
-  }, [d])
-
-  useEffect(() => {
-    const updateSize = () => {
-      const vmin = Math.min(window.innerWidth, window.innerHeight);
-      setSquareSize(Math.min(250, vmin * 0.99));
-    };
-    updateSize();
-    window.addEventListener("resize", updateSize);
-    return () => window.removeEventListener("resize", updateSize);
-  }, [])
-
   if (!coordinates || !d) return null
 
+  // console.log("drawer", myGroup, d)
   let local = myGroup
   if (GENERATE_LOCATIONS) {
-    local = generateLocations(myGroup, d)
+    local = generateLocations(myGroup, coordinates, d)
   }
+  const target = fillMissingData(d)
 
   function recenter() {
     map.easeTo({ center: coordinates, duration: 800 })
@@ -95,95 +77,51 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
     }, 400)
   }
 
-
-  if (!display) return null
-
-  // console.log("render", display)
   return (
     <Drawer
       open={!!drawerContent}
       onOpenChange={() => setDrawerContent(null)}
       modal={false}
-      snapPoints={[0.4, 0.92]}
+      snapPoints={[0.4, 0.6]}
     >
       <DrawerContent>
-        <DrawerTitle></DrawerTitle>
-
-        <div>
-          {/* Three column layout */}
-          <div className="flex justify-center items-start gap-8">
-            {/* Left Column – Important Info */}
-            <div className="flex flex-col gap-2 text-base min-w-[180px] max-w-[250px]">
-
-              <p className="text-gray-400 text-center">
-                <Crosshair size={mobile ? 14 : 20} onClick={recenter} className="inline mr-2 mb-1 cursor-pointer opacity-60" />
+        <DrawerHeader>
+          <DrawerTitle className="text-center" asChild>
+            <div>
+              <p className="text-gray-400">
+                <Crosshair size={mobile ? 14 : 20} onClick={() => recenter()} className="inline mr-2 mb-1 cursor-pointer opacity-60" />
                 {`${Math.floor(coordinates[1])},${Math.floor(coordinates[0])}`}
               </p>
-              <div className="flex justify-center items-center gap-2 mt-1 text-lg font-semibold text-center">
-                <Link href={genLink(display.source, name, "href")} className="opacity-60" target={name === "lancer" ? "_self" : "_blank"}>
+              <div className="flex justify-center mt-2">
+                <Link href={genLink(target.source, name, "href")} className="block w-6 opacity-60" target={`${name === "lancer" ? "_self" : "_blank"}`}>
                   <LinkIcon className="cursor-pointer" size={mobile ? 14 : 19} />
                 </Link>
-                {display.source.properties.name}
-                <span className="text-gray-400 text-sm">- {display.source.properties.type}</span>
+                {target.source.properties.name} <span className=" text-gray-400">- {target.source.properties.type}</span>
               </div>
-
-              {display.source.properties.faction && <Badge className="text-base">{display.source.properties.faction}</Badge>}
-              {display.source.properties.locations && <p className="text-lg">{display.source.properties.locations} known locations</p>}
-              {display.source.properties.destroyed && <Badge variant="secondary" className="text-base">Destroyed</Badge>}
-              {display.source.properties.unofficial && <Badge variant="destructive" className="text-base">Unofficial</Badge>}
             </div>
+          </DrawerTitle>
+        </DrawerHeader>
 
-            {/* Center Column – Planet */}
-            <div className={`flex justify-center items-center w-[${squareSize}px] h-[${squareSize}px] mx-auto`}>
-              <ThreejsPlanet
-                sharedCanvas={sharedCanvas}
-                sharedRenderer={sharedRenderer}
-                height={squareSize}
-                width={squareSize}
-                disableListeners={true}
-                type={display.ringed ? "ring" : display.type}
-                pixels={800}
-                baseColors={display.baseColors}
-                featureColors={display.featureColors}
-                layerColors={display.layerColors}
-                schemeColor={display.schemeColor}
-                atmosphere={display.atmosphere}
-                clouds={display.cloud}
-                cloudCover={display.cloud}
-                size={display.size}
-                land={display.hydrosphere}
-                ringWidth={display.ringSize}
-                lakes={display.ice}
-                rivers={display.hydrosphere}
-                seed={display.seed}
-                planetSize={display.planetSize}
-              />
-            </div>
+        <div className="min-w-64 p-2">
+          <div className="flex justify-center w-full">
+            <img src={`${svgBase + name + "/" + target.source.properties.type + '.svg'}`} alt={target.source.properties.type} width="70px" height="70px" align="left" />
 
-            {/* Right Column – Other Data */}
-            <div className={`flex flex-col gap-1 text-left text-xs min-w-[180px] max-w-[250px]`}>
-              {typeof display.cloud === "number" && <p>{(1 - display.cloud).toFixed(2) * 100}% cloud coverage</p>}
-              {typeof display.hydrosphere === "number" && <p>{(display.type === "ice_planet" ? (1 - display.ice) : display.hydrosphere).toFixed(2) * 100}% hydrosphere</p>}
-              {typeof display.ice === "number" && display.type === "ice_planet" && <p>{(display.ice * 100).toFixed(1)}% ice coverage</p>}
-              {typeof display.radius === "number" && <p>{display.radius.toFixed(2)} {display.type === "star" ? "solar radii" : "km radius"}</p>}
-              {typeof display.temperature === "number" && <p>{display.temperature}°C</p>}
-              {typeof display.dominantChemical === "string" && <p>Dominant Chemical: {display.dominantChemical}</p>}
-              {typeof display.daysInYear === "number" && <p>{display.daysInYear} days/year</p>}
-              {typeof display.hoursInDay === "number" && <p>{display.hoursInDay} hours/day</p>}
-              {typeof display.gravity === "number" && <p>Gravity: {(display.gravity * 0.0010197162).toFixed(1)} g</p>}
-              {typeof display.pressure === "number" && display.pressure > 0 && <p>Pressure: {(display.pressure / 1000).toFixed(1)} bars</p>}
-              {Array.isArray(display.moons) && display.moons.length > 0 && <p>{display.moons.length} moon{display.moons.length > 1 ? "s" : ""}</p>}
-              {typeof display.modifier === "string" && <p>{display.modifier}</p>}
-              {display.isMoon && <p>Moon</p>}
-            </div>
+
+
           </div>
-
-          {/* Optional Description */}
-          {display.source.properties.description && (
-            <div className="max-w-prose mx-auto px-4 text-sm mt-6">
-              <p className="text-justify select-text">{display.source.properties.description}</p>
+          {target.source.properties.description &&
+            <div className="max-w-prose mx-auto px-4 text-sm m-4">
+              <p className="text-justify">
+                {target.source.properties.description}
+              </p>
             </div>
-          )}
+          }
+
+          <div className="flex flex-col items-center">
+            {target.source.properties.unofficial && <Badge variant="destructive" className="mx-auto">Unofficial</Badge>}
+            {target.source.properties.faction && <Badge variant="secondary" className="mx-auto">{target.source.properties.faction}</Badge>}
+            {target.source.properties.destroyed && <Badge variant="secondary" className="mx-auto">Destroyed</Badge>}
+          </div>
         </div>
         {myGroup.length > 0 ? (
           <>
@@ -222,8 +160,8 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
 //   groupCenter: [lng, lat]
 //   properties
 // }]
-function generateLocations(group, location) {
-  const seed = genSeed(location)
+function generateLocations(group, coordinates, location) {
+  const seed = coordinates.toString()
   const rng = seedrandom(seed)
   const random = () => rng()
 
@@ -266,10 +204,13 @@ function generateLocations(group, location) {
   return locations
 }
 function fillMissingData(d) {
-  if (!d) return
+  const seed = d.geometry.coordinates.toString()
+  const rng = seedrandom(seed)
+  const random = () => rng()
+
   let starData
   if (d.properties.type === "star") {
-    starData = generateStar(genSeed(d), d)
+    starData = generateStar(seed + `${d?.properties.name || ""}`, d)
   }
 
   let planetSize = 1
@@ -284,10 +225,6 @@ function fillMissingData(d) {
     tint: "gray",
     source: d,
   }
-}
-
-function genSeed(d) {
-  return d.geometry.coordinates.map(coord => coord.toFixed(1)).join(",").toString()
 }
 
 const tintMap = {
@@ -337,6 +274,7 @@ function generateStar(seed, location, groupCenter) {
 
   const rand = random()
   let star
+  console.log("generate star", location)
   if (location?.starType) {
     star = weightedTypes.find(item => item.variant === location.starType)
   } else {

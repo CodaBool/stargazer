@@ -48,20 +48,29 @@ function ThreejsPlanet({
     if (!container) return;
 
     // Set up renderer if not shared
-    if (!sharedRenderer) {
+    let isNewRenderer = false;
+
+    if (!sharedRenderer || !sharedCanvas) {
       sharedRenderer = new WebGLRenderer({ antialias: true });
       sharedRenderer.setPixelRatio(window.devicePixelRatio);
       sharedCanvas = sharedRenderer.domElement;
+      isNewRenderer = true;
     }
-
     if (disableListeners) {
       sharedRenderer.setSize(width || container.clientWidth, height || container.clientHeight)
     } else {
       sharedRenderer.setSize(container.clientWidth - 10, container.clientHeight - 10)
     }
-    if (!container.contains(sharedCanvas)) {
+
+    // Only append the sharedCanvas if it's not already attached to this container
+    if (sharedCanvas.parentElement !== container) {
+      // Remove from old parent if needed
+      if (sharedCanvas.parentElement) {
+        sharedCanvas.parentElement.removeChild(sharedCanvas);
+      }
       container.appendChild(sharedCanvas);
     }
+
 
 
     const scene = new Scene()
@@ -242,14 +251,35 @@ function ThreejsPlanet({
       if (typeof handleMouseDown === "function") {
         container.removeEventListener("pointerdown", handleMouseDown);
         container.removeEventListener("pointerup", handleMouseUp);
-        container.removeEventListener("pointermove", handleMouseMove);
       }
 
-      if (container.contains(sharedCanvas)) {
+      // Do not remove sharedCanvas unless we created it
+      if (isNewRenderer && container.contains(sharedCanvas)) {
         container.removeChild(sharedCanvas);
       }
     };
-  }, []);
+  }, [sharedCanvas,
+    sharedRenderer,
+    height,
+    width,
+    type,
+    pixels,
+    baseColors,
+    featureColors,
+    layerColors,
+    schemeColor,
+    atmosphere,
+    clouds,
+    cloudCover,
+    size,
+    land,
+    ringWidth,
+    lakes,
+    rivers,
+    seed,
+    planetSize,
+    disableListeners,
+    warpDistance]);
 
   return (
     <div

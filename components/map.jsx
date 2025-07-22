@@ -179,7 +179,8 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   async function pan(d, myGroup, fit) {
     if (locked && !fit) return
     let fly = true, lat, lng, bounds, coordinates = d.geometry.coordinates
-    let zoomedOut = wrapper.getZoom() < 6
+    console.log("zoomed out", wrapper.getZoom())
+    let zoomedOut = wrapper.getZoom() < 10
 
     // force a zoom if panning to location by search
     if (fit) zoomedOut = true
@@ -212,15 +213,17 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     // offset for sheet
     // TODO: doesn't this always need to be done?
     if (zoomedOut) {
-      const arbitraryNumber = 9.7
+      const arbitraryNumber = 0
       // const arbitraryNumber = locations?.length > 5 ? 9.5 : 10
       let zoomFactor = Math.pow(2, arbitraryNumber - wrapper.getZoom())
       zoomFactor = Math.max(zoomFactor, 4)
       const latDiff = (wrapper.getBounds().getNorth() - wrapper.getBounds().getSouth()) / zoomFactor
       lat = coordinates[1] - latDiff / 2
+      console.log("offset", latDiff / 2)
     }
 
     if (fly) {
+      console.log("bounds", bounds)
       if (bounds) {
         wrapper.fitBounds([
           [bounds[0], bounds[1]], // bottom-left corner
