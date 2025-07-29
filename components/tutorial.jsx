@@ -100,7 +100,7 @@ export default function Tutorial({ name }) {
                         <Collapsible>
                           <CollapsibleTrigger>Are there any hotkeys?</CollapsibleTrigger>
                           <CollapsibleContent className="text-white my-4">
-                            <p>Ctrl ={">"} toggle measure distance tool (click to start once mode is active)</p>
+                            <p>Ctrl ={">"} toggle measure distance tool</p>
                             <br />
                             <p>{osKey} ={">"} toggle coordinate view</p>
                             <br />
@@ -135,11 +135,11 @@ export default function Tutorial({ name }) {
                           <CollapsibleTrigger>How can I make other changes to my map?</CollapsibleTrigger>
                           <CollapsibleContent className="text-white my-4">
                             <h3 className="text-lg">Advanced level</h3>
-                            <p>All maps have settings. You can define things like the bounds of the map. Toggle the pregenerated planets. Or even if its set on Earth's surface! This can be found on the home page. </p>
+                            <p>All maps have settings. You can define things like the bounds of the map. Toggle the pregenerated planets. This can be found on the home page. </p>
                             <hr className="my-2 mt-4" />
 
                             <h3 className="text-lg">Expert script kitty <span style={{ color: "#5BCEFA" }}>co</span><span style={{ color: "#F5A9B8" }}>di</span><span style={{ color: "#FFFFFF" }}>ng</span><span style={{ color: "#F5A9B8" }}> so</span><span style={{ color: "#5BCEFA" }}>cks</span> vibe coder level</h3>
-                            <p>All the code is open source and under a copyleft license. Feel free to fork and tweak as desired (I can write a wiki guide on GitHub, just ping me using an issue. Then I will write on up for you). I do expose some Maplibre settings like the style spec and layout overrides for the symbol layer. Find those configs in any map settings page.</p>
+                            <p>All the code is open source and under a copyleft license. Feel free to fork and tweak as desired (I can write a wiki guide on GitHub, just ping me using an issue. Then I will write one up for you). I do expose some Maplibre settings like the style spec and layout overrides for the symbol layer. You can find those configs in the map settings page.</p>
                           </CollapsibleContent>
                         </Collapsible>
                         {process.env.NEXT_PUBLIC_REPO &&
