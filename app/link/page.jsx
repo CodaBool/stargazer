@@ -43,11 +43,11 @@ export default async function Page({ searchParams }) {
                 </Button>
               </Link>
             </div>
-            <CardDescription className="text-md my-10 leading-8">To continue we need to authenticate you. This is done through magic links.</CardDescription>
+            <CardDescription className="my-5 leading-8">To continue we need to authenticate you</CardDescription>
           </CardHeader>
           <CardContent>
             <Link href={`/api/auth/signin?callbackUrl=${callback}`}>
-              <Button className="cursor-pointer w-full" variant="scifi">Enter Email</Button >
+              <Button className="cursor-pointer w-full" variant="scifi">Sign In</Button >
             </Link >
           </CardContent>
         </Card>

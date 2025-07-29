@@ -16,7 +16,7 @@ import { useMap } from 'react-map-gl/maplibre'
 import SolarSystemDiagram from "./solarSystem.jsx"
 import LocationSystem from "./locationSystem.jsx"
 import seedrandom from 'seedrandom'
-import { Crosshair, Link as LinkIcon } from "lucide-react"
+import { Crosshair, ExternalLink } from "lucide-react"
 import ThreejsPlanet from "./threejsPlanet"
 
 const MAX_GEN_LOCATIONS = 8
@@ -67,7 +67,7 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
   useEffect(() => {
     const updateSize = () => {
       const vmin = Math.min(window.innerWidth, window.innerHeight);
-      setSquareSize(Math.min(250, vmin * 0.99));
+      setSquareSize(Math.min(250, vmin * 0.3))
     };
     updateSize();
     window.addEventListener("resize", updateSize);
@@ -98,43 +98,42 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
 
   if (!display) return null
 
-  // console.log("render", display)
   return (
     <Drawer
       open={!!drawerContent}
       onOpenChange={() => setDrawerContent(null)}
       modal={false}
-      snapPoints={[0.4, 0.92]}
+      snapPoints={[mobile ? 0.45 : 0.3, 0.92]}
     >
       <DrawerContent>
         <DrawerTitle></DrawerTitle>
 
         <div>
           {/* Three column layout */}
-          <div className="flex justify-center items-start gap-8">
+          <div className="flex flex-wrap justify-center items-center">
             {/* Left Column – Important Info */}
-            <div className="flex flex-col gap-2 text-base min-w-[180px] max-w-[250px]">
+            <div className="flex flex-col gap-2 w-full lg:max-w-[30vw] lg:items-end text-center">
 
-              <p className="text-gray-400 text-center">
+              <p className="text-gray-400 ">
                 <Crosshair size={mobile ? 14 : 20} onClick={recenter} className="inline mr-2 mb-1 cursor-pointer opacity-60" />
-                {`${Math.floor(coordinates[1])},${Math.floor(coordinates[0])}`}
+                {`${coordinates[1].toFixed(2)}, ${coordinates[0].toFixed(2)}`}
               </p>
-              <div className="flex justify-center items-center gap-2 mt-1 text-lg font-semibold text-center">
+              <div className="flex justify-center items-center gap-2 mt-1 text-lg font-semibold ">
                 <Link href={genLink(display.source, name, "href")} className="opacity-60" target={name === "lancer" ? "_self" : "_blank"}>
-                  <LinkIcon className="cursor-pointer" size={mobile ? 14 : 19} />
+                  <ExternalLink className="cursor-pointer" size={mobile ? 14 : 19} />
                 </Link>
                 {display.source.properties.name}
                 <span className="text-gray-400 text-sm">- {display.source.properties.type}</span>
               </div>
 
-              {display.source.properties.faction && <Badge className="text-base">{display.source.properties.faction}</Badge>}
+              {display.source.properties.faction && <Badge className="text-sm max-w-[200px] text-center mx-auto lg:mx-0">{display.source.properties.faction}</Badge>}
               {display.source.properties.locations && <p className="text-lg">{display.source.properties.locations} known locations</p>}
               {display.source.properties.destroyed && <Badge variant="secondary" className="text-base">Destroyed</Badge>}
               {display.source.properties.unofficial && <Badge variant="destructive" className="text-base">Unofficial</Badge>}
             </div>
 
             {/* Center Column – Planet */}
-            <div className={`flex justify-center items-center w-[${squareSize}px] h-[${squareSize}px] mx-auto`}>
+            <div className={`flex justify-center items-center w-[${squareSize}px] h-[${squareSize}px]`}>
               <ThreejsPlanet
                 sharedCanvas={sharedCanvas}
                 sharedRenderer={sharedRenderer}
@@ -161,12 +160,12 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
             </div>
 
             {/* Right Column – Other Data */}
-            <div className={`flex flex-col gap-1 text-left text-xs min-w-[180px] max-w-[250px]`}>
+            <div className="flex flex-col gap-1 text-sm w-full lg:max-w-[30vw] text-center sm:text-left mb-2">
               {typeof display.cloud === "number" && <p>{(1 - display.cloud).toFixed(2) * 100}% cloud coverage</p>}
               {typeof display.hydrosphere === "number" && <p>{(display.type === "ice_planet" ? (1 - display.ice) : display.hydrosphere).toFixed(2) * 100}% hydrosphere</p>}
               {typeof display.ice === "number" && display.type === "ice_planet" && <p>{(display.ice * 100).toFixed(1)}% ice coverage</p>}
               {typeof display.radius === "number" && <p>{display.radius.toFixed(2)} {display.type === "star" ? "solar radii" : "km radius"}</p>}
-              {typeof display.temperature === "number" && <p>{display.temperature}°C</p>}
+              {typeof display.temperature === "number" && <p>{Math.floor(display.temperature)}°C</p>}
               {typeof display.dominantChemical === "string" && <p>Dominant Chemical: {display.dominantChemical}</p>}
               {typeof display.daysInYear === "number" && <p>{display.daysInYear} days/year</p>}
               {typeof display.hoursInDay === "number" && <p>{display.hoursInDay} hours/day</p>}
@@ -180,14 +179,14 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
 
           {/* Optional Description */}
           {display.source.properties.description && (
-            <div className="max-w-prose mx-auto px-4 text-sm mt-6">
+            <div className="max-w-prose mx-auto px-4 text-sm my-3">
               <p className="text-justify select-text">{display.source.properties.description}</p>
             </div>
           )}
         </div>
         {myGroup.length > 0 ? (
           <>
-            <hr className="my-4" />
+            <hr className="mb-2" />
             <DrawerDescription className="text-center text-xs md:text-sm mb-2" >{local.length} Nearby {GROUP_NAME}</DrawerDescription>
             {IS_GALAXY
               ? <SolarSystemDiagram group={local} height={height} isGalaxy={IS_GALAXY} map={map} selectedId={selectedId} name={name} />
@@ -239,16 +238,20 @@ function generateLocations(group, location) {
 
   for (const location of group) {
     const type = location.properties.type
-    if (type === "star") continue
+
+    // If the star is already accounted for, include it too.
     let planetSize = 1
     if (type === "gate" || type === "station") {
       planetSize = 2.5
+    } else if (type === "star") {
+      planetSize = location.radius < 1 ? 12 : 1
     }
+
     locations.push({
       name: location.properties.name,
       type,
       planetSize,
-      tint: "gray",
+      tint: tintMap[type] || "gray",
       source: location,
       groupCenter: g?.groupCenter,
     })

@@ -212,8 +212,8 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     // offset for sheet
     // TODO: doesn't this always need to be done?
     if (zoomedOut) {
-      const arbitraryNumber = 0
-      // const arbitraryNumber = locations?.length > 5 ? 9.5 : 10
+      // const arbitraryNumber = 0
+      const arbitraryNumber = 9
       let zoomFactor = Math.pow(2, arbitraryNumber - wrapper.getZoom())
       zoomFactor = Math.max(zoomFactor, 4)
       const latDiff = (wrapper.getBounds().getNorth() - wrapper.getBounds().getSouth()) / zoomFactor

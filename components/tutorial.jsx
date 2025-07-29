@@ -89,7 +89,7 @@ export default function Tutorial({ name }) {
                             <br />
 
                             <ol className="list-decimal">
-                              <li>Sign in using a magic link</li>
+                              <li>Sign in</li>
                               <li>upload a local map</li>
                               <li>Your map will be publicly accessible at /{name}/yourUniqueMapID</li>
                             </ol>

@@ -17,6 +17,27 @@ export default function SearchBar({ map, data, mobile, name, pan, groups, UNIT, 
   const { editorTable } = useStore()
   const cmd = useRef(null)
   const input = useRef(null)
+  const [query, setQuery] = useState("")
+  const [results, setResults] = useState([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!active) return setResults([])
+    if (!query) return
+    setLoading(true)
+
+    const delay = setTimeout(() => {
+      const matches = data.features.filter(d =>
+        d.properties.name?.toLowerCase().includes(query?.toLowerCase())
+      )
+
+      setResults(matches.slice(0, 50))
+      setLoading(false)
+    }, 150) // debounce delay
+
+    return () => clearTimeout(delay)
+  }, [query, active])
+
 
   async function search(e, d) {
     if (typeof e === "object") e.preventDefault()
@@ -118,15 +139,21 @@ export default function SearchBar({ map, data, mobile, name, pan, groups, UNIT, 
   return (
     <div className="flex mt-5 w-full justify-center absolute z-10 pointer-events-none" >
       <Command className="rounded-lg border shadow-md w-[75%] searchbar pointer-events-auto" style={{ borderColor: darkenColor(STYLES.MAIN_COLOR, 13), backgroundColor: darkenColor(STYLES.MAIN_COLOR, 19) }}>
-        <CommandInput placeholder={mobile ? "Search for a location" : "press Space to search"} ref={input} onClick={() => setActive(true)} style={{ backgroundColor: STYLES.searchbarBackground }}
+        <CommandInput
+          placeholder={mobile ? "Search for a location" : "press Space to search"}
+          ref={input}
+          onClick={() => setActive(true)}
+          onValueChange={setQuery}
+          style={{ backgroundColor: STYLES.searchbarBackground }}
           borderbottomcolor={darkenColor(STYLES.MAIN_COLOR, 13)}
         />
         {active &&
           <CommandList style={{ height: '351px', zIndex: 100 }}>
-            <CommandEmpty>No results found.</CommandEmpty>
-            <CommandGroup ref={cmd} heading="Suggestions">
-              {data.features.map((d, index) => (
-                <CommandItem key={index} value={d.properties.name} className="cursor-pointer z-100" onMouseDown={e => search(e, d)} onSelect={e => search(e, d)}>
+            <CommandGroup ref={cmd}>
+              {loading && <div className="px-4 py-2 text-sm text-muted-foreground">Searching…</div>}
+              {!loading && results.length === 0 && <CommandEmpty>No results found.</CommandEmpty>}
+              {!loading && results.map((d, index) => (
+                <CommandItem key={index} value={d.properties.name} onMouseDown={e => search(e, d)} onSelect={e => search(e, d)}>
                   {d.properties.name}
                 </CommandItem>
               ))}
