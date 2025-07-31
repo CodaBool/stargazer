@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Settings, ArrowLeft, Heart, Map, Terminal, Plus, WifiOff, Cloud, ArrowRightFromLine, LogIn, Download, Link as Chain, Eye, Trash2, CloudUpload, Replace, X, CloudDownload, BookOpenCheck, Copy, Check, CloudOff, RefreshCcw, EyeOff, MapPin, Route, Landmark, Hexagon, Spline, Gavel, User, Bug, DollarSign } from 'lucide-react'
+import { Settings, ArrowLeft, Heart, Map, Terminal, Plus, WifiOff, Cloud, ArrowRightFromLine, LogIn, Download, Link as Chain, Eye, Trash2, CloudUpload, Replace, X, CloudDownload, BookOpenCheck, Copy, Check, CloudOff, RefreshCcw, EyeOff, MapPin, Route, Landmark, Hexagon, Spline, Gavel, User, Bug, DollarSign, MousePointerClick } from 'lucide-react'
 import { topology } from "topojson-server"
 import { toKML } from "@placemarkio/tokml"
 import {
@@ -120,12 +120,12 @@ export default function Home({ revalidate, cloudMaps, user, systems }) {
               <DialogTitle className="text-cyan-400">Settings</DialogTitle>
             </DialogHeader>
             <DialogDescription />
-            <div className="space-y-2 mt-6">
+            <div className="space-y-2 mt-2">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="scifi" className="w-full"><Chain /> Foundry</Button>
                 </PopoverTrigger>
-                <PopoverContent className="flex flex-col w-[385px]">
+                <PopoverContent className={`flex flex-col ${user ? "w-[400px]" : ""}`}>
                   {user
                     ? <>
                       <p className='mb-3 text-gray-200'>Link to your FoundryVTT by pasting this secret into the module settings</p>
@@ -133,7 +133,7 @@ export default function Home({ revalidate, cloudMaps, user, systems }) {
                       <p className='text-sm text-gray-400'>Warning: this exposes your account to some risk. All connected players and enabled modules in Foundry can read this value once entered. Local maps are always safe, this risk only applies to Cloud maps.</p>
                       <FoundryLink secret={user?.secret} />
                     </>
-                    : <h3 className='text-gray-300 text-center'>Provide an <Link href={`/api/auth/signin?callbackUrl=${typeof window !== "undefined" ? window.location.toString() + "#settings" : ""}`} className='text-blue-300'>email address</Link> to link to Foundry <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
+                    : <h3 className='text-gray-300 text-center text-xl'><Link href={`/login?back=/%23settings`} className='text-blue-300'><LogIn className='inline relative top-[-2px]' size={16} /> Login</Link> to link to Foundry</h3>
                   }
                 </PopoverContent>
               </Popover>
@@ -150,7 +150,7 @@ export default function Home({ revalidate, cloudMaps, user, systems }) {
                   </Link>
                 </>
               }
-              <Link href={user ? "/profile" : `/link?callback=/profile`}>
+              <Link href={user ? "/profile" : `/login?back=/%23settings&callback=/profile`}>
                 <Button variant="scifi" className="w-full mt-2"><User className="w-4 h-4" /> Account</Button>
               </Link>
             </div>
@@ -848,7 +848,7 @@ function FoundryLink({ secret }) {
   const [secretValue, setSecretValue] = useState(secret)
 
   async function refreshSecret() {
-    if (!window.confirm('Create a new secret? Only do this if your current secret was leaked. This will make any application using your current secret invalid.')) return
+    if (!window.confirm('This overwrites your current secret! All Foundry instances must have this new secret entered in the Stargazer module settings page.')) return
     setSubmitting(true)
     const res = await fetch('/api/profile', {
       method: 'PUT',
@@ -870,17 +870,23 @@ function FoundryLink({ secret }) {
 
   return (
     <>
-      {navigator.clipboard
-        ? <Button size="sm" className="cursor-pointer rounded my-4" variant="ghost" onClick={() => navigator.clipboard.writeText(secretValue)}><Copy />API Key</Button>
-        : <div className="flex items-center">
-          <Input value={secretValue} readOnly className="my-4 mx-0 flex-grow" type={showSecret ? 'text' : 'password'} />
-          <Button size="sm" className="cursor-pointer rounded ml-2" variant="outline" onClick={() => setShowSecret(!showSecret)}>
-            {showSecret ? <EyeOff /> : <Eye />}
-          </Button>
-        </div>
+      <div className="flex items-center">
+        <Input value={secretValue} readOnly className="my-4 mx-0 flex-grow" type={showSecret ? 'text' : 'password'} />
+        <Button size="sm" className="cursor-pointer rounded ml-2" variant="outline" onClick={() => setShowSecret(!showSecret)}>
+          {showSecret ? <EyeOff /> : <Eye />}
+        </Button>
+      </div>
+
+      {navigator.clipboard &&
+        <Button size="sm" className="cursor-pointer rounded mb-4" variant="outline" onClick={() => {
+          navigator.clipboard.writeText(secretValue)
+          toast.success("Copied to clipboard")
+        }}>
+          <Copy />Copy to Clipboard
+        </Button>
       }
       <Button size="sm" className="cursor-pointer rounded" variant="destructive" onClick={refreshSecret} disabled={submitting}>
-        <RefreshCcw />Request New Secret
+        <RefreshCcw />Request Replacement Secret
       </Button>
     </>
   )

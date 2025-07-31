@@ -1,6 +1,7 @@
 import NextAuth from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import DiscordProvider from "next-auth/providers/discord"
+// import { withAuth } from "next-auth/middleware"
 import db from "@/lib/db"
 import { TITLE } from "@/lib/utils"
 
@@ -33,6 +34,9 @@ export const authOptions = {
   session: {
     strategy: "jwt",
     maxAge: 31556952, // in seconds (31,556,952 = 1 year)
+  },
+  pages: {
+    signIn: "/login",
   },
   providers: [
     {

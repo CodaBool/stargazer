@@ -22,16 +22,12 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import db from "@/lib/db"
 import { ArrowLeft, Star, CircleX } from "lucide-react"
 import style from "../md.module.css"
-import { bbox } from '@turf/turf'
-
-// import MiniMap from "@/components/minimap"
 
 export default async function Location({ params, searchParams }) {
-  // const
   const session = await getServerSession(authOptions)
   const { id, map } = await params
   const { c: commentFormOpen } = await searchParams
-  const authURL = `/link?back=/contribute/${map}/${id}&callback=/contribute/${map}/${id}?c=1`
+  const authURL = `/login?back=/contribute/${map}/${id}&callback=/contribute/${map}/${id}?c=1`
 
   // unauthenticated and trying to create a location
   if (commentFormOpen && !session) {

@@ -138,7 +138,7 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       crosshairX.style.visibility = 'visible'
       crosshairY.style.visibility = 'visible'
       if (IS_GALAXY) {
-        text.textContent = `Y: ${lat.toFixed(1)} | X: ${lng.toFixed(1)}`;
+        text.textContent = `Y: ${lat.toFixed(2)} | X: ${lng.toFixed(2)}`;
       } else {
         text.textContent = `Lat: ${lat.toFixed(3)}° | Lng: ${lng.toFixed(3)}°`;
       }

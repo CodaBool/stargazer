@@ -46,8 +46,8 @@ export default async function Page({ searchParams }) {
             <CardDescription className="my-5 leading-8">To continue we need to authenticate you</CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href={`/api/auth/signin?callbackUrl=${callback}`}>
-              <Button className="cursor-pointer w-full" variant="scifi">Sign In</Button >
+            <Link href={`/login?callback=${callback}`}>
+              <Button className="cursor-pointer w-full" variant="scifi">Login</Button>
             </Link >
           </CardContent>
         </Card>
