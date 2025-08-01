@@ -23,9 +23,9 @@ const MAX_GEN_LOCATIONS = 8
 let sharedRenderer = null;
 let sharedCanvas = null;
 
-export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GALAXY, coordinates, GENERATE_LOCATIONS, name, height, selectedId, mobile, d, myGroup }) {
+export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GALAXY, coordinates, GENERATE_LOCATIONS, name, height, selectedId, mobile, d, myGroup, passedLocationClick }) {
   const { map } = useMap()
-  const GROUP_NAME = IS_GALAXY ? "Celestial Bodies" : "Locations"
+  const GROUP_NAME = IS_GALAXY ? "Celestial Bodies in this system" : "Locations"
 
   const [squareSize, setSquareSize] = useState()
   const [display, setDisplay] = useState(fillMissingData(d))
@@ -66,8 +66,12 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
 
   useEffect(() => {
     const updateSize = () => {
-      const vmin = Math.min(window.innerWidth, window.innerHeight);
-      setSquareSize(Math.min(250, vmin * 0.3))
+      const vmin = Math.min(window.innerWidth, window.innerHeight)
+      if (IS_GALAXY) {
+        setSquareSize(Math.min(250, vmin * 0.3))
+      } else {
+        setSquareSize(Math.min(120, vmin * 0.3))
+      }
     };
     updateSize();
     window.addEventListener("resize", updateSize);
@@ -82,7 +86,16 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
   }
 
   function recenter() {
-    map.easeTo({ center: coordinates, duration: 800 })
+
+    // duplicate of what's in map.jsx pan
+    // this is to compensate for drawer size and raise the flyto coordinates
+    const arbitraryNumber = 9
+    let zoomFactor = Math.pow(2, arbitraryNumber - map.getZoom())
+    zoomFactor = Math.max(zoomFactor, 4)
+    const latDiff = (map.getBounds().getNorth() - map.getBounds().getSouth()) / zoomFactor
+    let lat = coordinates[1] - latDiff / 2
+
+    map.flyTo({ center: [coordinates[0], lat], duration: 800 })
     map.setFeatureState(
       { source: 'source', id: selectedId },
       { hover: true }
@@ -103,38 +116,17 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
       open={!!drawerContent}
       onOpenChange={() => setDrawerContent(null)}
       modal={false}
-      snapPoints={[mobile ? 0.45 : 0.3, 0.92]}
+      snapPoints={[mobile ? 0.45 : 0.4, 0.92]}
     >
       <DrawerContent>
         <DrawerTitle></DrawerTitle>
 
-        <div>
-          {/* Three column layout */}
-          <div className="flex flex-wrap justify-center items-center">
-            {/* Left Column – Important Info */}
-            <div className="flex flex-col gap-2 w-full lg:max-w-[30vw] lg:items-end text-center">
 
-              <p className="text-gray-400 ">
-                <Crosshair size={mobile ? 14 : 20} onClick={recenter} className="inline mr-2 mb-1 cursor-pointer opacity-60" />
-                {`${coordinates[1].toFixed(2)}, ${coordinates[0].toFixed(2)}`}
-              </p>
-              <div className="flex justify-center items-center gap-2 mt-1 text-lg font-semibold ">
-                <Link href={genLink(display.source, name, "href")} className="opacity-60" target={name === "lancer" ? "_self" : "_blank"}>
-                  <ExternalLink className="cursor-pointer" size={mobile ? 14 : 19} />
-                </Link>
-                {display.source.properties.name}
-                <span className="text-gray-400 text-sm">- {display.source.properties.type}</span>
-              </div>
-
-              {display.source.properties.faction && <Badge className="text-sm max-w-[200px] text-center mx-auto lg:mx-0">{display.source.properties.faction}</Badge>}
-              {display.source.properties.locations && <p className="text-lg">{display.source.properties.locations} known locations</p>}
-              {display.source.properties.destroyed && <Badge variant="secondary" className="text-base">Destroyed</Badge>}
-              {display.source.properties.unofficial && <Badge variant="destructive" className="text-base">Unofficial</Badge>}
-            </div>
-
-            {/* Center Column – Planet */}
-            <div className={`flex justify-center items-center w-[${squareSize}px] h-[${squareSize}px]`}>
-              <ThreejsPlanet
+        <div className="w-full flex flex-col items-center justify-center text-xs lg:text-base">
+          {/* Canvas */}
+          <div className="flex items-center justify-center z-[-1]">
+            {IS_GALAXY
+              ? <ThreejsPlanet
                 sharedCanvas={sharedCanvas}
                 sharedRenderer={sharedRenderer}
                 height={squareSize}
@@ -156,11 +148,45 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
                 rivers={display.hydrosphere}
                 seed={display.seed}
                 planetSize={display.planetSize}
+                propStyle={{ position: "absolute", top: 0 }}
               />
+
+              : <img
+                src={`${svgBase + name}/${display.source.properties.type}.svg`}
+                alt={display.source.properties.name}
+                className={`mt-6`}
+                style={{
+                  width: (squareSize / 1.5) + "px",
+                  height: (squareSize / 1.5) + "px",
+                  position: "absolute",
+                  top: 0,
+                  filter: display.source.properties.tint ? `drop-shadow(0 0 6px ${display.source.properties.tint})` : undefined,
+                }}
+              />
+            }
+
+          </div>
+
+          {/* TOP – Coordinates */}
+          <div className="absolute top-[4px] left-1/2 transform -translate-x-1/2 z-10 text-xs lg:text-sm text-gray-400">
+            <Crosshair size={mobile ? 14 : 20} onClick={recenter} className="inline mr-2 mb-1 cursor-pointer opacity-60" />
+            {`${coordinates[1].toFixed(2)}, ${coordinates[0].toFixed(2)}`}
+          </div>
+
+
+          <div className="w-full flex flex-nowrap" style={{ height: `${squareSize}px` }}>
+
+            {/* left */}
+            <div className="w-full text-right p-0 lg:p-4 pb-5" style={{ marginRight: `${(Number(squareSize) + 10).toString()}px` }}>
+
+              {display.source.properties.faction && <Badge className="text-sm max-w-[200px] text-center mx-auto lg:mx-0">{display.source.properties.faction}</Badge>}
+              {display.source.properties.locations && <p className="text-lg">{display.source.properties.locations} known locations</p>}
+              {display.source.properties.destroyed && <Badge variant="secondary" className="text-base">Destroyed</Badge>}
+              {display.source.properties.unofficial && <Badge variant="destructive" className="text-base">Unofficial</Badge>}
             </div>
 
-            {/* Right Column – Other Data */}
-            <div className="flex flex-col gap-1 text-sm w-full lg:max-w-[30vw] text-center sm:text-left mb-2">
+            {/* right */}
+            <div className="w-full p-0 lg:p-4 pb-5">
               {typeof display.cloud === "number" && <p>{(1 - display.cloud).toFixed(2) * 100}% cloud coverage</p>}
               {typeof display.hydrosphere === "number" && <p>{(display.type === "ice_planet" ? (1 - display.ice) : display.hydrosphere).toFixed(2) * 100}% hydrosphere</p>}
               {typeof display.ice === "number" && display.type === "ice_planet" && <p>{(display.ice * 100).toFixed(1)}% ice coverage</p>}
@@ -177,39 +203,40 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
             </div>
           </div>
 
-          {/* Optional Description */}
-          {display.source.properties.description && (
-            <div className="max-w-prose mx-auto px-4 text-sm my-3">
-              <p className="text-justify select-text">{display.source.properties.description}</p>
-            </div>
-          )}
+          {/* BOTTOM – Name/Type */}
+          <div className={`absolute left-1/2  flex transform -translate-x-1/2 items-center`} style={{ top: `${(Number(squareSize) - 10).toString()}px` }}>
+            <Link href={genLink(display.source, name, "href")} className="opacity-60" target={name === "lancer" ? "_self" : "_blank"}>
+              <ExternalLink className="cursor-pointer me-1" size={mobile ? 14 : 19} />
+            </Link>
+            {display.source.properties.name}
+            <span className="text-gray-400  ms-1"> - {display.source.properties.type}</span>
+          </div>
         </div>
-        {myGroup.length > 0 ? (
+
+        {local.length > 0 && (
           <>
-            <hr className="mb-2" />
-            <DrawerDescription className="text-center text-xs md:text-sm mb-2" >{local.length} Nearby {GROUP_NAME}</DrawerDescription>
+            <hr className="mt-2" />
+            <DrawerDescription className="text-center text-xs md:text-sm mb-2" >{local.length} {GROUP_NAME}</DrawerDescription>
             {IS_GALAXY
-              ? <SolarSystemDiagram group={local} height={height} isGalaxy={IS_GALAXY} map={map} selectedId={selectedId} name={name} />
+              ? <SolarSystemDiagram group={local} height={height} isGalaxy={IS_GALAXY} map={map} selectedId={selectedId} name={name} passedLocationClick={passedLocationClick} />
               : <LocationSystem group={local} map={map} selectedId={selectedId} name={name} />
             }
           </>
-        )
-          :
-          IS_GALAXY &&
+        )}
+
+        {display.source.properties.description &&
           <>
-            <hr className="my-4" />
-            <DrawerDescription className="text-center text-xs md:text-sm mb-2" >{local.length} Nearby {GROUP_NAME}</DrawerDescription>
-            {IS_GALAXY
-              ? <SolarSystemDiagram group={local} height={height} isGalaxy={IS_GALAXY} map={map} selectedId={selectedId} name={name} />
-              : <LocationSystem group={local} map={map} selectedId={selectedId} name={name} />
-            }
+            <hr className="my-2" />
+            <div className="max-w-3xl mx-auto px-4">
+              <DrawerHeader className="m-0 p-0 mt-1 mb-3">
+                <DrawerTitle className="text-xl font-bold text-center">Description <span className="text-gray-500 text-sm"> - drawer can be pulled up</span></DrawerTitle>
+              </DrawerHeader>
+              <p className="text-base lg:text-lg leading-relaxed">
+                {display.source.properties.description}
+              </p>
+            </div>
           </>
         }
-        <DrawerFooter>
-          <DrawerClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DrawerClose>
-        </DrawerFooter>
       </DrawerContent>
     </Drawer >
   )

@@ -22,14 +22,14 @@ export default function Tutorial({ name }) {
   const { tutorial, setTutorial } = useStore()
   const { map } = useMap()
   const [check, setCheck] = useState()
-  const [osKey, setOSKey] = useState("Alt")
+  // const [osKey, setOSKey] = useState("Alt")
   const [fullscreenVideo, setFullscreenVideo] = useState()
   const mobile = isMobile()
 
   useEffect(() => {
-    if (navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
-      setOSKey("Option")
-    }
+    // if (navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
+    //   setOSKey("Option")
+    // }
     setCheck(localStorage.getItem("noTutorial") === "true")
     // if this is the first time, show a tutorial
     getMaps().then(maps => {
@@ -100,11 +100,11 @@ export default function Tutorial({ name }) {
                         <Collapsible>
                           <CollapsibleTrigger>Are there any hotkeys?</CollapsibleTrigger>
                           <CollapsibleContent className="text-white my-4">
-                            <p>Ctrl ={">"} toggle measure distance tool</p>
+                            <p>Z ={">"} toggle measure distance tool</p>
                             <br />
-                            <p>{osKey} ={">"} toggle coordinate view</p>
+                            <p>C ={">"} toggle coordinate view</p>
                             <br />
-                            <p>P ={">"} toggle preview mode</p>
+                            <p>P / B ={">"} toggle preview mode</p>
                           </CollapsibleContent>
                         </Collapsible>
                         <Collapsible>

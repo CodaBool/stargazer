@@ -56,7 +56,7 @@ export default function SolarSystemDiagram({ group, selectedId, map, name }) {
           {group.map((body, index) => {
             const selected = (body.id === selectedId) && typeof selectedId !== "undefined"
             return (
-              <div key={index} ref={selected ? selectedRef : null} className="flex flex-col items-center relative min-w-[40px]">
+              <div key={index} ref={selected ? selectedRef : null} className="flex flex-col items-center relative min-w-[50px]">
                 <img
                   src={`${svgBase + name}/${body.properties.type}.svg`}
                   alt={body.properties.name}
@@ -76,7 +76,7 @@ export default function SolarSystemDiagram({ group, selectedId, map, name }) {
                     filter: body.properties.tint ? `drop-shadow(0 0 6px ${body.properties.tint})` : undefined,
                   }}
                 />
-                <div className="text-xs mt-2 text-center text-white md:text-sm">
+                <div className="text-xs mt-2 text-center text-white lg:text-sm">
                   {body.properties.name}
                 </div>
                 <div className="text-xs mt-2 text-center text-white opacity-80">

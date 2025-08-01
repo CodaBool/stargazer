@@ -337,11 +337,17 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
     }
 
     const handleKeyDown = async event => {
-      if (event.altKey) {
+
+      // verify that the user is not typing somewhere
+      const searchbarFocused = document.querySelector('input[cmdk-input]') === document.activeElement;
+      const tableInEditMode = !!document.querySelector('table input')
+      if (searchbarFocused || tableInEditMode) return
+
+      if (event.code === "KeyC") {
         setMode(mode === "crosshair" ? null : "crosshair")
-      } else if (event.ctrlKey) {
+      } else if (event.code === "KeyZ") {
         setMode(mode === "measure" ? null : "measure")
-      } else if (event.code === "KeyP") {
+      } else if (event.code === "KeyP" || event.code === "KeyB") {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get("preview")) {
           router.push(`/${name}?id=${urlParams.get("id")}`)

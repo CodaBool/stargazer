@@ -40,6 +40,7 @@ function ThreejsPlanet({
   planetSize,
   disableListeners,
   warpDistance,
+  propStyle,
 }) {
   const containerRef = useRef(null);
 
@@ -285,6 +286,7 @@ function ThreejsPlanet({
     <div
       ref={containerRef}
       style={{
+        ...propStyle,
         width: "100%",
         aspectRatio: "1 / 1",
         height: "auto",

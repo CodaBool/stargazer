@@ -122,7 +122,7 @@ const removePopup = () => {
   if (popup._container) popup.remove()
 }
 
-export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, CLICK_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE }) {
+export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
   const { mode } = useMode()
@@ -144,10 +144,10 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   const mouseUpRef = useRef(null)
 
 
-  function locationClick(e) {
+  function locationClick(e, manual) {
     if (modeRef.current === "measure" || (modeRef.current === "crosshair" && mobile) || locked) return
 
-    const clicked = e.features[0]
+    const clicked = e?.features[0] || manual
     const index = locationGroupsRef.current
     if (!index) {
       console.error("ERR: spatial index failed")
@@ -179,19 +179,14 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   async function pan(d, myGroup, fit) {
     if (locked && !fit) return
     let fly = true, lat, lng, bounds, coordinates = d.geometry.coordinates
-    let zoomedOut = wrapper.getZoom() < 10
-
-    // force a zoom if panning to location by search
-    if (fit) zoomedOut = true
     let zoom = wrapper.getZoom()
 
+    // duplicate of what's in drawer.jsx recenter
     if (d.geometry.type === "Point") {
       [lng, lat] = coordinates
 
-      // zoom in for location clicks, if zoomed out
-      if (zoomedOut) {
-        zoom = CLICK_ZOOM
-      }
+      // force a zoom if panning to location by search
+      if (fit) zoom = SEARCH_POINT_ZOOM
 
     } else {
 
@@ -206,13 +201,10 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       if (fit) {
         bounds = turf.bbox(d)
       }
-      if (!zoomedOut) fly = false
     }
 
-    // offset for sheet
-    // TODO: doesn't this always need to be done?
-    if (zoomedOut) {
-      // const arbitraryNumber = 0
+    // offset for drawer (1/2)
+    if (!fit) {
       const arbitraryNumber = 9
       let zoomFactor = Math.pow(2, arbitraryNumber - wrapper.getZoom())
       zoomFactor = Math.max(zoomFactor, 4)
@@ -230,7 +222,19 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
           padding: { top: 50, bottom: 50, left: 50, right: 50 },
         });
       } else {
-        wrapper.flyTo({ center: [lng, lat], duration: 800, zoom })
+        wrapper.flyTo({ center: [lng, lat], duration: 700, zoom })
+
+        // Hacky solution since trying to offset for the drawer when zoomed out is hard
+        // this will wait until more zoomed and closer to the target to then attempt
+        // offset for drawer (2/2)
+        setTimeout(() => {
+          const arbitraryNumber = 9
+          let zoomFactor = Math.pow(2, arbitraryNumber - wrapper.getZoom())
+          zoomFactor = Math.max(zoomFactor, 4)
+          const latDiff = (wrapper.getBounds().getNorth() - wrapper.getBounds().getSouth()) / zoomFactor
+          lat = coordinates[1] - latDiff / 2
+          wrapper.flyTo({ center: [lng, lat], duration: 1_000, zoom })
+        }, 600)
       }
     }
 
@@ -554,7 +558,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       {params.get("calibrate") && <Calibrate width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}
 
       <Tutorial name={name} IS_GALAXY={IS_GALAXY} />
-      <Drawer {...drawerContent} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GENERATE_LOCATIONS={GENERATE_LOCATIONS} mobile={mobile} />
+      <Drawer {...drawerContent} passedLocationClick={locationClick} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GENERATE_LOCATIONS={GENERATE_LOCATIONS} mobile={mobile} />
 
       <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} />
       {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} mobile={mobile} />}

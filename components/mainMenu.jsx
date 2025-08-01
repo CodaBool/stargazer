@@ -60,8 +60,6 @@ import StarsBackground from "@/components/ui/starbackground"
 import StarsBackgroundSimple from "@/components/ui/starbackgroundSimple"
 import { useRouter } from 'next/navigation'
 import { animateText, combineAndDownload, combineLayers, combineLayersForTopoJSON, getDailyMenuQuote, isMobile, localSet, TITLE, REPO, USER, getMaps } from "@/lib/utils"
-
-// import { animateText, combineAndDownload, combineLayers, combineLayersForTopoJSON, getDailyMenuQuote, localSet, TITLE, REPO, USER, getMaps } from "@/lib/utils"
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import PlanetBackground from '@/components/ui/PlanetBackground'
@@ -263,16 +261,16 @@ export function MainMenu({ cloudMaps, user, revalidate, hash, systems }) {
 
       {/* Buttons for selected system */}
       {selectedSystem && !selectedMap && (
-        <div className="absolute top-4 right-16">
+        <div className="absolute top-4 right-6">
           {tab === "local" &&
             <Link href={`/${selectedSystem}/?new=1`} className='mr-4'>
-              <Button variant="scifi" title="Create a new map"><Plus /></Button>
+              <Button variant="scifi" title="Create a new map" className="p-3"><Plus /></Button>
             </Link>
           }
           {selectedSystem !== "custom" &&
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="scifi" title="Download base map data"><Download /></Button>
+                <Button variant="scifi" title="Download base map data" className="p-3"><Download /></Button>
               </PopoverTrigger>
               <PopoverContent className="flex flex-col w-80 bg-black/80 border border-cyan-400 text-white">
                 <p className='mb-3 text-gray-200'>Download the base {selectedSystem} map features. Your added locations will not be included.</p>

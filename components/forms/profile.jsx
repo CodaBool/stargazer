@@ -113,7 +113,7 @@ export default function CreateLocation({ user }) {
                     <Input {...field} />
                   </FormControl>
                   <FormDescription>
-                    This is the name that is publically shown on your contributions. This also used as a seed for your avatar.
+                    This is the name that is publically shown on your contributions. This name also used as a seed for your avatar.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

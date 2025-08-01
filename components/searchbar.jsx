@@ -65,7 +65,6 @@ export default function SearchBar({ map, data, mobile, name, pan, groups, UNIT, 
 
     // duplcate of what's in locationClick in map.jsx
     const [lng, lat] = d.geometry.coordinates
-    const buffer = UNIT === "ly" ? 2 : 0.5 // ~adjust for scale in degrees
 
     // rbush uses a square but that's fine
     const rawNearby = groups.search({

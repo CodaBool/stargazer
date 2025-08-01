@@ -15,7 +15,7 @@ import Link from "next/link";
 let sharedRenderer = null;
 let sharedCanvas = null;
 
-export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId, map, name }) {
+export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId, map, name, passedLocationClick }) {
   const [squareSize, setSquareSize] = useState()
   const [activeBody, setActiveBody] = useState()
   const [moonBodies, setMoonBodies] = useState()
@@ -41,6 +41,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
 
   function handleMouseOver(d) {
     if (!d) return
+    // console.log("highlight group", group)
     map.setFeatureState(
       { source: 'source', id: d.id },
       { hover: true }
@@ -74,49 +75,66 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
           {group.map((body, index) => {
             const selected = (body.source?.id === selectedId) && typeof selectedId !== "undefined"
             return (
-              <div key={index} className="flex flex-col items-center relative min-w-[40px]">
-                <img
-                  src={getIcon(body.source, body.type, name)}
-                  alt={body.name}
-                  onClick={() => setActiveBody(body)}
-                  onMouseOver={() => handleMouseOver(body.source)}
-                  onMouseOut={() => handleMouseOut(body.source)}
-                  className={`hover-grow-xl cursor-pointer ${(selected && selectedId) ? 'animate-pulse' : ''}`}
-                  style={{
-                    width: 40 + "px",
-                    height: 40 + "px",
-                    filter: getFilter(body),
-                  }}
-                />
-                {body.moons?.length > 0 && (
-                  <div className="mt-2 flex flex-col items-center">
-                    <img
-                      src={SVG_BASE + "lancer/moon.svg"}
-                      className="hover-grow-xl cursor-pointer"
-                      onClick={() => {
-                        if (body.moons.length === 1) {
-                          setActiveBody(body.moons[0])
-                        } else {
-                          setMoonBodies(body.moons)
-                        }
-                      }}
-                      style={{ width: 30 + "px", height: 30 + "px" }}
-                    />
-                    <div className="text-ms opacity-70 mt-1 text-center">
-                      {body.moons.length}x
+              <div key={index} className="flex flex-col items-center relative min-w-[50px]">
+                <div className="flex flex-wrap items-center">
+                  <img
+                    src={getIcon(body.source, body.type, name)}
+                    alt={body.name}
+                    onClick={() => {
+                      if (body.source) {
+                        passedLocationClick(null, body.source);
+                        return
+                      }
+                      setActiveBody(body)
+                    }}
+                    onMouseOver={() => handleMouseOver(body.source)}
+                    onMouseOut={() => handleMouseOut(body.source)}
+                    className={`hover-grow-xl cursor-pointer ${(selected && selectedId) ? 'animate-pulse' : ''}`}
+                    style={{
+                      width: 40 + "px",
+                      height: 40 + "px",
+                      filter: getFilter(body),
+                    }}
+                  />
+                  {body.moons?.length > 0 && (
+                    <div className="flex flex-wrap items-center ms-1">
+                      <img
+                        src={SVG_BASE + "lancer/moon.svg"}
+                        className="hover-grow-xl cursor-pointer"
+                        onClick={() => {
+                          if (body.moons.length === 1) {
+                            setActiveBody(body.moons[0])
+                          } else {
+                            setMoonBodies(body.moons)
+                          }
+                        }}
+                        style={{ width: 25 + "px", height: 25 + "px" }}
+                      />
+                      <div className="text-ms opacity-70 text-center ms-1"
+                        onClick={() => {
+                          if (body.moons.length === 1) {
+                            setActiveBody(body.moons[0])
+                          } else {
+                            setMoonBodies(body.moons)
+                          }
+                        }}>
+                        {body.moons.length}x
+                      </div>
                     </div>
-                  </div>
-                )}
-                <div className="text-xs mt-2 text-center text-white md:text-sm">
+                  )}
+                </div>
+
+                <div className="text-xs text-center text-white lg:text-sm">
                   {body.name}
                 </div>
                 {body.source && (
-                  <div className="text-xs mt-2 text-center text-white opacity-80">
-                    {selected && <Badge variant="brightOrange" className="mx-auto">Selected</Badge>}
-                    {body.source.properties.unofficial && <Badge variant="destructive" className="mx-auto">unofficial</Badge>}
+                  <div className="text-xs lg:text-sm text-center text-white opacity-80">
+                    {/* {selected && <Badge variant="brightOrange" className="mx-auto">Selected</Badge>} */}
+                    {body.source.properties.faction && <Badge className="mx-auto">{body.source.properties.faction}</Badge>}
+                    {/* {body.source.properties.unofficial && <Badge variant="destructive" className="mx-auto">unofficial</Badge>}
                     {body.source.properties.faction && <Badge className="mx-auto">{body.source.properties.faction}</Badge>}
                     {body.source.properties.destroyed && <Badge className="mx-auto">destroyed</Badge>}
-                    {body.source.properties.capital && <Badge variant="destructive" className="mx-auto">capital</Badge>}
+                    {body.source.properties.capital && <Badge variant="destructive" className="mx-auto">capital</Badge>} */}
                   </div>
                 )}
               </div>
