@@ -24,6 +24,7 @@ const fragmentShader = () => {
         float light_border_1 = 0.4;
         float light_border_2 = 0.6;
         uniform float ring_width;
+        uniform float ringTilt;
         uniform float ring_perspective;
         uniform float scale_rel_to_planet;
 
@@ -97,7 +98,10 @@ const fragmentShader = () => {
             vec2 uv = (floor(vUv.xy*pixels)/pixels) + 0.5;
 
             float light_d = distance(uv, light_origin);
-            uv = rotate(uv, rotation);
+            // tilt ring
+            uv = rotate(uv, ringTilt);
+            // spin rotation
+            // uv = rotate(uv, rotation);
 
             // center is used to determine ring position
             vec2 uv_center = uv - vec2(0.0, 0.5);
@@ -140,7 +144,16 @@ const fragmentShader = () => {
     `;
 }
 
-export function createRingLayer(lightPos = new Vector2(0.39, 0.7), rotationSpeed = 0.1, ringWidth, perspective = 6.0, pixels, seed, colors) {
+export function createRingLayer(
+  lightPos = new Vector2(0.39, 0.7),
+  rotationSpeed = 0.1,
+  ringWidth,
+  perspective = 6.0,
+  pixels,
+  seed,
+  colors,
+  ringTilt = Math.PI / 4 // results in 45 degree tilt
+) {
 
   let colorPalette = [
     new Vector4(238 / 255, 195 / 255, 154 / 255, .18), // outside
@@ -169,7 +182,8 @@ export function createRingLayer(lightPos = new Vector2(0.39, 0.7), rotationSpeed
       time_speed: { value: rotationSpeed },
       rotation: { value: Math.random() },
       seed: { value: seed || Math.random() > 0.5 ? Math.random() * 10 : Math.random() * 100 },
-      time: { value: 0.0 }
+      time: { value: 0.0 },
+      ringTilt: { value: ringTilt },
     },
     vertexShader: vertexShader(),
     fragmentShader: fragmentShader(),

@@ -52,7 +52,8 @@ function ThreejsPlanet({
     let isNewRenderer = false;
 
     if (!sharedRenderer || !sharedCanvas) {
-      sharedRenderer = new WebGLRenderer({ antialias: true });
+      sharedRenderer = new WebGLRenderer({ antialias: true, alpha: true });
+      sharedRenderer.setClearColor(0x000000, 0);
       sharedRenderer.setPixelRatio(window.devicePixelRatio);
       sharedCanvas = sharedRenderer.domElement;
       isNewRenderer = true;
@@ -141,7 +142,9 @@ function ThreejsPlanet({
       scene.add(directionalLight);
     }
 
-    sharedCanvas.style.display = 'block';
+    sharedCanvas.style.display = 'block'
+    sharedCanvas.style.backgroundColor = 'transparent';
+    sharedCanvas.style.pointerEvents = 'none';
 
     let animationId, cameraStartTime, currentZ;
     let totalX = 0;
@@ -155,7 +158,6 @@ function ThreejsPlanet({
     const notLava = type !== "lava";
 
     if (warpDistance) {
-      sharedCanvas.style.borderRadius = '50%';
       const warpStartZ = warpDistance * 300 // Starting far away
       camera.position.z = warpStartZ
       currentZ = warpStartZ
@@ -291,8 +293,6 @@ function ThreejsPlanet({
         aspectRatio: "1 / 1",
         height: "auto",
         display: "flex",
-        // background: "transparent",
-        // borderRadius: "50%",
         justifyContent: disableListeners ? "center" : "normal",
       }}
     />

@@ -6,7 +6,7 @@ import { debounce } from '@/lib/utils'
 
 const LazyThreejsPlanet = dynamic(() => import('../threejsPlanet'), {
   ssr: false,
-  loading: () => <div className="w-full h-full bg-transparent rounded-[50%]" />,
+  loading: () => <div className="w-full h-full" />,
 })
 
 const PLANET_TYPES = [
@@ -18,6 +18,7 @@ const PLANET_TYPES = [
   'lava',
   'desert',
   'terrestrial',
+  'ring',
 ]
 
 const randomIndex = Math.floor(Math.random() * PLANET_TYPES.length)
@@ -49,9 +50,9 @@ export default function PlanetBackground() {
   return (
     <StarsBackground delay={0} travelTime={1.2}>
       <div className="fixed inset-0 flex items-center justify-center">
-        <div style={{ width: planetSize, height: planetSize, background: "transparent" }}>
+        <div style={{ width: planetSize, height: planetSize }}>
           {beginWarp &&
-            <Suspense fallback={<div className="w-full h-full bg-transparent rounded-[50%]" />}>
+            <Suspense fallback={<div className="w-full h-full" />}>
               <LazyThreejsPlanet
                 type={type}
                 pixels={700}
