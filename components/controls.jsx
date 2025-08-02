@@ -16,7 +16,7 @@ export const useDraw = create(set => ({
   setRecreateListeners: () => set({ recreateListeners: Math.random() }),
 }))
 
-export default function Controls({ name, params, setSize, TYPES, STYLES }) {
+export default function Controls({ name, params, setSize, TYPES, STYLES, GEO_EDIT }) {
   const [saveTrigger, setSaveTrigger] = useState()
   // const { setTutorial, tutorial } = useStore()
   const [mapId, setMapId] = useState()
@@ -28,7 +28,9 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
 
   useEffect(() => {
     if (!draw || !mapId) return
+
     const geojson = draw.getAll()
+
     if (!geojson.features.length) return
 
     geojson.features.forEach(f => {
@@ -70,6 +72,8 @@ export default function Controls({ name, params, setSize, TYPES, STYLES }) {
         }
       })
     })
+
+    if (GEO_EDIT) window.localGet("maps").then(r => console.log(Object.values(r)[0].geojson))
 
   }, [saveTrigger, mapId])
 

@@ -122,7 +122,7 @@ const removePopup = () => {
   if (popup._container) popup.remove()
 }
 
-export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE }) {
+export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
   const { mode } = useMode()
@@ -335,27 +335,152 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
     if (name === "cyberpunk") {
       if (!wrapper.getMap().getSource('custom-image')) {
-        wrapper.getMap().addSource('custom-image', {
-          type: 'image',
-          url: 'https://img.codabool.com/night_city.webp',
-          "coordinates": [
-            [-5, 5], // top left
-            [4, 5], // top right
-            [4, -4], // bottom right
-            [-5, -4], // bottom left
-          ]
-        })
-      }
 
-      if (!wrapper.getMap().getLayer('custom-image-layer')) {
+        // cyberpunk 2077 map. Probably going to cut
+        // wrapper.getMap().addSource('custom-image', {
+        //   type: 'image',
+        //   url: 'https://img.codabool.com/night_city.webp',
+        //   "coordinates": [
+        //     // <->, |
+        //     [-4.5, 4.5], // top left
+        //     [4.5, 4.5], // top right
+        //     [4.5, -4.5], // bottom right
+        //     [-4.5, -4.5], // bottom left
+        //   ]
+        // })
+
+        wrapper.getMap().addSource('roads', {
+          'type': 'geojson',
+          'data': {
+            "type": "FeatureCollection",
+            "features": [
+              {
+                "type": "Feature",
+                "properties": { "name": "Arasaka Way", "type": "main" },
+                "geometry": {
+                  "type": "LineString",
+                  "coordinates": [
+                    [-4, -1],
+                    [4, -1]
+                  ]
+                }
+              },
+              {
+                "type": "Feature",
+                "properties": { "name": "Watson Street", "type": "side" },
+                "geometry": {
+                  "type": "LineString",
+                  "coordinates": [
+                    [0, -4],
+                    [0, 4]
+                  ]
+                }
+              },
+              {
+                "type": "Feature",
+                "properties": { "zone": "rocks" },
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [-2, -2],
+                      [-2, 2],
+                      [2, 2],
+                      [2, -2],
+                      [-2, -2]
+                    ]
+                  ]
+                }
+              }
+            ]
+          }
+        });
+        if (!wrapper.hasImage("water-0")) {
+          const img = new Image()
+          img.crossOrigin = "anonymous"
+          img.width = 64
+          img.height = 64
+          img.src = '/1.png'
+          img.onload = () => {
+            wrapper.addImage("water-0", img, { sdf: true })
+          }
+        }
+        if (!wrapper.hasImage("water-1")) {
+          const img = new Image()
+          img.crossOrigin = "anonymous"
+          img.width = 64
+          img.height = 64
+          img.src = '/2.png'
+          img.onload = () => {
+            wrapper.addImage("water-1", img, { sdf: true })
+          }
+        }
+
+
         wrapper.getMap().addLayer({
-          id: 'custom-image-layer',
-          type: 'raster',
-          source: 'custom-image',
-          // paint: {
-          //   'raster-opacity': 1
-          // }
-        })
+          id: 'road-lines',
+          type: 'line',
+          source: 'roads',
+          layout: {
+            'line-cap': 'round',
+            'line-join': 'round'
+          },
+          paint: {
+            'line-color': [
+              'match',
+              ['get', 'type'],
+              'main', '#ff00ff',
+              'side', '#888888',
+              '#ffffff' // fallback
+            ],
+            'line-width': 3
+          }
+        });
+
+        wrapper.getMap().addLayer({
+          id: 'road-labels',
+          type: 'symbol',
+          source: 'roads',
+          layout: {
+            'symbol-placement': 'line',   // ← follows road geometry
+            'text-field': ['get', 'name'],
+            'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+            'text-size': 12,
+            'text-letter-spacing': 0.05
+          },
+          paint: {
+            'text-color': '#ffffff',
+            'text-halo-color': '#000000',
+            'text-halo-width': 1.5,
+          }
+        });
+
+        // Add fill layer using pattern
+        wrapper.getMap().addLayer({
+          id: 'rocky-fill',
+          type: 'fill',
+          source: 'roads',
+          paint: {
+            'fill-color': 'red',
+            'fill-opacity': 0.4
+          }
+        });
+        wrapper.getMap().addLayer({
+          id: 'rocky-pattern',
+          type: 'fill',
+          source: 'roads',
+          paint: {
+            'fill-pattern': 'water-1'
+          }
+        });
+
+        // set to different images
+        // works, just would require something subtle
+        // let frame = 0;
+        // setInterval(() => {
+        //   wrapper.getMap().setPaintProperty('rocky-pattern', 'fill-pattern', `water-${frame}`);
+        //   frame = (frame + 1) % 2;
+        // }, 500);
       }
     }
 
@@ -558,7 +683,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       {params.get("calibrate") && <Calibrate width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}
 
       <Tutorial name={name} IS_GALAXY={IS_GALAXY} />
-      <Drawer {...drawerContent} passedLocationClick={locationClick} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GENERATE_LOCATIONS={GENERATE_LOCATIONS} mobile={mobile} />
+      <Drawer {...drawerContent} passedLocationClick={locationClick} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} GENERATE_LOCATIONS={GENERATE_LOCATIONS} mobile={mobile} />
 
       <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} />
       {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} mobile={mobile} />}

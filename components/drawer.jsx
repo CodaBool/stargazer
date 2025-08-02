@@ -23,9 +23,9 @@ const MAX_GEN_LOCATIONS = 8
 let sharedRenderer = null;
 let sharedCanvas = null;
 
-export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GALAXY, coordinates, GENERATE_LOCATIONS, name, height, selectedId, mobile, d, myGroup, passedLocationClick }) {
+export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GALAXY, coordinates, GENERATE_LOCATIONS, name, height, selectedId, mobile, d, myGroup, passedLocationClick, GEO_EDIT }) {
   const { map } = useMap()
-  const GROUP_NAME = IS_GALAXY ? "Celestial Bodies in this system" : "Locations"
+  const GROUP_NAME = IS_GALAXY ? "Celestial Bodies in this system" : "Nearby Locations"
 
   const [squareSize, setSquareSize] = useState()
   const [display, setDisplay] = useState(fillMissingData(d))
@@ -109,7 +109,7 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
   }
 
 
-  if (!display) return null
+  if (!display || GEO_EDIT) return null
 
   return (
     <Drawer

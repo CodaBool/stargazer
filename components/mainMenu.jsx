@@ -105,11 +105,14 @@ export default function Home({ revalidate, cloudMaps, user, systems }) {
       <div className="absolute top-4 right-4 z-50">
         <Dialog open={!!settingsDialog} onOpenChange={(open) => !open && setSettingsDialog(null)}>
           <DialogTrigger asChild>
-            <Button variant="ghost" className="md:w-20 md:h-20 w-16 h-16 p-0 m-0 cursor-pointer" onClick={() => {
+            <Button variant="ghost" className="w-[60px] h-[60px]" onClick={() => {
               setSettingsDialog(true)
               router.replace(`#settings`)
-            }}>
-              <Settings className='md:w-16 md:h-16 h-8 w-[4em]' />
+            }}
+              onPointerEnter={(e) => e.currentTarget.childNodes[0].style.animation = 'spin 3s linear infinite'}
+              onPointerLeave={(e) => e.currentTarget.childNodes[0].style.animation = 'none'}
+            >
+              <Settings className='' style={{ width: '30px', height: '30px' }} />
             </Button>
           </DialogTrigger>
           <DialogContent scifi={true} >

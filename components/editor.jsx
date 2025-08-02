@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 import { useDraw } from "./controls";
 import { getMaps, localSet, useStore } from "@/lib/utils";
 
-export default function Editor({ mapName, params, TYPES }) {
+export default function Editor({ mapName, params, TYPES, data, GEO_EDIT }) {
   const { map } = useMap()
   const draw = useDraw(s => s.draw)
   const [popup, setPopup] = useState()
@@ -16,6 +16,7 @@ export default function Editor({ mapName, params, TYPES }) {
   function handleClick(e) {
     if (!draw.getSelected().features.length) return
     const f = draw.getSelected().features[0]
+    if (GEO_EDIT) console.log(f.properties.name)
     if (draw.getMode() !== 'simple_select' && draw.getMode() !== 'direct_select') return
     const feature = draw.get(f.id) || f
     setPopup(feature)
@@ -40,7 +41,15 @@ export default function Editor({ mapName, params, TYPES }) {
     // duplicate of controls save function
     // const urlParams = new URLSearchParams(window.location.search);
     const mapId = mapName + "-" + params.get('id')
-    const geojson = draw.getAll()
+
+    // dev mode
+    let geojson
+    if (GEO_EDIT) {
+      geojson = data
+    } else {
+      geojson = draw.getAll()
+    }
+
     if (!geojson.features.length) return
     getMaps().then(maps => {
       localSet("maps", {
@@ -55,6 +64,8 @@ export default function Editor({ mapName, params, TYPES }) {
       })
     })
   }, [popup, draw])
+
+  if (GEO_EDIT) return
 
   if (popup) {
     return (

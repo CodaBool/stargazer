@@ -70,7 +70,7 @@ export default function SharedSettings({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(submit)} className="space-y-8 md:container mx-auto my-8">
-        <Card className="mx-auto max-w-2xl">
+        <Card className="mx-2 max-w-2xl">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle><Settings className="inline mb-1" /> Settings {data.name}</CardTitle>

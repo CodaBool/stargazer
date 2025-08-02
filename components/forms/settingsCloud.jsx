@@ -122,7 +122,7 @@ export default function MapSettings({ map, id, data, config }) {
   if (!data) {
     router.push(`/#${map}_cloud_${id}`)
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[80vh]">
         <div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent text-indigo-900 rounded-full" />
       </div>
     )

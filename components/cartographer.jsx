@@ -7,6 +7,7 @@ import Controls from './controls.jsx'
 import Editor from './editor'
 import { useSearchParams } from 'next/navigation'
 import RBush from 'rbush'
+const GEO_EDIT = true // debugging
 
 export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
   const CONFIG = getConsts(name)
@@ -102,12 +103,11 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
 
   if (!size || !config || !groups) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[80vh]">
         <div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent text-indigo-900 rounded-full" />
       </div>
     )
   }
-
 
   return (
     <>
@@ -133,10 +133,10 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
       // projection="globe"
       // projection={config.IS_GALAXY === false ? "mercator" : "globe"}
       >
-        <MapComponent locationGroups={groups} width={size.width} height={size.height} name={name} data={combined || data} mobile={mobile} params={params} locked={locked} setCrashed={setCrashed} {...config} />
-        {showControls && <Controls name={name} params={params} setSize={setSize} TYPES={config.TYPES} STYLES={config.STYLES} />}
+        <MapComponent locationGroups={groups} width={size.width} height={size.height} name={name} data={combined || data} mobile={mobile} params={params} locked={locked} setCrashed={setCrashed} {...config} GEO_EDIT={GEO_EDIT} />
+        {showControls && <Controls name={name} params={params} setSize={setSize} TYPES={config.TYPES} STYLES={config.STYLES} GEO_EDIT={GEO_EDIT} />}
       </Map>
-      {showEditor && <Editor mapName={name} params={params} TYPES={config.TYPES} />}
+      {showEditor && <Editor mapName={name} params={params} TYPES={config.TYPES} data={data} GEO_EDIT={GEO_EDIT} />}
       <div style={{ width: size.width, height: size.height, background: `radial-gradient(${config.BG})`, zIndex: -1, top: 0, position: "absolute" }}></div>
     </>
   )

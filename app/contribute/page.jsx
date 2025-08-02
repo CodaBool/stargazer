@@ -19,7 +19,7 @@ export default async function Page({ searchParams }) {
   if (location.length === 1) {
     redirect(`/contribute/${map}/${location[0].id}`, "push")
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[80vh]">
         <div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent text-indigo-900 rounded-full" />
       </div>
     )
