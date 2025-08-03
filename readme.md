@@ -1,24 +1,14 @@
 # 🗺️ Stargazer
-> create and publish your own Sci-Fi map
+> create and publish your own maps
 
-## 👉 [Start Stargazing](https://stargazer.vercel.app)
+### 📍 Sick of static maps?
+maps need to be as dynamic as the RPG games you play.
 
-### 🤔 Why?
-Most maps are just static images. These have a few issues
+Stargazer allows you to customize locations while also benefiting from a wealth of base map data. This is because Stargazer comes with all the known official data points pre-generated.
 
-- rendering a new image is usually done locally and is inefficient
-- the styling from image maps won't match everyone's preference
+Just add your unofficial points and publish
 
-By creating a data driven map, all downstream uses of it are improved.
-This is because the project will release a free TopoJSON & GeoJSON file (common map specs).
-
-### ✨ Yet Another Stylized Map
-> not interested in programming or manually handling map data?
-
-In addition to the goal of having accurate and accessible map data. I will be creating my own stylized app which can read this data. It will support the ability to customize the style, add locations and publish the map. Click the link at the top to see it.
+## 🌟 [Start Stargazing](https://stargazer.vercel.app)
 
 ### 🎲 Foundry
-Here for the Foundry module? [Click here](https://github.com/CodaBool/map)
-
-### ⚖️ Legal
-Stargazer is not an official Lancer product; it is a third party work, and is not affiliated with Massif Press. Stargazer is published via the Lancer Third Party License.
+> Here for the [Foundry module?](https://github.com/CodaBool/map)

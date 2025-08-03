@@ -686,24 +686,24 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
 
 async function download(type, data) {
   try {
+    console.log("res", data)
+
     let downloadData, finalFileType = "application/json"
     if (data.map === "custom") {
-      const localGeojson = data.geojson
       if (type === "geojson") {
-        downloadData = JSON.stringify(localGeojson)
+        downloadData = JSON.stringify(data.geojson)
       } else if (type === "kml") {
-        const combinedGeojson = combineLayers([localGeojson]);
+        const combinedGeojson = combineLayers([data.geojson]);
         downloadData = toKML(combinedGeojson)
         finalFileType = "application/vnd.google-earth.kml+xml"
       } else if (type === "topojson") {
-        downloadData = JSON.stringify(topology(combineLayersForTopoJSON([localGeojson])))
+        downloadData = JSON.stringify(topology(combineLayersForTopoJSON([data.geojson])))
       }
 
     } else {
       const response = await fetch(`/api/download/${data.map}`)
-      const data = await response.json()
-      const localGeojson = data.geojson
-      const [finalData, fileType] = combineAndDownload(type, data, localGeojson)
+      const json = await response.json()
+      const [finalData, fileType] = combineAndDownload(type, json, data.geojson)
       downloadData = finalData
       finalFileType = fileType
     }

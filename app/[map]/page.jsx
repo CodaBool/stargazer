@@ -39,6 +39,7 @@ export default async function mapLobby({ params }) {
     } else {
       f.properties.priority = 9
     }
+    f.properties.userCreated = true
     f.id = fid++
   })
 
