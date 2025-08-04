@@ -7,7 +7,7 @@ import Controls from './controls.jsx'
 import Editor from './editor'
 import { useSearchParams } from 'next/navigation'
 import RBush from 'rbush'
-const GEO_EDIT = true // debugging
+const GEO_EDIT = false // debugging
 
 export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
   const CONFIG = getConsts(name)
