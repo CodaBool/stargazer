@@ -384,6 +384,7 @@ export function MainMenu({ cloudMaps, user, revalidate, hash, systems }) {
                     <StarsBackgroundSimple>
                       <Image
                         src={`/systems/${system}.webp`}
+                        unoptimized={system === "fallout"}
                         alt={system}
                         width={200}
                         height={200}

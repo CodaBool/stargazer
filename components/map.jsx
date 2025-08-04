@@ -334,103 +334,105 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
 
     if (name === "cyberpunk") {
-      if (!wrapper.getMap().getSource('custom-image')) {
-        wrapper.getMap().addSource('custom-image', {
-          type: 'image',
-          url: 'https://img.codabool.com/nc_positioned_scaled.webp',
-          "coordinates": [
-            // <->, |
-            [-3, 3], // top left
-            [3, 3], // top right
-            [3, -3], // bottom right
-            [-3, -3], // bottom left
-          ]
-        })
+      wrapper.getMap().on('load', () => {
+        if (!wrapper.getMap().getSource('custom-image')) {
+          wrapper.getMap().addSource('custom-image', {
+            type: 'image',
+            url: 'https://img.codabool.com/nc_positioned_scaled.webp',
+            "coordinates": [
+              // <->, |
+              [-3, 3], // top left
+              [3, 3], // top right
+              [3, -3], // bottom right
+              [-3, -3], // bottom left
+            ]
+          })
+        }
+        if (!wrapper.getMap().getLayer('custom-image-layer')) {
+          wrapper.getMap().addLayer({
+            id: 'custom-image-layer',
+            type: 'raster',
+            source: 'custom-image',
+          })
+        }
+      });
 
-        // if (!wrapper.hasImage("water-0")) {
-        //   const img = new Image()
-        //   img.crossOrigin = "anonymous"
-        //   img.width = 64
-        //   img.height = 64
-        //   img.src = '/1.png'
-        //   img.onload = () => {
-        //     wrapper.addImage("water-0", img, { sdf: true })
-        //   }
-        // }
+      // if (!wrapper.hasImage("water-0")) {
+      //   const img = new Image()
+      //   img.crossOrigin = "anonymous"
+      //   img.width = 64
+      //   img.height = 64
+      //   img.src = '/1.png'
+      //   img.onload = () => {
+      //     wrapper.addImage("water-0", img, { sdf: true })
+      //   }
+      // }
 
 
-        // wrapper.getMap().addLayer({
-        //   id: 'road-lines',
-        //   type: 'line',
-        //   source: 'roads',
-        //   layout: {
-        //     'line-cap': 'round',
-        //     'line-join': 'round'
-        //   },
-        //   paint: {
-        //     'line-color': [
-        //       'match',
-        //       ['get', 'type'],
-        //       'main', '#ff00ff',
-        //       'side', '#888888',
-        //       '#ffffff' // fallback
-        //     ],
-        //     'line-width': 3
-        //   }
-        // });
+      // wrapper.getMap().addLayer({
+      //   id: 'road-lines',
+      //   type: 'line',
+      //   source: 'roads',
+      //   layout: {
+      //     'line-cap': 'round',
+      //     'line-join': 'round'
+      //   },
+      //   paint: {
+      //     'line-color': [
+      //       'match',
+      //       ['get', 'type'],
+      //       'main', '#ff00ff',
+      //       'side', '#888888',
+      //       '#ffffff' // fallback
+      //     ],
+      //     'line-width': 3
+      //   }
+      // });
 
-        // wrapper.getMap().addLayer({
-        //   id: 'road-labels',
-        //   type: 'symbol',
-        //   source: 'source',
-        //   layout: {
-        //     'symbol-placement': 'line',   // ← follows road geometry
-        //     'text-field': ['get', 'name'],
-        //     'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
-        //     'text-size': 12,
-        //     'text-letter-spacing': 0.05
-        //   },
-        //   paint: {
-        //     'text-color': '#ffffff',
-        //     'text-halo-color': '#000000',
-        //     'text-halo-width': 1.5,
-        //   }
-        // });
+      // wrapper.getMap().addLayer({
+      //   id: 'road-labels',
+      //   type: 'symbol',
+      //   source: 'source',
+      //   layout: {
+      //     'symbol-placement': 'line',   // ← follows road geometry
+      //     'text-field': ['get', 'name'],
+      //     'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+      //     'text-size': 12,
+      //     'text-letter-spacing': 0.05
+      //   },
+      //   paint: {
+      //     'text-color': '#ffffff',
+      //     'text-halo-color': '#000000',
+      //     'text-halo-width': 1.5,
+      //   }
+      // });
 
-        // // Add fill layer using pattern
-        // wrapper.getMap().addLayer({
-        //   id: 'rocky-fill',
-        //   type: 'fill',
-        //   source: 'roads',
-        //   paint: {
-        //     'fill-color': 'red',
-        //     'fill-opacity': 0.4
-        //   }
-        // });
-        // wrapper.getMap().addLayer({
-        //   id: 'rocky-pattern',
-        //   type: 'fill',
-        //   source: 'roads',
-        //   paint: {
-        //     'fill-pattern': 'water-1'
-        //   }
-        // });
+      // // Add fill layer using pattern
+      // wrapper.getMap().addLayer({
+      //   id: 'rocky-fill',
+      //   type: 'fill',
+      //   source: 'roads',
+      //   paint: {
+      //     'fill-color': 'red',
+      //     'fill-opacity': 0.4
+      //   }
+      // });
+      // wrapper.getMap().addLayer({
+      //   id: 'rocky-pattern',
+      //   type: 'fill',
+      //   source: 'roads',
+      //   paint: {
+      //     'fill-pattern': 'water-1'
+      //   }
+      // });
 
-        // set to different images
-        // works, just would require something subtle
-        // let frame = 0;
-        // setInterval(() => {
-        //   wrapper.getMap().setPaintProperty('rocky-pattern', 'fill-pattern', `water-${frame}`);
-        //   frame = (frame + 1) % 2;
-        // }, 500);
-      }
-      if (!wrapper.getMap().getLayer('custom-image-layer')) {
-        wrapper.getMap().addLayer({
-          id: 'custom-image-layer',
-          type: 'raster',
-          source: 'custom-image',
-        })
-      }
+      // set to different images
+      // works, just would require something subtle
+      // let frame = 0;
+      // setInterval(() => {
+      //   wrapper.getMap().setPaintProperty('rocky-pattern', 'fill-pattern', `water-${frame}`);
+      //   frame = (frame + 1) % 2;
+      // }, 500);
     }
 
 
