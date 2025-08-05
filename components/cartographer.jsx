@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import MapComponent from './map'
-import { combineLayers, getConsts, getLocationGroups, getMaps, isMobile } from '@/lib/utils'
+import { combineLayers, getConsts, getLocationGroups, getMaps, isMobile, accelerationCheck } from '@/lib/utils'
 import Map from 'react-map-gl/maplibre'
 import Controls from './controls.jsx'
 import Editor from './editor'
@@ -25,6 +25,7 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
   const showControls = params.get("controls") !== "0" && !mobile && !uuid && !locked && !params.get("preview")
   const showEditor = params.get("editor") !== "0" && !mobile && !uuid && !locked && !params.get("preview")
 
+  useEffect(accelerationCheck, [])
   useEffect(() => {
     // set size
     if (params.get("width") && params.get("height")) {
