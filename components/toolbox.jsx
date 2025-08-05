@@ -13,9 +13,10 @@ const linestring = {
 }
 let text, tutorial, crosshairX, crosshairY
 
-export default function Toolbox({ map, width, params, height, mobile, name, IS_GALAXY, DISTANCE_CONVERTER, UNIT }) {
+export default function Toolbox({ map, width, params, height, mobile, name, IS_GALAXY, DISTANCE_CONVERTER, UNIT, COORD_OFFSET }) {
   const { mode, setMode } = useMode()
   const router = useRouter()
+  const offset = COORD_OFFSET || [0, 0]
 
   // Projects [lng, lat] to Mercator meters, using projection EPSG:3857
   function mercatorLength(lineString) {
@@ -137,10 +138,12 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       const { lng, lat } = map.getCenter()
       crosshairX.style.visibility = 'visible'
       crosshairY.style.visibility = 'visible'
+      const x = (lng + offset[0]).toFixed(3)
+      const y = (lat + offset[1]).toFixed(3)
       if (IS_GALAXY) {
-        text.textContent = `Y: ${lat.toFixed(2)} | X: ${lng.toFixed(2)}`;
+        text.textContent = `Y: ${y} | X: ${x}`;
       } else {
-        text.textContent = `Lat: ${lat.toFixed(3)}° | Lng: ${lng.toFixed(3)}°`;
+        text.textContent = `Lat: ${y}° | Lng: ${x}°`;
       }
       text.style.visibility = 'visible'
     }
@@ -271,7 +274,7 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
         km = turf.length(liveLine)
       }
       const distance = km * DISTANCE_CONVERTER
-      // console.log("km", km)
+      console.log("km", km)
 
       if (UNIT === "miles" || UNIT === "mi") {
         const walkingSpeedMph = 3 // average walking speed in miles per hour
@@ -325,10 +328,12 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
     if (mode === "crosshair") {
       const { lng, lat } = map.getCenter()
       document.querySelectorAll('.crosshair').forEach(el => el.style.visibility = "visible")
+      const x = (lng + offset[0]).toFixed(3)
+      const y = (lat + offset[1]).toFixed(3)
       if (IS_GALAXY) {
-        text.textContent = `X: ${lng.toFixed(1)} | Y: ${lat.toFixed(1)}`;
+        text.textContent = `Y: ${y} | X: ${x}`;
       } else {
-        text.textContent = `Lat: ${lat.toFixed(3)}° | Lng: ${lng.toFixed(3)}°`;
+        text.textContent = `Lat: ${y}° | Lng: ${x}°`;
       }
       text.style.visibility = 'visible'
     } else if (mode === "measure") {

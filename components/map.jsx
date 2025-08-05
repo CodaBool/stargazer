@@ -122,7 +122,7 @@ const removePopup = () => {
   if (popup._container) popup.remove()
 }
 
-export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT }) {
+export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
   const { mode } = useMode()
@@ -531,6 +531,20 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
           filter={["all", ["==", "type", "line"], ["==", "$type", "Polygon"]]}
         />
         <Layer
+          type="line"
+          id="guide"
+          paint={{
+            "line-color": getColorExpression(name, "stroke", "LineString"),
+            "line-width": [
+              "case",
+              ["in", ["get", "type"], ["literal", ["highway", "trail"]]], 3.5,
+              2.5
+            ],
+            // 'line-dasharray': [6, 1],
+          }}
+          filter={['==', '$type', 'LineString']}
+        />
+        <Layer
           type="symbol"
           paint={{
             'text-color': '#ffffff',
@@ -542,8 +556,8 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
             'symbol-placement': 'line',   // ← follows road geometry
             'text-field': ['get', 'name'],
             'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
-            'text-size': 12,
-            'text-letter-spacing': 0.05
+            'text-size': 15,
+            'text-letter-spacing': 0.07
           }}
         />
 
@@ -603,16 +617,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
           filter={['==', '$type', 'Point']}
         />
         <Layer
-          type="line"
-          id="guide"
-          paint={{
-            "line-color": getColorExpression(name, "stroke", "LineString"),
-            "line-width": 2,
-            "line-dasharray": [10, 4],
-          }}
-          filter={['==', '$type', 'LineString']}
-        />
-        <Layer
           type="symbol"
           layout={{
             "text-rotate": 25,
@@ -641,7 +645,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       <Tutorial name={name} IS_GALAXY={IS_GALAXY} />
       <Drawer {...drawerContent} passedLocationClick={locationClick} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} GENERATE_LOCATIONS={GENERATE_LOCATIONS} mobile={mobile} />
 
-      <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} />
+      <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} COORD_OFFSET={COORD_OFFSET} />
       {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} mobile={mobile} />}
     </>
   )

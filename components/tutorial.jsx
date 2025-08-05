@@ -42,9 +42,9 @@ export default function Tutorial({ name }) {
       // Run your JS here
     })
   }, [])
-  useEffect(() => {
-    console.log("tutorial", tutorial)
-  }, [tutorial])
+  // useEffect(() => {
+  //   console.log("tutorial", tutorial)
+  // }, [tutorial])
 
   return (
     <>
