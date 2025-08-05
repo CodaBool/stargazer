@@ -334,29 +334,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
 
     if (name === "cyberpunk") {
-      wrapper.getMap().on('load', () => {
-        if (!wrapper.getMap().getSource('custom-image')) {
-          wrapper.getMap().addSource('custom-image', {
-            type: 'image',
-            url: 'https://img.codabool.com/nc_positioned_scaled.webp',
-            "coordinates": [
-              // <->, |
-              [-3, 3], // top left
-              [3, 3], // top right
-              [3, -3], // bottom right
-              [-3, -3], // bottom left
-            ]
-          })
-        }
-        if (!wrapper.getMap().getLayer('custom-image-layer')) {
-          wrapper.getMap().addLayer({
-            id: 'custom-image-layer',
-            type: 'raster',
-            source: 'custom-image',
-          })
-        }
-      });
-
       // if (!wrapper.hasImage("water-0")) {
       //   const img = new Image()
       //   img.crossOrigin = "anonymous"
@@ -519,6 +496,17 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   */
   return (
     <>
+      <Source id="custom-image" type="image" url='https://img.codabool.com/nc_positioned_scaled.webp' coordinates={[
+        [-3, 3], // top left
+        [3, 3], // top right
+        [3, -3], // bottom right
+        [-3, -3], // bottom left
+      ]}>
+        <Layer
+          type="raster"
+          id="custom-image-layer"
+        />
+      </Source>
       <Source id="source" type="geojson" data={data}>
         <Layer
           type="fill"
