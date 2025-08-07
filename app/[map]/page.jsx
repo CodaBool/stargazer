@@ -11,7 +11,7 @@ export default async function mapLobby({ params }) {
     return <Cartographer name={map} fid={0} data={{ type: "FeatureCollection", features: [] }} />
   }
 
-  // see bottom comments
+  // see bottom comment
   path.resolve(`app/[map]/topojson/fallout.json`)
   path.resolve(`app/[map]/topojson/lancer.json`)
   path.resolve(`app/[map]/topojson/lancer_starwall.json`)

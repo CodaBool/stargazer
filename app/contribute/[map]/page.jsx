@@ -181,9 +181,9 @@ export default async function Contribute({ params, searchParams }) {
       <hr className="my-4" />
       <h1 className="text-5xl text-center">Guides</h1>
       <hr className="my-4" />
-      {locations?.filter(l => l.geometry === "LineString").length === 0 && <p className="text-center text-lg text-gray-600">This map has no guides</p>}
+      {locations?.filter(l => l.geometry.type.includes("LineString")).length === 0 && <p className="text-center text-lg text-gray-600">This map has no guides</p>}
       <div className="flex flex-wrap justify-center">
-        {locations?.filter(l => l.geometry === "LineString").map(location => {
+        {locations?.filter(l => l.geometry.type.includes("LineString")).map(location => {
           return (
             <Card className="w-full  m-2 min-[392px]:w-[180px]" key={location.id}>
               <Link href={`/contribute/${map}/${location.id}`} className="block h-full">

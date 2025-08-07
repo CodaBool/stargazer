@@ -542,7 +542,7 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
               <Hexagon size={16} /> {data.geojson?.features.filter(f => f.geometry.type.includes("Poly")).length}
             </span>
             <span className="flex items-center gap-1" title="Guides/Lines">
-              <Spline size={16} /> {data.geojson?.features.filter(f => f.geometry.type === "LineString").length}
+              <Spline size={16} /> {data.geojson?.features.filter(f => f.geometry.type.includes("LineString")).length}
             </span>
           </div>
         </div>

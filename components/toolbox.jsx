@@ -274,7 +274,7 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
         km = turf.length(liveLine)
       }
       const distance = km * DISTANCE_CONVERTER
-      console.log("km", km)
+      // console.log("km", km)
 
       if (UNIT === "miles" || UNIT === "mi") {
         const walkingSpeedMph = 3 // average walking speed in miles per hour

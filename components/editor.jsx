@@ -46,6 +46,7 @@ export default function Editor({ mapName, params, TYPES, data, GEO_EDIT }) {
     let geojson
     if (GEO_EDIT) {
       geojson = data
+      console.log("export", draw.getAll())
     } else {
       geojson = draw.getAll()
     }

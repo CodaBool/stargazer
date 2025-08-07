@@ -330,12 +330,11 @@ function generatePlanetByType(params) {
       return createLavaPlanet(params)
     case "desert_planet":
     case "desert":
-      // ightPos = new Vector2(0.39, 0.7), colors, rotationSpeed = 0.1, rotation = 0.0, pixels, seed
+      // lightPos = new Vector2(0.39, 0.7), colors, rotationSpeed = 0.1, rotation = 0.0, pixels, seed
       return createDryPlanet(undefined, params.colors, undefined, undefined, params.pixels, params.seed)
     case "terrestrial":
     case "ocean_planet":
     case "ocean":
-      // duplicate of terrestrial
       return createEarthPlanet(params)
   }
 }

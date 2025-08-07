@@ -284,7 +284,7 @@ function getFeatureData(geojson) {
       locations++
     } else if (f.geometry.type.includes("Poly")) {
       territories++
-    } else if (f.geometry.type === "LineString") {
+    } else if (f.geometry.type.includes("LineString")) {
       guides++
     }
   })

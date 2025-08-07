@@ -7,7 +7,7 @@ import Controls from './controls.jsx'
 import Editor from './editor'
 import { useSearchParams } from 'next/navigation'
 import RBush from 'rbush'
-const GEO_EDIT = false // debugging
+const GEO_EDIT = (false && process.env.NEXT_PUBLIC_URL === "http://192.168.0.16:3000") // local debugging
 
 export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
   const CONFIG = getConsts(name)

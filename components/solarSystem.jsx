@@ -57,14 +57,6 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
   }
 
   function getFilter(body) {
-    if (body.source?.name === "competent burnell")
-      if (body.source) {
-        if (body.source.stroke) {
-          return `drop-shadow(0 0 6px ${body.source.stroke})`
-        } else if (body.source.fill) {
-          return `drop-shadow(0 0 6px ${body.source.fill})`
-        }
-      }
     return body.tint ? `drop-shadow(0 0 6px ${body.tint})` : undefined
   }
 
@@ -192,9 +184,10 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
               height: `${squareSize}px`,
               maxWidth: "98vw",
               maxHeight: "98vh",
+              backgroundColor: "black"
             }}
           >
-            <DialogTitle>{(activeBody.name || "") + `${activeBody.variant ? ` (${activeBody.variant})` : ""}`} - {activeBody.type.replaceAll("_", " ")}</DialogTitle>
+            <DialogTitle>{(activeBody.name || "") + `${activeBody.variant ? ` (${activeBody.variant})` : ""}`}  {activeBody.type.replaceAll("_", " ")}</DialogTitle>
             <div className="threejs-planet-dialog"></div>
             <ThreejsPlanet
               sharedCanvas={sharedCanvas}

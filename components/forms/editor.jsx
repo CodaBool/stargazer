@@ -136,7 +136,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
         setErrorFill(null)
       }
     }
-    if (feature.geometry.type === "LineString" || feature.geometry.type === "Polygon") {
+    if (feature.geometry.type.includes("LineString") || feature.geometry.type.includes("Poly")) {
       if (!feature.properties.stroke) {
         setErrorStroke(true)
       } else {
@@ -175,7 +175,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
           </svg>
         </div>
       )}
-      {popup.geometry.type === 'LineString' && (
+      {popup.geometry.type.includes("LineString") && (
         <div className="popup-preview">
           <svg width="24" height="24" viewBox="0 0 24 24" stroke={popup.properties.stroke}>
             <line x1="4" y1="4" x2="20" y2="20" strokeWidth="2" />

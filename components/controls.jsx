@@ -54,7 +54,7 @@ export default function Controls({ name, params, setSize, TYPES, STYLES, GEO_EDI
         f.properties.fill = STYLES.MAIN_COLOR
         draw.add(f)
       }
-      if ((f.geometry.type === "LineString" || f.geometry.type.includes("Poly")) && !f.properties.stroke) {
+      if ((f.geometry.type.includes("LineString") || f.geometry.type.includes("Poly")) && !f.properties.stroke) {
         f.properties.stroke = `rgba(${hexToRgb(STYLES.HIGHLIGHT_COLOR)}, 0.5)`
         draw.add(f)
       }

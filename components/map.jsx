@@ -73,12 +73,13 @@ const mouseMove = (e, wrapper, IS_GALAXY, name, IGNORE_POLY) => {
     while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
       coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
     }
-    if (e.features[0].geometry.type === "LineString") {
+    if (e.features[0].geometry.type === "LineString" || e.features[0].geometry.type === "MultiLineString") {
       if (!e.lngLat) return
       coordinates = [e.lngLat.lng, e.lngLat.lat]
     }
     if (!coordinates) {
       console.error("failed to get coordinates", coordinates, e)
+      return
     }
     popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap())
   }
@@ -122,7 +123,7 @@ const removePopup = () => {
   if (popup._container) popup.remove()
 }
 
-export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET }) {
+export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET, VIEW }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
   const { mode } = useMode()
@@ -444,7 +445,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       if (f.geometry.type !== params.get("type")) return
       if (f.properties.name !== params.get("name")) return
       let coord = f.geometry.coordinates.join(",")
-      if (f.geometry.type.includes("Poly") || f.geometry.type === "LineString") {
+      if (f.geometry.type.includes("Poly") || f.geometry.type.includes("LineString")) {
         const centroid = turf.centroid(f)
         coord = centroid.geometry.coordinates.join(",")
       }
@@ -496,17 +497,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   */
   return (
     <>
-      <Source id="custom-image" type="image" url='https://img.codabool.com/nc_positioned_scaled.webp' coordinates={[
-        [-3, 3], // top left
-        [3, 3], // top right
-        [3, -3], // bottom right
-        [-3, -3], // bottom left
-      ]}>
-        <Layer
-          type="raster"
-          id="custom-image-layer"
-        />
-      </Source>
       <Source id="source" type="geojson" data={data}>
         <Layer
           type="fill"
@@ -537,65 +527,66 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
             "line-color": getColorExpression(name, "stroke", "LineString"),
             "line-width": [
               "case",
-              ["in", ["get", "type"], ["literal", ["highway", "trail"]]], 3.5,
+              ["in", ["get", "type"], ["literal", ["highway", "replace_me"]]], 3.5,
               2.5
             ],
             // 'line-dasharray': [6, 1],
           }}
           filter={['==', '$type', 'LineString']}
         />
+        {/* Territory Label */}
         <Layer
           type="symbol"
-          paint={{
-            'text-color': '#ffffff',
-            'text-halo-color': '#000000',
-            'text-halo-width': 1.5,
-          }}
-          // filter={["all", ["==", "type", "line"], ["==", "$type", "Polygon"]]}
           layout={{
-            'symbol-placement': 'line',   // ← follows road geometry
-            'text-field': ['get', 'name'],
-            'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
-            'text-size': 15,
-            'text-letter-spacing': 0.07
+            "symbol-placement": "point",
+            "text-overlap": "never",
+            "text-rotate": 30,
+            "text-transform": "uppercase",
+            "text-field": ["get", "name"],
+            "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
+          }}
+          filter={["all", ["!=", "type", "line"], ["!=", "type", "bg"], ["==", "$type", "Polygon"]]}
+          paint={{
+            "text-color": "#ffffff",
+            "text-opacity": 0.4,
           }}
         />
-
+        <Layer
+          type="symbol"
+          layout={{
+            "symbol-placement": "line",
+            "text-field": ["get", "name"],
+            "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
+            "text-size": 15,
+            "text-letter-spacing": 0.07
+          }}
+          filter={["all", ["!=", "type", "grid"], ["==", "$type", "LineString"]]}
+          paint={{
+            "text-color": "#ffffff",
+            "text-halo-color": "#000000",
+            "text-halo-width": 1.5
+          }}
+        />
         <Layer
           type="symbol"
           id="location"
           layout={{
-            // "symbol-spacing": 250, // default 250 (in px)
             // "icon-allow-overlap": true, // default false
-            "icon-overlap": "always",
-            // "icon-optional": true, // default false
-            "icon-overlap": "cooperative",
+            "icon-optional": true, // default false
+            "icon-overlap": "never",
             "icon-size": 1,
-            // "text-anchor": "top",
-            "text-offset": [0, 1.3],
+            "text-offset": [0, 2.2],
             "icon-padding": 0, // default 2
-
-
-            // "icon-image": ["get", "icon"],
+            "symbol-sort-key": ["get", "priority"],
             "icon-image": [
               "coalesce",
               ["get", "icon"],
               ["get", "type"]
             ],
-
-            // fallback image example 1
-            // "icon-image": ["coalesce", ["image", "myImage"], ["image", "fallbackImage"]],
-            // fallback image example 2
-            // 'icon-image': [
-            //   'coalesce',
-            //   ['image', ['concat', ['get', 'icon'], '_15']],
-            //   ['image', 'marker_15']
-            // ],
             "text-field": ['get', 'name'],
             "text-font": ["Noto Sans Bold"],
             "text-size": 10,
             "text-max-width": 10,
-            "text-line-height": 1.2,
             "text-optional": true,
             ...LAYOUT_OVERRIDE || {},
           }}
@@ -631,7 +622,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
           filter={['==', ['get', 'type'], 'text']}
         />
       </Source>
-      {IS_GALAXY && <Starfield width={width} height={height} />}
+      {IS_GALAXY && <Starfield width={width} height={height} BOUNDS={VIEW.maxBounds} />}
       {params.get("zoom") !== "0" && <div className="absolute mt-28 ml-11 mr-[.3em] cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" style={{ transition: 'bottom 0.5s ease-in-out' }}>
         <ZoomIn size={34} onClick={() => wrapper.zoomIn()} className='m-2 hover:stroke-blue-200' />
         <ZoomOut size={34} onClick={() => wrapper.zoomOut()} className='m-2 mt-4 hover:stroke-blue-200' />

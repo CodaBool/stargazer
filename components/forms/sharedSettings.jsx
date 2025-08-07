@@ -476,7 +476,7 @@ export default function SharedSettings({
                             preAlertData = {
                               points: fileData.features.filter(f => f.geometry.type === "Point").length,
                               polygons: fileData.features.filter(f => f.geometry.type.includes("Poly")).length,
-                              lines: fileData.features.filter(f => f.geometry.type === "LineString").length,
+                              lines: fileData.features.filter(f => f.geometry.type.includes("LineString")).length,
                               total: fileData.features.length,
                             }
 
@@ -502,7 +502,7 @@ export default function SharedSettings({
                               } else if (f.geometry.type.includes("Poly") && !f.properties.fill) {
                                 f.properties.fill = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.4)`
                               }
-                              if ((f.geometry.type === "LineString" || f.geometry.type.includes("Poly")) && !f.properties.stroke) {
+                              if ((f.geometry.type.includes("LineString") || f.geometry.type.includes("Poly")) && !f.properties.stroke) {
                                 f.properties.stroke = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`
                               }
                             })

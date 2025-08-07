@@ -108,20 +108,19 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
     }, 400)
   }
 
-
   if (!display || GEO_EDIT) return null
+
+  const starNum = display.source?.properties?.starType?.split(",").length
 
   return (
     <Drawer
       open={!!drawerContent}
       onOpenChange={() => setDrawerContent(null)}
       modal={false}
-      snapPoints={[mobile ? 0.45 : 0.4, 0.92]}
+      snapPoints={[mobile ? 0.45 : IS_GALAXY ? 0.4 : 0.28, 0.92]}
     >
       <DrawerContent>
-        <DrawerTitle></DrawerTitle>
-
-
+        <DrawerTitle />
         <div className="w-full flex flex-col items-center justify-center text-xs lg:text-base">
           {/* Canvas */}
           <div className="flex items-center justify-center z-[-1]">
@@ -154,7 +153,7 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
               : <img
                 src={`${svgBase + name}/${display.source.properties.type}.svg`}
                 alt={display.source.properties.name}
-                className={`mt-6`}
+                className="mt-[1.7em]"
                 style={{
                   width: (squareSize / 1.5) + "px",
                   height: (squareSize / 1.5) + "px",
@@ -168,58 +167,66 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
           </div>
 
           {/* TOP – Coordinates */}
-          <div className="absolute top-[4px] left-1/2 transform -translate-x-1/2 z-10 text-xs lg:text-sm text-gray-400">
+          <div className="absolute top-[0px] left-1/2 transform -translate-x-1/2 z-10 text-xs lg:text-sm text-gray-100">
             <Crosshair size={mobile ? 14 : 20} onClick={recenter} className="inline mr-2 mb-1 cursor-pointer opacity-60" />
             {`${coordinates[1].toFixed(2)}, ${coordinates[0].toFixed(2)}`}
           </div>
 
 
           <div className="w-full flex flex-nowrap" style={{ height: `${squareSize}px` }}>
-
             {/* left */}
-            <div className="w-full text-right p-0 lg:p-4 pb-5" style={{ marginRight: `${(Number(squareSize) + 10).toString()}px` }}>
-
-              {display.source.properties.faction && <Badge className="text-sm max-w-[200px] text-center mx-auto lg:mx-0">{display.source.properties.faction}</Badge>}
-              {display.source.properties.locations && <p className="text-lg">{display.source.properties.locations} known locations</p>}
-              {display.source.properties.destroyed && <Badge variant="secondary" className="text-base">Destroyed</Badge>}
-              {display.source.properties.unofficial && <Badge variant="destructive" className="text-base">Unofficial</Badge>}
+            <div className="w-full text-right p-0 lg:p-4 pb-5 flex flex-col-reverse" style={{ marginRight: `${(Number(squareSize) + 10).toString()}px` }}>
+              <div>
+                {starNum === 2 && <Badge className="text-sm">binary</Badge>}
+                {starNum === 3 && <Badge className="text-sm">trinary</Badge>}
+                {display.source.properties.faction && <Badge className="text-sm text-center mx-auto lg:mx-0">{display.source.properties.faction}</Badge>}
+                {display.source.properties.locations && <p className="text-lg">{display.source.properties.locations} known locations</p>}
+                {display.source.properties.destroyed && <Badge variant="secondary" className="text-base">Destroyed</Badge>}
+                {display.source.properties.unofficial && <Badge variant="destructive" className="text-base">Unofficial</Badge>}
+              </div>
             </div>
 
             {/* right */}
+
             <div className="w-full p-0 lg:p-4 pb-5">
-              {typeof display.cloud === "number" && <p>{(1 - display.cloud).toFixed(2) * 100}% cloud coverage</p>}
-              {typeof display.hydrosphere === "number" && <p>{(display.type === "ice_planet" ? (1 - display.ice) : display.hydrosphere).toFixed(2) * 100}% hydrosphere</p>}
-              {typeof display.ice === "number" && display.type === "ice_planet" && <p>{(display.ice * 100).toFixed(1)}% ice coverage</p>}
-              {typeof display.radius === "number" && <p>{display.radius.toFixed(2)} {display.type === "star" ? "solar radii" : "km radius"}</p>}
-              {typeof display.temperature === "number" && <p>{Math.floor(display.temperature)}°C</p>}
-              {typeof display.dominantChemical === "string" && <p>Dominant Chemical: {display.dominantChemical}</p>}
-              {typeof display.daysInYear === "number" && <p>{display.daysInYear} days/year</p>}
-              {typeof display.hoursInDay === "number" && <p>{display.hoursInDay} hours/day</p>}
-              {typeof display.gravity === "number" && <p>Gravity: {(display.gravity * 0.0010197162).toFixed(1)} g</p>}
-              {typeof display.pressure === "number" && display.pressure > 0 && <p>Pressure: {(display.pressure / 1000).toFixed(1)} bars</p>}
-              {Array.isArray(display.moons) && display.moons.length > 0 && <p>{display.moons.length} moon{display.moons.length > 1 ? "s" : ""}</p>}
-              {typeof display.modifier === "string" && <p>{display.modifier}</p>}
-              {display.isMoon && <p>Moon</p>}
+              <div className="w-full h-full flex flex-col-reverse">
+                <div>
+                  {typeof display.cloud === "number" && <p>{(1 - display.cloud).toFixed(2) * 100}% cloud coverage</p>}
+                  {typeof display.hydrosphere === "number" && <p>{(display.type === "ice_planet" ? (1 - display.ice) : display.hydrosphere).toFixed(2) * 100}% hydrosphere</p>}
+                  {typeof display.ice === "number" && display.type === "ice_planet" && <p>{(display.ice * 100).toFixed(1)}% ice coverage</p>}
+                  {typeof display.radius === "number" && <p>{display.radius.toFixed(2)} {display.type === "star" ? "solar radii" : "km radius"}</p>}
+                  {(typeof display.temperature === "number" && display.type !== "star") && <p>{Math.floor(display.temperature)}°C</p>}
+                  {(typeof display.temperature === "number" && display.type === "star") && <p>{Math.floor(display.temperature) + 273}°K</p>}
+                  {typeof display.dominantChemical === "string" && <p>Dominant Chemical: {display.dominantChemical}</p>}
+                  {typeof display.daysInYear === "number" && <p>{display.daysInYear} days/year</p>}
+                  {typeof display.hoursInDay === "number" && <p>{display.hoursInDay} hours/day</p>}
+                  {typeof display.gravity === "number" && <p>Gravity: {(display.gravity * 0.0010197162).toFixed(1)} g</p>}
+                  {typeof display.pressure === "number" && display.pressure > 0 && <p>Pressure: {(display.pressure / 1000).toFixed(1)} bars</p>}
+                  {Array.isArray(display.moons) && display.moons.length > 0 && <p>{display.moons.length} moon{display.moons.length > 1 ? "s" : ""}</p>}
+                  {typeof display.modifier === "string" && <p>{display.modifier}</p>}
+                  {display.isMoon && <p>Moon</p>}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* BOTTOM – Name/Type */}
-          <div className={`absolute left-1/2  flex transform -translate-x-1/2 items-center`} style={{ top: `${(Number(squareSize) - 10).toString()}px` }}>
+          <div className={`absolute left-1/2 flex transform -translate-x-1/2 items-center`} style={{ top: `${(Number(squareSize) - 5).toString()}px` }}>
             <Link href={genLink(display.source, name, "href")} className="opacity-60" target={name === "lancer" ? "_self" : "_blank"}>
               <ExternalLink className="cursor-pointer me-1" size={mobile ? 14 : 19} />
             </Link>
             {display.source.properties.name}
-            <span className="text-gray-400  ms-1"> - {display.source.properties.type}</span>
+            <span className="text-gray-400  ms-1"> - {display.type === "star" ? (display.source.properties.starType || `${display.variant}`) : display.source.properties.type}</span>
           </div>
         </div>
 
         {local.length > 0 && (
           <>
-            <hr className="mt-2" />
-            <DrawerDescription className="text-center text-xs md:text-sm mb-2" >{local.length} {GROUP_NAME}</DrawerDescription>
+            <hr className="mt-6" />
+            <DrawerDescription className="text-center text-xs md:text-sm my-2" >{local.length} {GROUP_NAME}</DrawerDescription>
             {IS_GALAXY
               ? <SolarSystemDiagram group={local} height={height} isGalaxy={IS_GALAXY} map={map} selectedId={selectedId} name={name} passedLocationClick={passedLocationClick} />
-              : <LocationSystem group={local} map={map} selectedId={selectedId} name={name} />
+              : <LocationSystem group={local} map={map} selectedId={selectedId} name={name} passedLocationClick={passedLocationClick} />
             }
           </>
         )}
@@ -268,9 +275,13 @@ function generateLocations(group, location) {
 
     // If the star is already accounted for, include it too.
     let planetSize = 1
+    // console.log("planet", location)
+
     if (type === "gate" || type === "station") {
       planetSize = 2.5
     } else if (type === "star") {
+      // make dwarf stars small on the canvas
+      // console.log("planet size", location.radius)
       planetSize = location.radius < 1 ? 12 : 1
     }
 
@@ -291,26 +302,24 @@ function generateLocations(group, location) {
     })
   }
 
-  // console.log("locations", locations)
-
   return locations
 }
 function fillMissingData(d) {
   if (!d) return
-  let starData
+  let starData = {}
   if (d.properties.type === "star") {
     starData = generateStar(genSeed(d), d)
   }
 
-  let planetSize = 1
   if (d.properties.type === "gate" || d.properties.type === "station") {
-    planetSize = 2.5
+    starData.planetSize = 1.1
   }
+
   return {
     ...starData,
     name: d.properties.name,
     type: d.properties.type,
-    planetSize,
+    planetSize: starData?.planetSize || 1,
     tint: "gray",
     source: d,
   }
@@ -328,34 +337,41 @@ const tintMap = {
   desert_planet: "yellow",
   ocean_planet: "blue",
   gate: "purple",
-  "red dwarf": "red",
-  "white dwarf": "white",
-  "red giant": "red",
-  "red supergiant": "red",
-  "blue giant": "blue",
-  "blue supergiant": "blue",
   // "neutron": "blue",
-  "red": "red",
   "blue": "blue",
   "orange": "orange",
+  "red": "red",
+  "white": "white",
   "yellow": "yellow",
+  "orange dwarf": "orange",
+  "red dwarf": "red",
+  "white dwarf": "white",
+  "yellow dwarf": "yellow",
+  "blue giant": "blue",
+  "orange giant": "orange",
+  "red giant": "red",
+  "yellow giant": "yellow",
 }
 
 function generateStar(seed, location, groupCenter) {
   const rng = seedrandom(seed);
   const random = () => rng();
 
+  // these numbers were pulled from my butt
   const weightedTypes = [
-    { type: 'star', variant: 'red dwarf', chance: 50, scheme: "red", baseColor: "c20000" },
+    { type: 'star', variant: 'blue', chance: 3, scheme: "blue", baseColor: "4753fc" },
     { type: 'star', variant: 'orange', chance: 5, scheme: "orange", baseColor: "fc8c03" },
-    { type: 'star', variant: 'yellow', chance: 5, scheme: "yellow", baseColor: "ffeb91" },
-    { type: 'star', variant: 'white dwarf', chance: 10, scheme: "white", baseColor: "b3b3b3" },
-    { type: 'star', variant: 'red giant', chance: 5, scheme: "red", baseColor: "c20000" },
-    { type: 'star', variant: 'red supergiant', chance: 4, scheme: "red", baseColor: "c20000" },
-    { type: 'star', variant: 'blue giant', chance: 5, scheme: "blue", baseColor: "4753fc" },
-    { type: 'star', variant: 'blue supergiant', chance: 3, scheme: "blue", baseColor: "4753fc" },
-    { type: 'star', variant: 'red', chance: 5, scheme: "red", baseColor: "c20000" },
-    { type: 'star', variant: 'blue', chance: 5, scheme: "blue", baseColor: "4753fc" },
+    { type: 'star', variant: 'red', chance: 6, scheme: "red", baseColor: "c20000" },
+    { type: 'star', variant: 'white', chance: 3, scheme: "white", baseColor: "b3b3b3" },
+    { type: 'star', variant: 'yellow', chance: 4, scheme: "yellow", baseColor: "ffeb91" },
+    { type: 'star', variant: 'blue giant', chance: 3, scheme: "blue", baseColor: "4753fc" },
+    { type: 'star', variant: 'orange giant', chance: 5, scheme: "orange", baseColor: "fc8c03" },
+    { type: 'star', variant: 'red giant', chance: 12, scheme: "red", baseColor: "c20000" },
+    { type: 'star', variant: 'yellow giant', chance: 4, scheme: "yellow", baseColor: "ffeb91" },
+    { type: 'star', variant: 'orange dwarf', chance: 10, scheme: "orange", baseColor: "fc8c03" },
+    { type: 'star', variant: 'red dwarf', chance: 27, scheme: "red", baseColor: "c20000" },
+    { type: 'star', variant: 'white dwarf', chance: 8, scheme: "white", baseColor: "b3b3b3" },
+    { type: 'star', variant: 'yellow dwarf', chance: 10, scheme: "yellow", baseColor: "ffeb91" },
   ];
 
   const totalChance = weightedTypes.reduce((sum, item) => sum + item.chance, 0);
@@ -367,34 +383,30 @@ function generateStar(seed, location, groupCenter) {
 
   const rand = random()
   let star
-  if (location?.starType) {
-    star = weightedTypes.find(item => item.variant === location.starType)
+  // console.log("location", location)
+  if (location?.properties?.starType) {
+    const starType = location.properties.starType.includes(",") ? location.properties.starType.split(",")[0].trim() : location.properties.starType
+    star = weightedTypes.find(item => item.variant === starType)
   } else {
     star = cumulativeWeights.find(item => rand <= item.cumulativeChance)
   }
 
+  // console.log("star", star)
+
   let radius
-  if (location?.radius) {
+  if (location?.properties?.radius) {
     radius = location.radius
   } else {
     radius = range(random, planetData[star.variant].radius)
   }
 
-  const clampedRadius = Math.min(Math.max(radius, 0), 1500); // Clamp 0–1500
+  // const clampedRadius = Math.min(Math.max(radius, 0), 1500); // Clamp 0–1500
 
-  // Custom size band mapping
-  let planetSize;
-  if (clampedRadius < 0.5) {
-    planetSize = 4
-    if (star.variant === "white dwarf") {
-      planetSize = 12
-    }
-  } else if (clampedRadius < 1) {
-    planetSize = 3;
-  } else if (clampedRadius < 5) {
-    planetSize = 2;
-  } else {
-    planetSize = 1;
+  let planetSize = 1.2
+  if (star.variant.includes("dwarf")) {
+    planetSize = 3
+  } else if (star.variant.includes("giant")) {
+    planetSize = 0.9
   }
 
   return {
@@ -610,48 +622,56 @@ const planetData = {
     year: [150, 10000],
   },
   "red dwarf": {
-    temperature: [2500, 3500],
-    radius: [0.1, 0.7],
+    temperature: [2500, 4000],
+    radius: [0.1, 0.5],
+  },
+  "orange dwarf": {
+    temperature: [3900, 5200],
+    radius: [0.7, 0.96],
+  },
+  "yellow dwarf": {
+    temperature: [5300, 6000],
+    radius: [0.8, 1.15],
   },
   "white dwarf": {
-    temperature: [8000, 40000],
-    radius: [0.001, 0.1],
+    temperature: [4000, 150000],
+    radius: [0.008, 0.02],
   },
   "red giant": {
-    temperature: [3000, 6000],
-    radius: [10, 150],
+    temperature: [2200, 3200],
+    radius: [100, 200],
   },
-  "red supergiant": {
-    temperature: [3500, 4500],
-    radius: [30, 1500],
+  "orange giant": {
+    temperature: [3500, 5000],
+    radius: [10, 100],
+  },
+  "yellow giant": {
+    temperature: [5000, 7000],
+    radius: [30, 1000],
   },
   "blue giant": {
     temperature: [10000, 50000],
-    radius: [5, 10],
+    radius: [2, 25],
   },
-  "blue supergiant": {
-    temperature: [10000, 50000],
-    radius: [10, 40],
-  },
-  // "neutron": {
-  //   temperature: [1000000, 5000000],
-  //   radius: [8, 14],
-  // },
   "red": {
-    temperature: [2000, 4000],
-    radius: [1, 5],
-  },
-  "blue": {
-    temperature: [30000, 60000],
-    radius: [2, 16],
+    temperature: [2500, 4000],
+    radius: [0.6, 1.0],
   },
   "orange": {
-    temperature: [2000, 4000],
-    radius: [1, 5],
+    temperature: [3700, 5200],
+    radius: [0.7, 0.9],
   },
   "yellow": {
-    temperature: [2000, 4000],
-    radius: [1, 5],
+    temperature: [5000, 6000],
+    radius: [0.8, 1.2],
+  },
+  "white": {
+    temperature: [7500, 10000],
+    radius: [0.8, 1.3],
+  },
+  "blue": {
+    temperature: [10000, 50000],
+    radius: [1.8, 6.6],
   }
 }
 

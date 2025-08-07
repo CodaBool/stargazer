@@ -3,7 +3,7 @@ import { genLink, svgBase } from "@/lib/utils";
 import { Badge } from "./ui/badge"
 import { useEffect, useRef } from "react";
 
-export default function SolarSystemDiagram({ group, selectedId, map, name }) {
+export default function SolarSystemDiagram({ group, selectedId, map, name, passedLocationClick }) {
   const selectedRef = useRef(null)
 
   useEffect(() => {
@@ -54,22 +54,16 @@ export default function SolarSystemDiagram({ group, selectedId, map, name }) {
       <div className="w-full overflow-x-auto overflow-y-visible py-2">
         <div className="flex items-baseline h-full space-x-6 px-4 justify-evenly">
           {group.map((body, index) => {
-            const selected = (body.id === selectedId) && typeof selectedId !== "undefined"
+            // const selected = (body.id === selectedId) && typeof selectedId !== "undefined"
             return (
-              <div key={index} ref={selected ? selectedRef : null} className="flex flex-col items-center relative min-w-[50px]">
+              <div key={index} className="flex flex-col items-center relative min-w-[50px]">
                 <img
                   src={`${svgBase + name}/${body.properties.type}.svg`}
                   alt={body.properties.name}
-                  onClick={() => {
-                    if (selected) {
-                      window.open(genLink(body, name, "href"), '_blank');
-                    } else {
-                      panTo(body)
-                    }
-                  }}
+                  onClick={() => passedLocationClick(null, body)}
                   onMouseOver={() => handleMouseOver(body)}
                   onMouseOut={() => handleMouseOut(body)}
-                  className={`hover-grow-xl cursor-pointer ${selected ? 'animate-pulse' : ''}`}
+                  className={`hover-grow-xl cursor-pointer`}
                   style={{
                     width: 40 + "px",
                     height: 40 + "px",
@@ -80,7 +74,6 @@ export default function SolarSystemDiagram({ group, selectedId, map, name }) {
                   {body.properties.name}
                 </div>
                 <div className="text-xs mt-2 text-center text-white opacity-80">
-                  {selected && <Badge variant="brightOrange" className="mx-auto">Selected</Badge>}
                   {body.properties.unofficial && <Badge variant="destructive" className="mx-auto">unofficial</Badge>}
                   {body.properties.faction && <Badge className="mx-auto">{body.properties.faction}</Badge>}
                   {body.properties.destroyed && <Badge className="mx-auto">destroyed</Badge>}
