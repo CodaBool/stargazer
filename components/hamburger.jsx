@@ -170,11 +170,11 @@ function Credits({ name }) {
               <span className="text-[0.7em] md:text-md"><Sparkles className="inline pr-2" /> <a href="https://wyrmlog.wyrmworld.com" target="_blank"> Purple Wyrm (icons) <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
             </>
           }
-          {name === "cyberpunk" &&
+          {/* {name === "cyberpunk" &&
             <>
               <span className="text-xs md:text-md"><Sparkles className="inline pr-2" /> <a href="https://www.reddit.com/user/devianaut" target="_blank"> Devianaut <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
             </>
-          }
+          }*/}
           {name === "starwars" &&
             <>
               <span className="text-[0.7em] md:text-md"><Sparkles className="inline pr-2" /> <a href="https://github.com/jennygrahamjones" target="_blank"> Jenny Graham-Jones <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
@@ -214,6 +214,7 @@ function Credits({ name }) {
       }
 
       {name.includes("lancer") && <span className="text-center block text-[dimgray] mt-4">{TITLE} is not an official Lancer product<br />Lancer is copyright Massif Press</span>}
+      {name === "cyberpunk" && <span className="text-center block text-[dimgray] mt-4 text-xs">{TITLE} is not an official R. Talsorian Games Inc., CD Projekt Red S.A., or Cyberpunk product<br />This project is created for educational and entertainment purposes only</span>}
       {REPO &&
         <span className="text-center">
           <Link href={`/legal?redirect=${window?.location?.href || "/" + name}`} className="hover:underline text-sm inline text-[#8A8A8A]">
