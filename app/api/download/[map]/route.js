@@ -1,5 +1,6 @@
 import { readFile } from "fs/promises"
 import path from "path"
+import fs from "fs"
 import { feature } from 'topojson-client'
 import { toKML } from '@placemarkio/tokml'
 

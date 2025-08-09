@@ -33,13 +33,17 @@ export default async function mapLobby({ params }) {
 
   let fid = 0
   const data = JSON.parse(noIdData)
+  // TODO: find out if priority is still used
   data.features.forEach(f => {
     if (IMPORTANT.includes(f.properties.type)) {
-      f.properties.priority = 1
+      f.properties.priority = 6
+    } else if (f.properties.type === "bg") {
+      f.properties.priority = 2
+    } else if (f.properties.type === "grid") {
+      f.properties.priority = 2
     } else {
-      f.properties.priority = 9
+      f.properties.priority = 5
     }
-    // f.properties.userCreated = true
     f.id = fid++
   })
 

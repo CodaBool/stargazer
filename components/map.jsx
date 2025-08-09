@@ -5,8 +5,8 @@ import maplibregl, {
   LngLatBounds,
 } from 'maplibre-gl'
 import { useMap, Layer, Source, Popup } from 'react-map-gl/maplibre'
-import { useEffect, useRef, useState } from 'react'
-import { getColorExpression, createPopupHTML, hexToRgb, localSet, getMaps, useStore, useMode } from "@/lib/utils.js"
+import { useEffect, useRef, useState, Fragment } from 'react'
+import { getColorExpression, createPopupHTML, hexToRgb, localSet, getMaps, useStore, useMode, getPaint } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import SearchBar from './searchbar'
 import * as turf from '@turf/turf'
@@ -328,91 +328,11 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     wrapper.on("move", removePopupRef.current)
     wrapper.on("mousemove", "location", mouseMoveRef.current)
     wrapper.on("mouseleave", "location", mouseLeaveRef.current)
-    wrapper.on("mousemove", "guide", mouseMoveRef.current)
-    wrapper.on("mouseleave", "guide", mouseLeaveRef.current)
-    wrapper.on("click", "territory", territoryClickRef.current)
+    wrapper.on("mousemove", "line", mouseMoveRef.current)
+    wrapper.on("mouseleave", "line", mouseLeaveRef.current)
+    wrapper.on("click", "polygon-foreground", territoryClickRef.current)
+    wrapper.on("click", "polygon-user", territoryClickRef.current)
     wrapper.on("click", "location", locationClickRef.current)
-
-
-    if (name === "cyberpunk") {
-      // if (!wrapper.hasImage("water-0")) {
-      //   const img = new Image()
-      //   img.crossOrigin = "anonymous"
-      //   img.width = 64
-      //   img.height = 64
-      //   img.src = '/1.png'
-      //   img.onload = () => {
-      //     wrapper.addImage("water-0", img, { sdf: true })
-      //   }
-      // }
-
-
-      // wrapper.getMap().addLayer({
-      //   id: 'road-lines',
-      //   type: 'line',
-      //   source: 'roads',
-      //   layout: {
-      //     'line-cap': 'round',
-      //     'line-join': 'round'
-      //   },
-      //   paint: {
-      //     'line-color': [
-      //       'match',
-      //       ['get', 'type'],
-      //       'main', '#ff00ff',
-      //       'side', '#888888',
-      //       '#ffffff' // fallback
-      //     ],
-      //     'line-width': 3
-      //   }
-      // });
-
-      // wrapper.getMap().addLayer({
-      //   id: 'road-labels',
-      //   type: 'symbol',
-      //   source: 'source',
-      //   layout: {
-      //     'symbol-placement': 'line',   // ← follows road geometry
-      //     'text-field': ['get', 'name'],
-      //     'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
-      //     'text-size': 12,
-      //     'text-letter-spacing': 0.05
-      //   },
-      //   paint: {
-      //     'text-color': '#ffffff',
-      //     'text-halo-color': '#000000',
-      //     'text-halo-width': 1.5,
-      //   }
-      // });
-
-      // // Add fill layer using pattern
-      // wrapper.getMap().addLayer({
-      //   id: 'rocky-fill',
-      //   type: 'fill',
-      //   source: 'roads',
-      //   paint: {
-      //     'fill-color': 'red',
-      //     'fill-opacity': 0.4
-      //   }
-      // });
-      // wrapper.getMap().addLayer({
-      //   id: 'rocky-pattern',
-      //   type: 'fill',
-      //   source: 'roads',
-      //   paint: {
-      //     'fill-pattern': 'water-1'
-      //   }
-      // });
-
-      // set to different images
-      // works, just would require something subtle
-      // let frame = 0;
-      // setInterval(() => {
-      //   wrapper.getMap().setPaintProperty('rocky-pattern', 'fill-pattern', `water-${frame}`);
-      //   frame = (frame + 1) % 2;
-      // }, 500);
-    }
-
 
     // crash detection
     const checkWebGLCrash = () => {
@@ -426,15 +346,16 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     return () => {
       clearInterval(interval)
       // Remove all
-      wrapper.off("move", removePopupRef.current)
-      // wrapper.off("mousedown", mouseDownRef.current)
       // wrapper.off("mousemove", panMoveRef.current)
       // wrapper.off("mouseup", mouseUpRef.current)
+      wrapper.off("move", removePopupRef.current)
+      wrapper.off("mousedown", mouseDownRef.current)
       wrapper.off("mousemove", "location", mouseMoveRef.current)
       wrapper.off("mouseleave", "location", mouseLeaveRef.current)
-      wrapper.off("mousemove", "guide", mouseMoveRef.current)
-      wrapper.off("mouseleave", "guide", mouseLeaveRef.current)
-      wrapper.off("click", "territory", territoryClickRef.current)
+      wrapper.off("mousemove", "line", mouseMoveRef.current)
+      wrapper.off("mouseleave", "line", mouseLeaveRef.current)
+      wrapper.off("click", "polygon-foreground", territoryClickRef.current)
+      wrapper.off("click", "polygon-user", territoryClickRef.current)
       wrapper.off("click", "location", locationClickRef.current)
     }
   }, [wrapper, recreateListeners, params.get("preview"), mode, locationGroups, data])
@@ -495,46 +416,40 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   - sw has its own coordinate system
   - do a webgl check https://maplibre.org/maplibre-gl-js/docs/examples/check-for-support/
   */
+
+  // TODO: get full coverage for these
+  // placement point (Polygon, Point, Point text)
+  // placement line
+  // prev = https://github.com/CodaBool/stargazer-proxy/blob/main/components/map.jsx
+
   return (
     <>
       <Source id="source" type="geojson" data={data}>
+
         <Layer
           type="fill"
-          id="territory"
-          paint={{
-            "fill-color": [
-              'case',
-              ['boolean', ['feature-state', 'hover'], false],
-              `rgba(${hexToRgb(STYLES.HIGHLIGHT_COLOR)}, .1)`,
-              getColorExpression(name, "fill", "Polygon")
-            ],
-            'fill-outline-color': getColorExpression(name, "stroke", "Polygon"),
-          }}
-          filter={["all", ["!=", "type", "line"], ["==", "$type", "Polygon"]]}
+          id="polygon-background"
+          paint={getPaint(name, "fill", "polygon-background", STYLES)}
+          filter={["all", ["==", "type", "bg"], ["==", "$type", "Polygon"]]}
         />
         <Layer
           type="fill"
-          paint={{
-            "fill-color": getColorExpression(name, "fill", "Polygon"),
-            'fill-outline-color': getColorExpression(name, "stroke", "Polygon"),
-          }}
-          filter={["all", ["==", "type", "line"], ["==", "$type", "Polygon"]]}
+          id="polygon-foreground"
+          paint={getPaint(name, "fill", "polygon-foreground", STYLES)}
+          filter={["all", ["!=", "type", "bg"], ["!=", "userCreated", true], ["==", "$type", "Polygon"]]}
         />
         <Layer
           type="line"
-          id="guide"
-          paint={{
-            "line-color": getColorExpression(name, "stroke", "LineString"),
-            "line-width": [
-              "case",
-              ["in", ["get", "type"], ["literal", ["highway", "replace_me"]]], 3.5,
-              2.5
-            ],
-            // 'line-dasharray': [6, 1],
-          }}
+          id="line"
+          paint={getPaint(name, "line", "line", STYLES)}
           filter={['==', '$type', 'LineString']}
         />
-        {/* Territory Label */}
+        <Layer
+          type="fill"
+          id="polygon-user"
+          paint={getPaint(name, "fill", "polygon-user", STYLES)}
+          filter={["all", ["!=", "type", "bg"], ["==", "userCreated", true], ["==", "$type", "Polygon"]]}
+        />
         <Layer
           type="symbol"
           layout={{
@@ -553,6 +468,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
         />
         <Layer
           type="symbol"
+          id="line-label"
           layout={{
             "symbol-placement": "line",
             "text-field": ["get", "name"],
@@ -560,67 +476,51 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
             "text-size": 15,
             "text-letter-spacing": 0.07
           }}
-          filter={["all", ["!=", "type", "grid"], ["==", "$type", "LineString"]]}
-          paint={{
-            "text-color": "#ffffff",
-            "text-halo-color": "#000000",
-            "text-halo-width": 1.5
-          }}
+          paint={getPaint(name, "symbol", "line-label", STYLES)}
+          filter={[
+            'all',
+            ['!=', 'no-label', true],
+            ['==', '$type', 'LineString'],
+          ]}
         />
         <Layer
           type="symbol"
           id="location"
           layout={{
-            // "icon-allow-overlap": true, // default false
-            "icon-optional": true, // default false
+            "icon-optional": true,
             "icon-overlap": "never",
-            "icon-size": 1,
-            "text-offset": [0, 2.2],
+            "icon-size": ["get", "icon-size"],
+            "text-offset": [0, 1.5],
             "icon-padding": 0, // default 2
             "symbol-sort-key": ["get", "priority"],
+            "symbol-placement": "point",
+            "text-overlap": "never",
+            "text-rotate": ["get", "text-rotate"],
             "icon-image": [
               "coalesce",
               ["get", "icon"],
               ["get", "type"]
             ],
-            "text-field": ['get', 'name'],
+            "text-transform": [
+              'coalesce',
+              ['get', "text-transform"],
+              "none"
+            ],
+            "text-size": [
+              'coalesce',
+              ['get', "text-size"],
+              12
+            ],
+            "text-field": ['get', "name"],
             "text-font": ["Noto Sans Bold"],
-            "text-size": 10,
-            "text-max-width": 10,
-            "text-optional": true,
-            ...LAYOUT_OVERRIDE || {},
+            "text-optional": true, // default false
+            ...LAYOUT_OVERRIDE
           }}
-          paint={{
-            "text-color": "#ffffff",
-            'text-opacity': [
-              'case',
-              ['boolean', ['feature-state', 'hideLabel'], false],
-              0,
-              1,
-            ],
-            "icon-color": [
-              'case',
-              ['boolean', ['feature-state', 'hover'], false],
-              STYLES.HIGHLIGHT_COLOR,
-              getColorExpression(name, "fill", "Point")
-            ],
-          }}
+          paint={getPaint(name, "symbol", "location", STYLES)}
           filter={['==', '$type', 'Point']}
         />
-        <Layer
-          type="symbol"
-          layout={{
-            "text-rotate": 25,
-            "text-offset": [0, 1.3],
-            "text-field": ['get', 'name'],
-            "text-size": 11,
-            "text-optional": false,
-          }}
-          paint={{
-            "text-color": "rgba(255, 255, 255, 0.5)",
-          }}
-          filter={['==', ['get', 'type'], 'text']}
-        />
+
+
       </Source>
       {IS_GALAXY && <Starfield width={width} height={height} BOUNDS={VIEW.maxBounds} />}
       {params.get("zoom") !== "0" && <div className="absolute mt-28 ml-11 mr-[.3em] cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" style={{ transition: 'bottom 0.5s ease-in-out' }}>
