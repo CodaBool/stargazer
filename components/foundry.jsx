@@ -1,6 +1,6 @@
 
 import { useEffect } from "react"
-import { useMap } from 'react-map-gl/maplibre'
+import { useMap } from '@vis.gl/react-maplibre'
 import distance from '@turf/distance'
 import { point as turfPoint } from '@turf/helpers'
 import maplibregl from 'maplibre-gl'

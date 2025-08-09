@@ -4,7 +4,8 @@ import maplibregl, {
   LngLat,
   LngLatBounds,
 } from 'maplibre-gl'
-import { useMap, Layer, Source, Popup } from 'react-map-gl/maplibre'
+import { useMap, Layer, Source, Popup } from '@vis.gl/react-maplibre'
+import { GeoGrid } from 'geogrid-maplibre-gl'
 import { useEffect, useRef, useState, Fragment } from 'react'
 import { getColorExpression, createPopupHTML, hexToRgb, localSet, getMaps, useStore, useMode, getPaint } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
@@ -320,6 +321,28 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
           }, '*')
         })
       });
+    }
+
+    // TODO: use this for alien grid
+    if (name === "starwars") {
+      new GeoGrid({
+        map: wrapper.getMap(),
+        // beforeLayerId: 'line',
+        gridDensity: (zoomLevel) => 0.65,
+        formatLabels: (degreesFloat, arg2, arg3, arg4) => {
+          // console.log("degreesFloat", degreesFloat, "args", arg2, arg3, arg4)
+          return Math.floor(degreesFloat)
+        },
+        gridStyle: {
+          color: 'rgba(255, 255, 255, 0.05)',
+          width: 2,
+        },
+        labelStyle: {
+          color: 'white',
+          fontSize: 24,
+          // textShadow: '0 0 10px rgba(0, 0, 0)',
+        },
+      })
     }
 
     // wrapper.on("mousemove", panMoveRef.current)

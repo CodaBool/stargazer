@@ -12,7 +12,7 @@ import { Button } from "./ui/button"
 import { Badge } from '@/components/ui/badge.jsx'
 import Link from "next/link"
 import { genLink, svgBase } from "@/lib/utils.js"
-import { useMap } from 'react-map-gl/maplibre'
+import { useMap } from '@vis.gl/react-maplibre'
 import SolarSystemDiagram from "./solarSystem.jsx"
 import LocationSystem from "./locationSystem.jsx"
 import seedrandom from 'seedrandom'

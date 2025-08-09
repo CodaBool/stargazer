@@ -1,6 +1,4 @@
-// TODO: try to switch back to MapboxDraw
-// import MapboxDraw from '@mapbox/mapbox-gl-draw';
-import { useControl } from 'react-map-gl/maplibre'
+import { useControl } from '@vis.gl/react-maplibre'
 import MapboxDraw from "@hyvilo/maplibre-gl-draw"
 import { useEffect, useState } from 'react'
 import randomName from '@scaleway/random-name'

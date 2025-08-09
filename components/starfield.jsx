@@ -1,4 +1,4 @@
-import { Source, Layer } from 'react-map-gl/maplibre'
+import { Source, Layer } from '@vis.gl/react-maplibre'
 import { useMemo } from 'react'
 
 function randomMercatorLatitude(bounds) {

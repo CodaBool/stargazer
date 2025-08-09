@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/collapsible"
 import { useEffect, useState } from "react"
 import { isMobile, useStore, getMaps, TITLE } from "@/lib/utils"
-import { useMap } from "react-map-gl/maplibre"
+import { useMap } from "@vis.gl/react-maplibre"
 
 export default function Tutorial({ name }) {
   const { tutorial, setTutorial } = useStore()

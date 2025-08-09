@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Button } from './ui/button'
-import { useMap } from "react-map-gl/maplibre";
+import { useMap } from "@vis.gl/react-maplibre";
 import EditorForm from "./forms/editor";
 import randomName from "@scaleway/random-name";
 import { X } from "lucide-react";

@@ -289,3 +289,9 @@ body {
 .fade-in-up {
   animation: fadeInUp 300ms ease-out;
 }
+
+/*grid maplibre*/
+.geogrid-overrides {
+  top: 0;
+  position: absolute !important;
+}

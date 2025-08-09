@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Layer, Source } from 'react-map-gl/maplibre'
+import { Layer, Source } from '@vis.gl/react-maplibre'
 import * as turf from '@turf/turf'
 import { debounce, useMode, getMaps } from '@/lib/utils'
 import { useRouter } from 'next/navigation'

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import MapComponent from './map'
 import { combineLayers, getConsts, getLocationGroups, getMaps, isMobile, accelerationCheck } from '@/lib/utils'
-import Map from 'react-map-gl/maplibre'
+import Map from '@vis.gl/react-maplibre'
 import Controls from './controls.jsx'
 import Editor from './editor'
 import { useSearchParams } from 'next/navigation'
