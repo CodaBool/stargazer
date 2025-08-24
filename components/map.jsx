@@ -7,7 +7,7 @@ import maplibregl, {
 import { useMap, Layer, Source, Popup } from '@vis.gl/react-maplibre'
 import { GeoGrid } from 'geogrid-maplibre-gl'
 import { useEffect, useRef, useState, Fragment } from 'react'
-import { getColorExpression, createPopupHTML, hexToRgb, localSet, getMaps, useStore, useMode, getPaint, gridAlgorithm } from "@/lib/utils.js"
+import { createPopupHTML, localSet, getMaps, useMode, getPaint, gridAlgorithm } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import SearchBar from './searchbar'
 import * as turf from '@turf/turf'
@@ -372,6 +372,8 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       }
     }
 
+
+
     const interval = setInterval(checkWebGLCrash, 1_500) // check every 1.5s
     return () => {
       clearInterval(interval)
@@ -442,8 +444,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   TODO:
   ## Map fine tuning
   - sw location need to be separated into CANON / LEGENDS
-  - sw needs the grid
-  - sw has its own coordinate system
   - do a webgl check https://maplibre.org/maplibre-gl-js/docs/examples/check-for-support/
   */
 
@@ -490,7 +490,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
             "text-field": ["get", "name"],
             "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
           }}
-          filter={["all", ["!=", "type", "line"], ["!=", "type", "bg"], ["==", "$type", "Polygon"]]}
+          filter={["all", ["!=", "type", "line"], ["!=", "type", "bg"], ["!=", "type", "bg-radiated"], ["==", "$type", "Polygon"]]}
           paint={{
             "text-color": "#ffffff",
             "text-opacity": 0.4,

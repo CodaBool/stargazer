@@ -1,4 +1,4 @@
-import { useControl } from '@vis.gl/react-maplibre'
+import { useControl, useMap } from '@vis.gl/react-maplibre'
 import MapboxDraw from "@hyvilo/maplibre-gl-draw"
 import { useEffect, useState } from 'react'
 import randomName from '@scaleway/random-name'
@@ -18,6 +18,7 @@ export default function Controls({ name, params, setSize, TYPES, STYLES, GEO_EDI
   const [saveTrigger, setSaveTrigger] = useState()
   // const { setTutorial, tutorial } = useStore()
   const [mapId, setMapId] = useState()
+  const { map: wrapper } = useMap()
   const mobile = isMobile()
   const draw = useDraw(d => d.draw)
   const setDraw = useDraw(d => d.setDraw)
@@ -75,6 +76,23 @@ export default function Controls({ name, params, setSize, TYPES, STYLES, GEO_EDI
 
   }, [saveTrigger, mapId])
 
+
+  // fix draw layer order, since sometimes it's not on top
+  useEffect(() => {
+    if (!wrapper) return
+    const map = wrapper.getMap()
+    const moveAllDrawLayersToTop = () => {
+      const layers = map.getStyle()?.layers ?? []
+      const drawIds = layers.filter(l => l.id.startsWith("gl-draw-")).map(l => l.id)
+      if (drawIds.length === 0) return
+      // Detach to save on performance, only needs to be done once
+      map.off("idle", moveAllDrawLayersToTop)
+      drawIds.forEach(id => map.moveLayer(id));
+    }
+    map.on("idle", moveAllDrawLayersToTop)
+    return () => map.off("idle", moveAllDrawLayersToTop)
+  }, [wrapper])
+
   useEffect(() => {
     if (!draw) return
     // hacky solution to prevent draw being used before initialization
@@ -117,7 +135,7 @@ export default function Controls({ name, params, setSize, TYPES, STYLES, GEO_EDI
         if (geojson) {
           setMapId(mId)
           draw.add(geojson)
-          toast.success("restored local map")
+          toast.success(`restored local map ${maps[mId]?.name || ""}`)
           return
         } else {
           toast.warning("could not find map using id " + mId)

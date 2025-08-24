@@ -131,9 +131,9 @@ export default function SearchBar({ map, data, mobile, name, pan, groups, UNIT, 
     return () => root.removeEventListener("focusout", handleFocusOut)
   }, [input])
 
-  useEffect(() => {
-    console.log("missing name", data.features.filter(n => !n.properties.name))
-  }, [])
+  // useEffect(() => {
+  //   console.log("missing name", data.features.filter(n => !n.properties.name))
+  // }, [])
 
   return (
     <div className="flex mt-5 w-full justify-center absolute z-10 pointer-events-none" >

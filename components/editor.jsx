@@ -66,8 +66,6 @@ export default function Editor({ mapName, params, TYPES, data, GEO_EDIT }) {
     })
   }, [popup, draw])
 
-  // if (GEO_EDIT) return
-
   if (popup) {
     return (
       <div
