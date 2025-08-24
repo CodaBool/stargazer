@@ -7,7 +7,7 @@ import maplibregl, {
 import { useMap, Layer, Source, Popup } from '@vis.gl/react-maplibre'
 import { GeoGrid } from 'geogrid-maplibre-gl'
 import { useEffect, useRef, useState, Fragment } from 'react'
-import { getColorExpression, createPopupHTML, hexToRgb, localSet, getMaps, useStore, useMode, getPaint } from "@/lib/utils.js"
+import { getColorExpression, createPopupHTML, hexToRgb, localSet, getMaps, useStore, useMode, getPaint, gridAlgorithm } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import SearchBar from './searchbar'
 import * as turf from '@turf/turf'
@@ -124,7 +124,7 @@ const removePopup = () => {
   if (popup._container) popup.remove()
 }
 
-export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET, VIEW }) {
+export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET, VIEW, GRID_DENSITY }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
   const { mode } = useMode()
@@ -323,18 +323,25 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       });
     }
 
-    // TODO: use this for alien grid
-    if (name === "starwars") {
+    if (name === "starwars" || name === "alien" || name === "fallouty") {
       new GeoGrid({
         map: wrapper.getMap(),
         // beforeLayerId: 'line',
-        gridDensity: (zoomLevel) => 0.65,
-        formatLabels: (degreesFloat, arg2, arg3, arg4) => {
-          // console.log("degreesFloat", degreesFloat, "args", arg2, arg3, arg4)
-          return Math.floor(degreesFloat)
+        gridDensity: () => GRID_DENSITY || 1,
+        formatLabels: (deg, alignment) => {
+          if (name === "alien") {
+            // round to nearest grid index, bias slightly to avoid float drift
+            const idx = Math.round(deg * (1 / GRID_DENSITY) + (deg === 0 ? 0 : Math.sign(deg) * 1e-9));
+            return String(idx === 0 ? 0 : idx);
+          } else if (name === "starwars") {
+            return gridAlgorithm(deg, alignment)
+          } else if (name === "fallout") {
+            return Math.floor(deg)
+          }
+          return deg.toFixed(1)
         },
         gridStyle: {
-          color: 'rgba(255, 255, 255, 0.05)',
+          color: `rgba(255, 255, 255, ${name === "fallout" ? 0.02 : 0.03})`,
           width: 2,
         },
         labelStyle: {

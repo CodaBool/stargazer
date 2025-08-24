@@ -66,7 +66,7 @@ export default function Tutorial({ name }) {
         </DialogContent>
       </Dialog>
       <Dialog open={!!tutorial} onOpenChange={(open) => !open && setTutorial(null)} >
-        <DialogContent className="max-h-[850px] overflow-auto">
+        <DialogContent className="max-h-[880px] overflow-auto">
           <DialogHeader>
             <DialogTitle><CircleHelp className="inline" size={18} /> Tutorial</DialogTitle>
             <DialogDescription asChild>
@@ -75,7 +75,6 @@ export default function Tutorial({ name }) {
                 {mobile
                   ? <p className="my-8">Unfortunately many features are not available on mobile. Please visit the website on desktop to view the full capabilities.</p>
                   : <>
-
                     <Tabs defaultValue="faq" className="w-full" value={tutorial}>
                       <TabsList className="w-full">
                         <TabsTrigger value="faq" onClick={() => setTutorial('faq')}>F.A.Q.</TabsTrigger>
@@ -83,12 +82,26 @@ export default function Tutorial({ name }) {
                       </TabsList>
                       <TabsContent value="faq">
                         <Collapsible>
+                          <CollapsibleTrigger>What is {TITLE}?</CollapsibleTrigger>
+                          <CollapsibleContent className="text-white my-4">
+                            <p>Custom scifi map tool for RPGs. You can create your own custom locations. A <a href="https://github.com/CodaBool/map" className="text-blue-200" target="_blank">Foundry VTT integration</a> is available. Main features:</p>
+                            <br />
+
+                            <ul className="list-disc ml-5">
+                              <li>create custom locations</li>
+                              <li>publish your map online</li>
+                              <li>measure distances and find coordinates</li>
+                              <li>search all locations</li>
+                            </ul>
+                          </CollapsibleContent>
+                        </Collapsible>
+                        <Collapsible>
                           <CollapsibleTrigger>How can I share or download my map?</CollapsibleTrigger>
                           <CollapsibleContent className="text-white my-4">
                             <p>Publishing is done straight from the home page.</p>
                             <br />
 
-                            <ol className="list-decimal">
+                            <ol className="list-decimal ml-5">
                               <li>Sign in</li>
                               <li>upload a local map</li>
                               <li>Your map will be publicly accessible at /{name}/yourUniqueMapID</li>
@@ -111,12 +124,12 @@ export default function Tutorial({ name }) {
                           <CollapsibleTrigger>How can I integrate with FoundryVTT?</CollapsibleTrigger>
                           <CollapsibleContent className="text-white my-4">
                             <h3 className="text-lg">{TITLE}</h3>
-                            <ol className="list-decimal">
+                            <ol className="list-decimal ml-5">
                               <li>copy your account secret found at the home page, by clicking the cog icon.</li>
                             </ol>
                             <hr className="my-2 mt-4" />
                             <h3 className="text-lg">Foundry</h3>
-                            <ol className="list-decimal" start={2}>
+                            <ol className="list-decimal ml-5" start={2}>
                               <li>Purchase and install the Stargazer module</li>
                               <li>Enter your secret from step 1 into Foundry settings</li>
                               <li>You can now use the sync button to automatically bring all your maps directly into Foundry. Even generating scenes using them!</li>
@@ -160,41 +173,39 @@ export default function Tutorial({ name }) {
                         }
                       </TabsContent>
                       <TabsContent value="create">
-                        <p className="text-white my-2 text-center">To add locations to the map, use the controls in the top right corner.</p>
+                        <p className="text-white text-center">To add locations to the map, use the controls in the top right corner.</p>
+                        <p className="text-white text-center">Click on any of the video thumbnails below to see more details.</p>
 
                         <div className="grid grid-cols-2 gap-4">
-                          <div className="flex flex-col items-center">
+                          <div className="flex flex-col items-center hover-grow">
                             <video src="/tutorial/line.webm" className="cursor-pointer min-h-[150px] bg-gray-900 animate-pulse" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/line.webm", title: "Create a Line", desc: "Add points with a single click. Use a double click to finish the line." })} />
                             <p className="text-center mt-2">Create a Line</p>
                           </div>
-                          <div className="flex flex-col items-center">
+                          <div className="flex flex-col items-center hover-grow">
                             <video src="/tutorial/point.webm" className="cursor-pointer min-h-[150px] bg-gray-900 animate-pulse" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/point.webm", title: "Create a Point", desc: "Add a point with a single click" })} />
                             <p className="text-center mt-2">Create a Point</p>
                           </div>
-                          <div className="flex flex-col items-center">
+                          <div className="flex flex-col items-center hover-grow">
                             <video src="/tutorial/poly_create.webm" className="cursor-pointer min-h-[150px] bg-gray-900 animate-pulse" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/poly_create.webm", title: "Create a Polygon", desc: "Add points with a single click. Use a double click to finish the polygon." })} />
                             <p className="text-center mt-2">Create a Polygon</p>
                           </div>
-                          <div className="flex flex-col items-center">
+                          <div className="flex flex-col items-center hover-grow">
                             <video src="/tutorial/move.webm" className="cursor-pointer min-h-[150px] bg-gray-900 animate-pulse" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/move.webm", title: "Move a Feature", desc: "Click to select and then click and drag to move." })} />
                             <p className="text-center mt-2">Move</p>
                           </div>
-                          <div className="flex flex-col items-center">
+                          <div className="flex flex-col items-center hover-grow">
                             <video src="/tutorial/poly_edit.webm" className="cursor-pointer min-h-[150px] bg-gray-900 animate-pulse" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/poly_edit.webm", title: "Edit a Polygon", desc: "Double click a polygon to edit. Click any midpoint to add a new point. Click and drag an existing point to move it." })} />
                             <p className="text-center mt-2">Edit a Polygon</p>
                           </div>
-                          <div className="flex flex-col items-center">
-
+                          <div className="flex flex-col items-center hover-grow">
                             <video src="/tutorial/delete.webm" className="cursor-pointer min-h-[150px] bg-gray-900 animate-pulse" autoPlay loop muted playsInline width={200} height={200} onClick={() => setFullscreenVideo({ src: "/tutorial/delete.webm", title: "Delete a Feature", desc: 'Select a shape and click the delete button. The "delete" key on your keyboard will also delete the selected shape.' })} />
                             <p className="text-center mt-2">Delete</p>
                           </div>
                         </div>
 
-                        <p className="text-white mt-4 text-center">When done, enter preview mode to see how your map will look.</p>
-
+                        <p className="text-white mt-1 text-center">When done, enter preview mode to see how your map will look.</p>
                       </TabsContent>
                     </Tabs>
-
                   </>
                 }
 

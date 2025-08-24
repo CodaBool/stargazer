@@ -37,23 +37,24 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { LoaderCircle, Settings, X } from "lucide-react"
+import { ArrowLeft, LoaderCircle, Settings, X } from "lucide-react"
 import 'react-quill-new/dist/quill.bubble.css'
 import { combineAndDownload, combineLayers, getConsts, hexToRgb, localGet, localSet } from "@/lib/utils"
 import randomName from '@scaleway/random-name'
 import Link from "next/link"
 import { Textarea } from "../ui/textarea"
+import { toast } from "sonner"
 
 export default function SharedSettings({
   isCloud,
   config,
-
   form,
   submit,
   submitting,
   setSubmitting,
   alert,
   setAlert,
+  setPreAlert,
   map,
   id,
   data,
@@ -71,12 +72,12 @@ export default function SharedSettings({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(submit)} className="space-y-8 md:container mx-auto my-8">
         <Card className="mx-auto max-w-2xl">
-          <CardHeader>
+          <CardHeader className="pb-0">
             <div className="flex items-center justify-between">
               <CardTitle><Settings className="inline mb-1" /> Settings {data.name}</CardTitle>
               <Link href={`/#${map}_${isCloud ? "cloud" : "local"}_${id}`}>
-                <Button type="button" variant="ghost" className="cursor-pointer">
-                  <X />
+                <Button type="button" variant="ghost" className="p-1 rounded-full w-12 h-12">
+                  <ArrowLeft style={{ width: "100%", height: "100%" }} />
                 </Button>
               </Link>
             </div>
@@ -113,7 +114,8 @@ export default function SharedSettings({
                   return parts.length === 2 && parts.every(part => part.trim().length > 0 && !isNaN(part.trim())) || "This must be two numbers separated by a comma";
                 }
               }}
-              defaultValue={data.config?.VIEW?.latitude ? [data.config?.VIEW?.latitude, data.config?.VIEW?.longitude].toString() : [VIEW.latitude, VIEW.longitude].toString()}
+
+              defaultValue={typeof data.config?.VIEW?.latitude !== "undefined" ? [data.config?.VIEW?.latitude, data.config?.VIEW?.longitude].toString() : [VIEW.latitude, VIEW.longitude].toString()}
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Starting Coordinates</FormLabel>
@@ -143,7 +145,7 @@ export default function SharedSettings({
                   return parts.length === 4 && parts.every(part => part.trim().length > 0 && !isNaN(part.trim())) || "Value must be four numbers separated by commas"
                 }
               }}
-              defaultValue={data.config?.VIEW?.maxBounds ? data.config?.VIEW?.maxBounds.toString() : VIEW.maxBounds?.toString()}
+              defaultValue={typeof data.config?.VIEW?.maxBounds !== "undefined" ? data.config?.VIEW?.maxBounds.toString() : VIEW.maxBounds?.toString()}
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Bounds</FormLabel>
@@ -170,6 +172,7 @@ export default function SharedSettings({
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Starting Zoom</FormLabel>
+                  <p className="inline ml-5 text-gray-400 text-sm">{form.getValues("ZOOM")}</p>
                   <FormControl>
                     <div className="flex">
                       <Input type="range" min={0} max={24} step={0.1} {...field} />
@@ -199,6 +202,7 @@ export default function SharedSettings({
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Maximum Zoom</FormLabel>
+                  <p className="inline ml-5 text-gray-400 text-sm">{form.getValues("MAX_ZOOM")}</p>
                   <FormControl>
                     <div className="flex">
                       <Input type="range" min={0} max={24} step={0.1} {...field} />
@@ -228,6 +232,7 @@ export default function SharedSettings({
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Minimum Zoom</FormLabel>
+                  <p className="inline ml-5 text-gray-400 text-sm">{form.getValues("MIN_ZOOM")}</p>
                   <FormControl>
                     <div className="flex">
                       <Input type="range" min={0} max={24} step={0.1} {...field} />
@@ -243,7 +248,7 @@ export default function SharedSettings({
                 </FormItem>
               )}
             />
-            <FormField
+            {map === "custom" && <FormField
               control={form.control}
               name="IS_GALAXY"
               defaultValue={typeof data.config?.IS_GALAXY === 'boolean' ? data.config?.IS_GALAXY : IS_GALAXY}
@@ -263,8 +268,8 @@ export default function SharedSettings({
                   <FormMessage />
                 </FormItem>
               )}
-            />
-            <FormField
+            />}
+            {map === "custom" && <FormField
               control={form.control}
               name="UNIT"
               defaultValue={data.config?.UNIT || UNIT}
@@ -272,17 +277,22 @@ export default function SharedSettings({
                 <FormItem className="py-4">
                   <FormLabel>Unit of Measurement</FormLabel>
                   <FormControl>
-                    <Input placeholder={UNIT} {...field} />
+                    <div className="flex">
+                      <Input placeholder={UNIT} {...field} />
+                      <Button variant="outline" type="button" onClick={() => form.setValue("UNIT", UNIT)} className="ml-3">
+                        Reset
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormDescription>
-                    What distance unit to use for measuring
+                    An arbitrary label for the unit of measurement. This has no impact on the measurement itself.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            />}
             {/* TODO: look into scale control maplibre */}
-            <FormField
+            {map === "custom" && <FormField
               control={form.control}
               rules={{ validate: v => !isNaN(v) || "Value must be a number" }}
               name="DISTANCE_CONVERTER"
@@ -304,7 +314,7 @@ export default function SharedSettings({
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            />}
             <FormField
               control={form.control}
               name="BG"
@@ -411,7 +421,7 @@ export default function SharedSettings({
                     </div>
                   </FormControl>
                   <FormDescription>
-                    I'm just going to recommend not touching this one
+                    Available types when creating a new feature. Must be valid JSON.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -443,7 +453,7 @@ export default function SharedSettings({
                     </div>
                   </FormControl>
                   <FormDescription>
-                    <a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-style-spec/layers/#symbol">Maplibre symbol</a> layout overrides. e.g. {'{"icon-size": 1}'}
+                    <a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-style-spec/layers/#symbol">Maplibre symbol</a> layout overrides. e.g. {'{"icon-size": 1}'}. This only applies to the point location symbol layer. Meaning polygon or linestrings are not affected.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -465,22 +475,31 @@ export default function SharedSettings({
                           const content = await file.text();
                           try {
                             let fileData = JSON.parse(content)
+
+                            console.log("fileData", fileData)
                             if (fileData.type === "FeatureCollection") { // geojson
+                              if (fileData.features?.length === 0 || !fileData.features) {
+                                throw new Error("GeoJSON file has no feature data")
+                              }
                             } else if (fileData.type === "Topology") { // topojson
                               const [convertedGeojson, type] = combineAndDownload("geojson", fileData, {})
                               fileData = JSON.parse(convertedGeojson)
+                              if (fileData.features.length === 0) {
+                                throw new Error("TopoJSON either has no data or it's layers are named incorrectly. Use 'territory' for polygons, 'location' for points, and 'guide' for lines")
+                              }
                             } else {
                               throw new Error("Invalid GeoJSON or TopoJSON file")
                             }
                             // console.log("loaded a file with", fileData.features.length, "features")
-                            preAlertData = {
+                            setPreAlert({
                               points: fileData.features.filter(f => f.geometry.type === "Point").length,
                               polygons: fileData.features.filter(f => f.geometry.type.includes("Poly")).length,
                               lines: fileData.features.filter(f => f.geometry.type.includes("LineString")).length,
                               total: fileData.features.length,
-                            }
+                            })
 
                             // fill required data
+                            let altered = 0
                             fileData.features.forEach(f => {
 
                               // TYPES: {
@@ -491,28 +510,51 @@ export default function SharedSettings({
 
                               const availableTypes = TYPES[f.geometry.type.toLowerCase().trim()]
 
-                              if (!f.properties.name) {
-                                f.properties.name = randomName('', ' ')
+                              if (!f.properties.name || !f.properties.type) {
+                                const proceed = window.confirm(
+                                  `This data is missing a required 'name' or 'type' property\n\n` +
+                                  `${JSON.stringify(f.properties, null, 2)}\n\n` +
+                                  `Auto-fill missing required property values?\n\n` +
+                                  `• name (if missing) → random name\n` +
+                                  `• type (if missing) → "${availableTypes[0] || "placeholder"}"`
+                                )
+                                if (!proceed) {
+                                  throw new Error("Missing required property")
+                                }
+                                if (!f.properties.name) {
+                                  f.properties.name = randomName('', ' ')
+                                  altered++
+                                }
+                                if (!f.properties.type) {
+                                  f.properties.type = availableTypes[0] || "placeholder"
+                                  altered++
+                                }
                               }
-                              if (!f.properties.type) {
-                                f.properties.type = availableTypes[0] || "placeholder"
-                              }
-                              if (f.geometry.type === "Point" && !f.properties.fill) {
-                                f.properties.fill = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`
-                              } else if (f.geometry.type.includes("Poly") && !f.properties.fill) {
-                                f.properties.fill = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.4)`
-                              }
-                              if ((f.geometry.type.includes("LineString") || f.geometry.type.includes("Poly")) && !f.properties.stroke) {
-                                f.properties.stroke = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`
-                              }
+
+
+                              // if (f.geometry.type === "Point" && !f.properties.fill) {
+                              //   f.properties.fill = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`
+                              // } else if (f.geometry.type.includes("Poly") && !f.properties.fill) {
+                              //   f.properties.fill = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.4)`
+                              // }
+                              // if ((f.geometry.type.includes("LineString") || f.geometry.type.includes("Poly")) && !f.properties.stroke) {
+                              //   f.properties.stroke = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`
+                              // }
                             })
+
+                            if (altered) toast.success(`Added ${altered} required value${altered > 1 ? 's' : ''} to your uploaded map`);
 
                             const combinedGeojson = combineLayers([fileData, data.geojson])
                             form.setValue('file', combinedGeojson)
-                            form.clearErrors('invalidJson')
+                            form.clearErrors('invalid')
                           } catch (error) {
-                            console.error(error)
-                            form.setError("invalidJson")
+                            console.log(error)
+                            if (error.name === "SyntaxError") {
+                              toast.warning(`Invalid JSON`)
+                            } else {
+                              toast.warning(`${error.message}`);
+                            }
+                            form.setError('invalid')
                           }
                         }
                       }}
@@ -521,7 +563,7 @@ export default function SharedSettings({
                   <FormDescription>
                     Upload a GeoJSON or TopoJSON file to fill the map with data. If uploading a topojson the layers must be named as follows: "location" for points, "territory" for polygons, "guide" for lines
                   </FormDescription>
-                  {form.formState.errors.invalidJson && <p className="text-sm text-red-500">Invalid format</p>}
+                  {form.formState.errors.invalid && <p className="text-sm text-red-500">Invalid map data</p>}
                   <FormMessage />
                 </FormItem>
               )}

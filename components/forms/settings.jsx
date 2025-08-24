@@ -15,6 +15,7 @@ export default function MapSettings({ map, id }) {
   const [submitting, setSubmitting] = useState()
   const [data, setData] = useState()
   const [alert, setAlert] = useState()
+  const [preAlert, setPreAlert] = useState()
   const router = useRouter()
   const form = useForm()
 
@@ -28,6 +29,7 @@ export default function MapSettings({ map, id }) {
     body.TYPES = JSON.parse(body.TYPES)
     body.LAYOUT_OVERRIDE = JSON.parse(body.LAYOUT_OVERRIDE)
     setSubmitting(true)
+    console.log(body)
 
     if (typeof body.STYLE === "undefined") {
       delete body.STYLE
@@ -40,7 +42,7 @@ export default function MapSettings({ map, id }) {
         newObj.geojson = geojson
       } else {
         // show a dialog letting the user know how many features they would add
-        setAlert(preAlertData)
+        setAlert(preAlert)
         return
       }
     } else {
@@ -61,9 +63,8 @@ export default function MapSettings({ map, id }) {
       delete body.HIGHLIGHT_COLOR
     }
     if (body.CENTER) {
-      // TODO: make sure this is the right order
-      body.VIEW.longitude = Number(body.CENTER.split(",")[0])
-      body.VIEW.latitude = Number(body.CENTER.split(",")[1])
+      body.VIEW.longitude = Number(body.CENTER.split(",")[1])
+      body.VIEW.latitude = Number(body.CENTER.split(",")[0])
       delete body.CENTER
     }
     if (body.ZOOM) {
@@ -112,6 +113,7 @@ export default function MapSettings({ map, id }) {
   useEffect(() => {
     getMaps().then(maps => {
       if (maps?.hasOwnProperty(`${map}-${id}`)) {
+        console.log("property", maps[`${map}-${id}`])
         setData(maps[`${map}-${id}`])
       } else {
         router.push(`/#${map}_local_${id}`)
@@ -136,6 +138,7 @@ export default function MapSettings({ map, id }) {
     setSubmitting={setSubmitting}
     alert={alert}
     setAlert={setAlert}
+    setPreAlert={setPreAlert}
     map={map}
     id={id}
     data={data}
