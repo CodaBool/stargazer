@@ -112,13 +112,6 @@ const mouseDown = (e) => {
   }
 }
 
-const territoryClick = (e, wrapper, IGNORE_POLY, IS_GALAXY, name) => {
-  if (IGNORE_POLY?.includes(e.features[0].properties.type)) return
-  const coordinates = e.lngLat;
-  const popupContent = createPopupHTML(e, IS_GALAXY, name)
-  popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap());
-}
-
 // remove popup when moving
 const removePopup = () => {
   if (popup._container) popup.remove()
@@ -144,6 +137,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   const mouseDownRef = useRef(null)
   const panMoveRef = useRef(null)
   const mouseUpRef = useRef(null)
+  window.setDrawerContent = setDrawerContent
 
 
   function locationClick(e, manual) {
@@ -176,6 +170,13 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     pan(clicked, myGroup)
 
     if (popup._container) popup.remove()
+  }
+
+  const territoryClick = (e, wrapper, IGNORE_POLY, IS_GALAXY, name) => {
+    if (IGNORE_POLY?.includes(e.features[0].properties.type)) return
+    const coordinates = e.lngLat;
+    const popupContent = createPopupHTML(e, IS_GALAXY, name, setDrawerContent)
+    popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap())
   }
 
   async function pan(d, myGroup, fit) {
@@ -360,6 +361,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     wrapper.on("mouseleave", "location", mouseLeaveRef.current)
     wrapper.on("mousemove", "line", mouseMoveRef.current)
     wrapper.on("mouseleave", "line", mouseLeaveRef.current)
+    wrapper.on("click", "polygon-background", territoryClickRef.current)
     wrapper.on("click", "polygon-foreground", territoryClickRef.current)
     wrapper.on("click", "polygon-user", territoryClickRef.current)
     wrapper.on("click", "location", locationClickRef.current)
@@ -386,6 +388,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       wrapper.off("mouseleave", "location", mouseLeaveRef.current)
       wrapper.off("mousemove", "line", mouseMoveRef.current)
       wrapper.off("mouseleave", "line", mouseLeaveRef.current)
+      wrapper.off("click", "polygon-background", territoryClickRef.current)
       wrapper.off("click", "polygon-foreground", territoryClickRef.current)
       wrapper.off("click", "polygon-user", territoryClickRef.current)
       wrapper.off("click", "location", locationClickRef.current)
@@ -431,9 +434,17 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
           img.crossOrigin = "anonymous"
           img.width = 19
           img.height = 19
+          if (f.properties.icon.includes("/api/img/")) {
+            // img.width = 24
+            // img.height = 24
+            img.width = 16
+            img.height = 16
+          }
           img.src = f.properties.icon
           img.onload = () => {
-            wrapper.addImage(f.properties.icon, img, { sdf: true })
+            if (!wrapper.hasImage(f.properties.icon)) {
+              wrapper.addImage(f.properties.icon, img, { sdf: true })
+            }
           }
         }
       }
@@ -459,14 +470,20 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
         <Layer
           type="fill"
           id="polygon-background"
+          layout={{
+            "fill-sort-key": ["case", ["has", "priority"], ["get", "priority"], 5]
+          }}
           paint={getPaint(name, "fill", "polygon-background", STYLES)}
-          filter={["all", ["==", "type", "bg"], ["==", "$type", "Polygon"]]}
+          filter={["all", ["!=", "type", "bg-texture"], ["==", "$type", "Polygon"]]}
         />
         <Layer
           type="fill"
+          layout={{
+            "fill-sort-key": ["case", ["has", "priority"], ["get", "priority"], 5]
+          }}
           id="polygon-foreground"
           paint={getPaint(name, "fill", "polygon-foreground", STYLES)}
-          filter={["all", ["!=", "type", "bg"], ["!=", "userCreated", true], ["==", "$type", "Polygon"]]}
+          filter={["all", ["==", "type", "bg-texture"], ["==", "$type", "Polygon"]]}
         />
         <Layer
           type="line"
@@ -478,7 +495,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
           type="fill"
           id="polygon-user"
           paint={getPaint(name, "fill", "polygon-user", STYLES)}
-          filter={["all", ["!=", "type", "bg"], ["==", "userCreated", true], ["==", "$type", "Polygon"]]}
+          filter={["all", ["==", "userCreated", true], ["==", "$type", "Polygon"]]}
         />
         <Layer
           type="symbol"
@@ -490,7 +507,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
             "text-field": ["get", "name"],
             "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
           }}
-          filter={["all", ["!=", "type", "line"], ["!=", "type", "bg"], ["!=", "type", "bg-radiated"], ["==", "$type", "Polygon"]]}
+          filter={["all", ["!=", "type", "line"], ["!=", "type", "bg"], ["!=", "type", "bg-texture"], ["==", "$type", "Polygon"]]}
           paint={{
             "text-color": "#ffffff",
             "text-opacity": 0.4,
