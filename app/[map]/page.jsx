@@ -33,11 +33,18 @@ export default async function mapLobby({ params }) {
 
   let fid = 0
   const data = JSON.parse(noIdData)
-  // TODO: find out if priority is still used
   data.features.forEach(f => {
     if (IMPORTANT.includes(f.properties.type)) {
-      f.properties.priority = 6
+      if (f.geometry.type === "Point") {
+        // symbol layer will show the lower key on top
+        f.properties["symbol-sort-key"] = 10 - 8
+      }
+      f.properties.priority = 8
     } else if (UNIMPORTANT.includes(f.properties.type) && !f.properties.faction && !f.properties.description) {
+      if (f.geometry.type === "Point") {
+        // symbol layer will show the lower key on top
+        f.properties["symbol-sort-key"] = 10 - 3
+      }
       f.properties.priority = 3
     } else if (f.properties.type === "bg") {
       f.properties.priority = 2
@@ -46,7 +53,7 @@ export default async function mapLobby({ params }) {
     } else {
       f.properties.priority = 5
     }
-    
+
     f.id = fid++
   })
 

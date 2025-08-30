@@ -247,7 +247,7 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
         {display.source.properties.description &&
           <>
             <hr className="my-2" />
-            <div className="max-w-3xl mx-auto px-4 overflow-auto">
+            <div className="max-w-3xl mx-auto px-4 overflow-auto mb-28">
               <DrawerHeader className="m-0 p-0 mt-1 mb-3">
                 <DrawerTitle className="text-xl font-bold text-center">Description <span className="text-gray-500 text-sm"> - drawer can be pulled up</span></DrawerTitle>
               </DrawerHeader>

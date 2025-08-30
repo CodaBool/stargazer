@@ -21,14 +21,13 @@ import Drawer from './drawer'
 
 let popup = new maplibregl.Popup({
   closeButton: false,
-  offset: [0, 20],
   closeOnClick: false,
   maxWidth: "340px",
-  anchor: "top",
-  className: "fade-in"
+  className: "fade-in",
+  offset: 15
 })
 
-const mouseMove = (e, wrapper, IS_GALAXY, name, IGNORE_POLY) => {
+const mouseMove = (e, wrapper, IS_GALAXY, name, IGNORE_POLY, mobile, modeRef) => {
   if (window.isMoving) {
     wrapper.panBy([offset.x - e.point.x, offset.y - e.point.y], {
       duration: 0,
@@ -52,7 +51,7 @@ const mouseMove = (e, wrapper, IS_GALAXY, name, IGNORE_POLY) => {
   }
 
   // popup
-  if (e.features[0].properties.type === "text") return
+  if (e.features[0].properties.type === "text" || (mobile && modeRef.current === "measure")) return
   if (e.features[0].geometry.type === "Point") {
     // don't show tooltips if the sheet/drawer is open
     if (document.querySelector('#bottom-sheet')) return
@@ -173,7 +172,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   }
 
   const territoryClick = (e, wrapper, IGNORE_POLY, IS_GALAXY, name) => {
-    if (IGNORE_POLY?.includes(e.features[0].properties.type)) return
+    if (IGNORE_POLY?.includes(e.features[0].properties.type) || modeRef.current === "measure") return
     const coordinates = e.lngLat;
     const popupContent = createPopupHTML(e, IS_GALAXY, name, setDrawerContent)
     popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap())
@@ -252,7 +251,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     window.localGet = getMaps
 
     // create Listeners
-    mouseMoveRef.current = e => mouseMove(e, wrapper, IS_GALAXY, name, IGNORE_POLY)
+    mouseMoveRef.current = e => mouseMove(e, wrapper, IS_GALAXY, name, IGNORE_POLY, mobile, modeRef)
     mouseLeaveRef.current = e => mouseLeave(e, wrapper)
     territoryClickRef.current = e => territoryClick(e, wrapper, IGNORE_POLY, IS_GALAXY, name)
     locationClickRef.current = locationClick
@@ -539,25 +538,22 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
           type="symbol"
           id="location"
           layout={{
-            "icon-optional": true,
-            "icon-overlap": "never",
+            "icon-optional": true, // default false
+            "text-optional": true, // default false
+            // "icon-overlap": "never",
             "icon-size": ["get", "icon-size"],
             "text-offset": [0, 1.8],
             "icon-padding": 0, // default 2
-            "symbol-sort-key": ["get", "priority"],
-            "symbol-placement": "point",
-            "text-overlap": "never",
+            "text-padding": 0, // default 2
+            "symbol-sort-key": ["case", ["has", "symbol-sort-key"], ["get", "symbol-sort-key"], 5],
+            // "text-overlap": "never",
             "text-rotate": ["get", "text-rotate"],
             "icon-image": [
               "coalesce",
               ["get", "icon"],
               ["get", "type"]
             ],
-            "text-transform": [
-              'coalesce',
-              ['get', "text-transform"],
-              "none"
-            ],
+            "text-transform": ['get', "text-transform"],
             "text-size": [
               'coalesce',
               ['get', "text-size"],
@@ -565,7 +561,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
             ],
             "text-field": ['get', "name"],
             "text-font": ["Noto Sans Bold"],
-            "text-optional": true, // default false
             ...LAYOUT_OVERRIDE
           }}
           paint={getPaint(name, "symbol", "location", STYLES)}
