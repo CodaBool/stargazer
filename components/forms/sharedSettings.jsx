@@ -37,13 +37,14 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, LoaderCircle, Settings, X } from "lucide-react"
+import { ArrowLeft, Download, LoaderCircle, Settings, X } from "lucide-react"
 import 'react-quill-new/dist/quill.bubble.css'
-import { combineAndDownload, combineLayers, getConsts, hexToRgb, localGet, localSet } from "@/lib/utils"
+import { combineAndDownload, combineLayers, getConsts, hexToRgb, localGet, localSet, TITLE } from "@/lib/utils"
 import randomName from '@scaleway/random-name'
 import Link from "next/link"
 import { Textarea } from "../ui/textarea"
 import { toast } from "sonner"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible"
 
 export default function SharedSettings({
   isCloud,
@@ -414,14 +415,14 @@ export default function SharedSettings({
                   <FormLabel>Available Feature Types</FormLabel>
                   <FormControl>
                     <div className="flex">
-                      <Textarea placeholder="{}" {...field} rows={11} />
+                      <Textarea placeholder="{}" {...field} rows={11} readOnly disabled />
                       <Button variant="outline" type="button" onClick={() => form.setValue("TYPES", JSON.stringify(TYPES, null, 2))} className="ml-3">
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Available types when creating a new feature. Must be valid JSON.
+                    Available types when creating a new feature. <b>Currently changing this is not allowed</b>
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -453,7 +454,7 @@ export default function SharedSettings({
                     </div>
                   </FormControl>
                   <FormDescription>
-                    <a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-style-spec/layers/#symbol">Maplibre symbol</a> layout overrides. e.g. {'{"icon-size": 1}'}. This only applies to the point location symbol layer. Meaning polygon or linestrings are not affected.
+                    <a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-style-spec/layers/#symbol">Maplibre symbol</a> layout overrides. e.g. {'{"icon-size": 1}'}. This only applies to the point location symbol layer. Meaning polygon or linestrings are not affected. Some maplibre symbol properties listed are Paint properties, such as <b>icon-color</b>. These cannot be overridden using this field, only Layout properties can.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -563,7 +564,56 @@ export default function SharedSettings({
                   <FormDescription>
                     Upload a GeoJSON or TopoJSON file to fill the map with data. If uploading a topojson the layers must be named as follows: "location" for points, "territory" for polygons, "guide" for lines
                   </FormDescription>
-                  {form.formState.errors.invalid && <p className="text-sm text-red-500">Invalid map data</p>}
+                  {form.formState.errors.invalid &&
+                    <>
+                      <p className="text-sm text-red-500">Invalid map data</p>
+                      <div className="py-2">
+                        <Collapsible>
+                          <CollapsibleTrigger className="text-blue-200 cursor-pointer">
+                            <span class="relative size-3 inline mr-2">
+                              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-200 opacity-75"></span>
+                              <span class="relative inline-flex size-3 rounded-full bg-sky-300"></span>
+                            </span>
+                            Need help, click here?
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="mt-2 text-gray-400 select-text">
+                            <p>Troubleshooting steps:</p>
+                            <ul className="list-disc list-inside">
+                              <li>Ensure that each feature has both a <strong>name</strong> and <strong>type</strong> property. These are required.</li>
+                              <li>The current implementation of {TITLE} has a hardcoded set of types. Those can be seen above under <b>Available Feature Types</b>. Use a value from there depending on the feature geometry type.</li>
+                              <li>When uploading a topojson {TITLE} currently expects each geometry layer to be named exactly (must be lowercase) as shown below. Note that you do not have to include all 3 layers, but if they are present, they must follow this naming convention:</li>
+                              <ul className="list-disc list-inside ml-4">
+                                <li><strong>location:</strong> for points</li>
+                                <li><strong>territory:</strong> for polygons</li>
+                                <li><strong>guide:</strong> for lines</li>
+                              </ul>
+                              <li>There are two websites which make creating map data easy: <a href="https://geojson.io" target="_blank" className="text-blue-300">geojson.io</a> and <a href="https://mapshaper.org" target="_blank" className="text-blue-300">mapshaper.org</a>. Let's do a full exhaustive workflow example using mapshaper:</li>
+                              <ul className="list-decimal list-inside ml-4">
+                                <li>Download a full copy of {map}'s map data: you can do that from the <a href="/" target="_blank" className="text-blue-300">menu</a> by selecting the relevant system and clicking the <strong><Download className="inline" size={18} /> download</strong> button.</li>
+                                <li>Use <a href="https://mapshaper.org" target="_blank" className="text-blue-300">mapshaper.org</a> and upload your downloaded base map</li>
+                                <li>Open the layers popover by clicking at the top middle button</li>
+                                <li>In the popover, click on the top most eye symbol. This reveals all layers.</li>
+                                <li>Create a new layer by clicking on "Add empty layer". Or if you already have some data, use "Add files"</li>
+                                <li>Use mapshaper tools to add features and edit their properties. Remember, <b>name</b> and <b>type</b> are required on all features.</li>
+                                <li>Once done, delete the original layers which were uploaded. They were there just to be used as a reference. We don't actually want that in the data we will be uploading.</li>
+                                <li>Now follow the above rule for layer naming convention. Meaning <b>location</b> for points, <b>territory</b> for polygons, and <b>guide</b> for lines.</li>
+                                <li>Use the <b>Export</b> button and export as topojson</li>
+                                <li>Upload your topojson to {TITLE}</li>
+                              </ul>
+                              <li>Additional tips:</li>
+
+                              <ul className="list-disc list-inside ml-4">
+                                <li>in rare cases mapshaper will simplify your data. Use this option on export to disable that: <b>no-quantization precision=0.001</b></li>
+                                <li>Want to trace over an image? Well it's complicated but here is the best process I've found. Make a <a href="https://figma.com" target="_blank" className="text-blue-300">figma.com</a> project. Add an image and create polygons on top...just the polygons. What about points and line? Well here is where things get time consuming. If you want accurate points you'll need to create a box which you'll later use as reference for your points. Then export the fame as an SVG file. Convert the <a href="https://codabool.github.io/svg-plotter" target="_blank" className="text-blue-300">SVG to GeoJSON</a> (change the center to 0,0). Finally use mapshaper to cleanup your data, translating any boxes into points. This is a long process...</li>
+                                <li><b>npx mapshaper</b> CLI can be used to combine layers into one (but it's very picky on the properties on each feature)</li>
+                                <li><a href="https://findthatpostcode.uk/tools/merge-geojson" target="_blank" className="text-blue-300">combine two geojson files into one</a> (this tool is not picky)</li>
+                                <li>My maps are small and centered on coordinates 0,0 to minimize mercator projection distortion</li>
+                              </ul>
+                            </ul>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      </div>
+                    </>}
                   <FormMessage />
                 </FormItem>
               )}
