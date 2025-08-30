@@ -26,7 +26,7 @@ export default async function Page({ searchParams }) {
             </Button>
           </Link>
         </div>
-        <CardDescription>This project is created for educational and entertainment purposes only</CardDescription>
+        <CardDescription>This project is created for entertainment purposes only</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="max-w-3xl space-y-6">

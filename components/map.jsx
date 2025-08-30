@@ -272,12 +272,18 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
           sourceLayer: "location",
           filter: ['==', ['get', 'userCreated'], true]
         })
-        userCreated.forEach(({ id }) => {
-          map.setFeatureState(
-            { source: 'source', id },
-            { hideLabel: true },
-          )
-        })
+        // TODO: I changed it so you need to instead hook into the standard
+        // "text-opacity" instead of using a feature state thing. This will break
+        // this current feature but allow for better user customization
+        // the board of coding approved this message
+        //
+        // previous solution
+        // userCreated.forEach(({ id }) => {
+        //   map.setFeatureState(
+        //     { source: 'source', id },
+        //     { hideLabel: true },
+        //   )
+        // })
 
         // wait for state change to happen
         map.once('idle', ({ target: map }) => {
@@ -466,7 +472,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   return (
     <>
       <Source id="source" type="geojson" data={data}>
-
         <Layer
           type="fill"
           id="polygon-background"
@@ -537,7 +542,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
             "icon-optional": true,
             "icon-overlap": "never",
             "icon-size": ["get", "icon-size"],
-            "text-offset": [0, 1.5],
+            "text-offset": [0, 1.8],
             "icon-padding": 0, // default 2
             "symbol-sort-key": ["get", "priority"],
             "symbol-placement": "point",
@@ -566,8 +571,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
           paint={getPaint(name, "symbol", "location", STYLES)}
           filter={['==', '$type', 'Point']}
         />
-
-
       </Source>
       {IS_GALAXY && <Starfield width={width} height={height} BOUNDS={VIEW.maxBounds} />}
       {params.get("zoom") !== "0" && <div className="absolute mt-28 ml-11 mr-[.3em] cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" style={{ transition: 'bottom 0.5s ease-in-out' }}>
@@ -575,7 +578,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
         <ZoomOut size={34} onClick={() => wrapper.zoomOut()} className='m-2 mt-4 hover:stroke-blue-200' />
       </div>}
       {params.get("search") !== "0" && <SearchBar map={wrapper} name={name} data={data} pan={pan} mobile={mobile} groups={locationGroups} UNIT={UNIT} STYLES={STYLES} SEARCH_SIZE={SEARCH_SIZE} />}
-
       {/* FOUNDRY */}
       {params.get("secret") && <Link width={width} height={height} mobile={mobile} name={name} params={params} />}
       {params.get("calibrate") && <Calibrate width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}

@@ -2,7 +2,7 @@ export const dynamic = 'force-static'
 import fs, { promises } from "fs"
 import path from "path"
 import Cartographer from "@/components/cartographer"
-import { combineAndDownload, getConsts } from "@/lib/utils"
+import { combineAndDownload, getConsts, getDescriptionFromFaction } from "@/lib/utils"
 
 export default async function mapLobby({ params }) {
   const { map } = await params
@@ -29,7 +29,7 @@ export default async function mapLobby({ params }) {
     return
   }
   const [noIdData, type] = combineAndDownload("geojson", topojson, {})
-  const { IMPORTANT } = getConsts(map)
+  const { IMPORTANT, UNIMPORTANT } = getConsts(map)
 
   let fid = 0
   const data = JSON.parse(noIdData)
@@ -37,6 +37,8 @@ export default async function mapLobby({ params }) {
   data.features.forEach(f => {
     if (IMPORTANT.includes(f.properties.type)) {
       f.properties.priority = 6
+    } else if (UNIMPORTANT.includes(f.properties.type) && !f.properties.faction && !f.properties.description) {
+      f.properties.priority = 3
     } else if (f.properties.type === "bg") {
       f.properties.priority = 2
     } else if (f.properties.type === "grid") {
@@ -44,9 +46,17 @@ export default async function mapLobby({ params }) {
     } else {
       f.properties.priority = 5
     }
+    
     f.id = fid++
   })
 
+
+  // add description
+  data.features.forEach(f => {
+    if ((getDescriptionFromFaction(map, f.properties.faction) && !f.properties.description && f.geometry.type.includes("Poly")) || f.properties.useNameToGetDesc) {
+      f.properties.description = getDescriptionFromFaction(map, f.properties.useNameToGetDesc ? f.properties.name : f.properties.faction)
+    }
+  })
 
   return <Cartographer data={data} name={map} fid={fid} />
 }

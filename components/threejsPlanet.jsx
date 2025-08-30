@@ -299,6 +299,8 @@ function ThreejsPlanet({
   );
 }
 
+// KEEP THESE IN SYNC WITH THE SWITCH BELOW!!!
+export const availableThreejsModels = ["barren_planet", "moon", "barren", "gate", "station", "ice_planet", "ice", "gas", "jovian", "ringed_planet", "ring", "comet", "asteroid", "asteroids", "neutron_star", "star", "lava_planet", "lava", "desert_planet", "desert", "terrestrial", "ocean_planet", "ocean"]
 function generatePlanetByType(params) {
   switch (params.type) {
     case "barren_planet":

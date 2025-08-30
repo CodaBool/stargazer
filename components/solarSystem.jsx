@@ -241,7 +241,8 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
                   {activeBody.hydrosphere && <Badge variant="destructive" className="">{activeBody.hydrosphere} hydrosphere</Badge>}
                   {activeBody.ice && <Badge variant="destructive" className="">{activeBody.ice} ice coverage</Badge>}
                   {activeBody.radius && <Badge variant="destructive" className="">{activeBody.radius.toFixed(2)} {activeBody.type === "star" ? "solar radii" : "km radius"}</Badge>}
-                  {activeBody.temperature && <Badge variant="destructive" className="">{activeBody.temperature}°C</Badge>}
+                  {(activeBody.temperature && activeBody.type !== "star") && <Badge variant="destructive" className="">{Math.floor(activeBody.temperature)}°C</Badge>}
+                  {(activeBody.temperature && activeBody.type === "star") && <Badge variant="destructive" className="">{Math.floor(activeBody.temperature) + 273}°K</Badge>}
                   {activeBody.dominantChemical && <Badge variant="destructive" className="">Dominant Chemical: {activeBody.dominantChemical}</Badge>}
                   {activeBody.daysInYear && <Badge variant="destructive" className="">{activeBody.daysInYear} days in year</Badge>}
                   {activeBody.hoursInDay && <Badge variant="destructive" className="">{activeBody.hoursInDay} hours in day</Badge>}
@@ -258,7 +259,8 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
                 {(typeof activeBody.hydrosphere === "number" && activeBody.type === "ice_planet") && <p className="mt-2">{(1 - activeBody.ice).toFixed(1) * 100} hydrosphere %</p>}
                 {typeof activeBody.ice === "number" && activeBody.type === "ice_planet" && <p variant="destructive" className="mt-2">{activeBody.ice.toFixed(1)} ice coverage %</p>}
                 {typeof activeBody.radius === "number" && <p variant="destructive" className="mt-2">{activeBody.radius.toFixed(2)} {activeBody.type === "star" ? "solar radii" : "km radius"}</p>}
-                {typeof activeBody.temperature === "number" && <p variant="destructive" className="mt-2">{activeBody.temperature}°C</p>}
+                {(typeof activeBody.temperature === "number" && activeBody.type !== "star") && <p variant="destructive" className="mt-2">{Math.floor(activeBody.temperature)}°C</p>}
+                {(typeof activeBody.temperature === "number" && activeBody.type === "star") && <p variant="destructive" className="mt-2">{Math.floor(activeBody.temperature) + 273}°K</p>}
                 {typeof activeBody.dominantChemical === "string" && <p variant="destructive" className="mt-2">Dominant Chemical: {activeBody.dominantChemical}</p>}
                 {typeof activeBody.daysInYear === "number" && <p variant="destructive" className="mt-2">{activeBody.daysInYear} days in year</p>}
                 {typeof activeBody.hoursInDay === "number" && <p variant="destructive" className="mt-2">{activeBody.hoursInDay} hours in day</p>}

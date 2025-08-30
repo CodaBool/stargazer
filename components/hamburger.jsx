@@ -214,7 +214,7 @@ function Credits({ name }) {
       }
 
       {name.includes("lancer") && <span className="text-center block text-[dimgray] mt-4">{TITLE} is not an official Lancer product<br />Lancer is copyright Massif Press</span>}
-      {name === "cyberpunk" && <span className="text-center block text-[dimgray] mt-4 text-xs">{TITLE} is not an official R. Talsorian Games Inc., CD Projekt Red S.A., or Cyberpunk product<br />This project is created for educational and entertainment purposes only</span>}
+      {name === "cyberpunk" && <span className="text-center block text-[dimgray] mt-4 text-xs">{TITLE} is not an official R. Talsorian Games Inc., CD Projekt Red S.A., or Cyberpunk product<br />This project is created for entertainment purposes only</span>}
       {REPO &&
         <span className="text-center">
           <Link href={`/legal?redirect=${window?.location?.href || "/" + name}`} className="hover:underline text-sm inline text-[#8A8A8A]">

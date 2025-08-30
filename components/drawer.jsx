@@ -17,7 +17,7 @@ import SolarSystemDiagram from "./solarSystem.jsx"
 import LocationSystem from "./locationSystem.jsx"
 import seedrandom from 'seedrandom'
 import { Crosshair, ExternalLink } from "lucide-react"
-import ThreejsPlanet from "./threejsPlanet"
+import ThreejsPlanet, { availableThreejsModels } from "./threejsPlanet"
 
 const MAX_GEN_LOCATIONS = 8
 let sharedRenderer = null;
@@ -81,7 +81,7 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
   if (!coordinates || !d) return null
 
   let local = myGroup
-  if (GENERATE_LOCATIONS) {
+  if (GENERATE_LOCATIONS && d.geometry.type === 'Point') {
     local = generateLocations(myGroup, d)
   }
 
@@ -125,31 +125,44 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
           {/* Canvas */}
           <div className="flex items-center justify-center z-[-1]">
             {IS_GALAXY
-              ? <ThreejsPlanet
-                sharedCanvas={sharedCanvas}
-                sharedRenderer={sharedRenderer}
-                height={squareSize}
-                width={squareSize}
-                disableListeners={true}
-                type={display.ringed ? "ring" : display.type}
-                pixels={800}
-                baseColors={display.baseColors}
-                featureColors={display.featureColors}
-                layerColors={display.layerColors}
-                schemeColor={display.schemeColor}
-                atmosphere={display.atmosphere}
-                clouds={display.cloud}
-                cloudCover={display.cloud}
-                size={display.size}
-                land={display.hydrosphere}
-                ringWidth={display.ringSize}
-                lakes={display.ice}
-                rivers={display.hydrosphere}
-                seed={display.seed}
-                planetSize={display.planetSize}
-                propStyle={{ position: "absolute", top: 0 }}
-              />
-
+              ?
+              availableThreejsModels.includes(display.type)
+                ? <ThreejsPlanet
+                  sharedCanvas={sharedCanvas}
+                  sharedRenderer={sharedRenderer}
+                  height={squareSize}
+                  width={squareSize}
+                  disableListeners={true}
+                  type={display.ringed ? "ring" : display.type}
+                  pixels={800}
+                  baseColors={display.baseColors}
+                  featureColors={display.featureColors}
+                  layerColors={display.layerColors}
+                  schemeColor={display.schemeColor}
+                  atmosphere={display.atmosphere}
+                  clouds={display.cloud}
+                  cloudCover={display.cloud}
+                  size={display.size}
+                  land={display.hydrosphere}
+                  ringWidth={display.ringSize}
+                  lakes={display.ice}
+                  rivers={display.hydrosphere}
+                  seed={display.seed}
+                  planetSize={display.planetSize}
+                  propStyle={{ position: "absolute", top: 0 }}
+                />
+                : <img
+                  src={`${svgBase + name}/${display.source.properties.type}.svg`}
+                  alt={display.source.properties.name}
+                  className="mt-[1.7em]"
+                  style={{
+                    width: (squareSize / 1.5) + "px",
+                    height: (squareSize / 1.5) + "px",
+                    position: "absolute",
+                    top: 0,
+                    filter: display.source.properties.tint ? `drop-shadow(0 0 6px ${display.source.properties.tint})` : undefined,
+                  }}
+                />
               : <img
                 src={`${svgBase + name}/${display.source.properties.type}.svg`}
                 alt={display.source.properties.name}
