@@ -7,7 +7,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer"
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { Button } from "./ui/button"
 import { Badge } from '@/components/ui/badge.jsx'
 import Link from "next/link"
@@ -127,7 +127,7 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
             {IS_GALAXY
               ?
               availableThreejsModels.includes(display.type)
-                ? <ThreejsPlanet
+                ? <Suspense fallback={<div></div>}><ThreejsPlanet
                   sharedCanvas={sharedCanvas}
                   sharedRenderer={sharedRenderer}
                   height={squareSize}
@@ -150,7 +150,7 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
                   seed={display.seed}
                   planetSize={display.planetSize}
                   propStyle={{ position: "absolute", top: 0 }}
-                />
+                /></Suspense>
                 : <img
                   src={`${svgBase + name}/${display.source.properties.type}.svg`}
                   alt={display.source.properties.name}

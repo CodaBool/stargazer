@@ -289,11 +289,17 @@ body {
   animation: fadeInUp 300ms ease-out;
 }
 
-/*grid maplibre*/
+/* grid maplibre */
 .geogrid-overrides {
   top: 0;
   position: absolute !important;
 }
 .geogrid-overrides .geogrid__label--top {
   display: none;
+}
+.geogrid-overrides .geogrid__label--left {
+  transform: translateY(12px);
+}
+.geogrid-overrides .geogrid__label--bottom {
+  transform: translateX(12px);
 }

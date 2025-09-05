@@ -36,7 +36,7 @@ const DrawerContent = React.forwardRef(({ className, children, ...props }, ref) 
         background: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.92) 90%, rgba(0,0,0,0) 100%)"
       }}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-50 mt-24 flex left-0 right-0 h-full flex-col rounded-t-[10px]overflow-hidden",
+        "fixed inset-x-0 bottom-0 z-50 mt-24 flex left-0 outline-none right-0 h-full flex-col rounded-t-[10px]overflow-hidden",
         className
       )}
       {...props}>

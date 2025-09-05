@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Layer, Source } from '@vis.gl/react-maplibre'
 import * as turf from '@turf/turf'
-import { debounce, useMode, getMaps } from '@/lib/utils'
+import { debounce, useMode, getMaps, gridHelpers } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 
 const linestring = {
@@ -13,10 +13,14 @@ const linestring = {
 }
 let text, tutorial, crosshairX, crosshairY
 
-export default function Toolbox({ map, width, params, height, mobile, name, IS_GALAXY, DISTANCE_CONVERTER, UNIT, COORD_OFFSET }) {
+export default function Toolbox({ map, width, params, height, mobile, name, IS_GALAXY, DISTANCE_CONVERTER, UNIT, COORD_OFFSET, GRID_DENSITY }) {
   const { mode, setMode } = useMode()
   const router = useRouter()
   const offset = COORD_OFFSET || [0, 0]
+
+  // helper for translating arbitrary grid coordinates to relative map coordinates
+  const GRID = (typeof GRID_DENSITY === "number" && GRID_DENSITY > 0) ? GRID_DENSITY : 1
+  const { coordFromLngLat } = useMemo(() => gridHelpers(name, GRID), [name, GRID])
 
   // Projects [lng, lat] to Mercator meters, using projection EPSG:3857
   function mercatorLength(lineString) {
@@ -141,7 +145,10 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       const x = (lng + offset[0]).toFixed(3)
       const y = (lat + offset[1]).toFixed(3)
       if (IS_GALAXY) {
-        text.textContent = `Y: ${y} | X: ${x}`;
+        const sci = coordFromLngLat(lng, lat); // -> { col, row, label, meta }
+        // console.log("I got this scifi grid coord, how does it look", sci.cell.label, [y, x])
+        // text.textContent = `Y: ${y} | X: ${x}`
+        text.textContent = sci.cell.label
       } else {
         text.textContent = `Lat: ${y}° | Lng: ${x}°`;
       }
@@ -203,6 +210,13 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
     text.style.pointerEvents = 'none'
     text.style.visibility = 'hidden'
     text.style.textAlign = 'center'
+    text.style.textShadow = `
+      0 0 3px rgba(0,0,0,1),
+      0 0 6px rgba(0,0,0,0.9)
+    `;
+    text.style.background = 'rgba(0, 0, 0, 0.9)'; // semi-transparent black
+    text.style.padding = '0.2em 0.5em'; // space around text
+    text.style.borderRadius = '10px';   // optional rounded corners
     mapboxChildrenParent.appendChild(text)
 
     // tutorial text
@@ -215,7 +229,7 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
     tutorial.style.transform = 'translateX(-50%)';
     tutorial.style.top = mobile ? '160px' : '140px'
     tutorial.style.color = 'white'
-    tutorial.style.opacity = 0.5
+    tutorial.style.opacity = 0.7
     tutorial.style.fontSize = mobile ? '1.2em' : '1.8em'
     tutorial.style.pointerEvents = 'none'
     tutorial.style.visibility = 'hidden'
@@ -325,13 +339,17 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       })
     }
 
+    // duplicate of handleMove function
     if (mode === "crosshair") {
       const { lng, lat } = map.getCenter()
       document.querySelectorAll('.crosshair').forEach(el => el.style.visibility = "visible")
       const x = (lng + offset[0]).toFixed(3)
       const y = (lat + offset[1]).toFixed(3)
       if (IS_GALAXY) {
-        text.textContent = `Y: ${y} | X: ${x}`;
+        const sci = coordFromLngLat(lng, lat); // -> { col, row, label, meta }
+        // console.log("I got this scifi grid coord, how does it look", sci.cell.label, [y, x])
+        // text.textContent = `Y: ${y} | X: ${x}`
+        text.textContent = sci.cell.label
       } else {
         text.textContent = `Lat: ${y}° | Lng: ${x}°`;
       }

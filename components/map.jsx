@@ -7,7 +7,7 @@ import maplibregl, {
 import { useMap, Layer, Source, Popup } from '@vis.gl/react-maplibre'
 import { GeoGrid } from 'geogrid-maplibre-gl'
 import { useEffect, useRef, useState, Fragment } from 'react'
-import { createPopupHTML, localSet, getMaps, useMode, getPaint, gridAlgorithm } from "@/lib/utils.js"
+import { createPopupHTML, localSet, getMaps, useMode, getPaint, gridAlgorithm, useGrid, gridHelpers } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import SearchBar from './searchbar'
 import * as turf from '@turf/turf'
@@ -116,7 +116,7 @@ const removePopup = () => {
   if (popup._container) popup.remove()
 }
 
-export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET, VIEW, GRID_DENSITY }) {
+export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET, VIEW, GRID_DENSITY, MIN_ZOOM, MAX_ZOOM }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
   const { mode } = useMode()
@@ -178,17 +178,20 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap())
   }
 
+  // fit will be true if a search
   async function pan(d, myGroup, fit) {
     if (locked && !fit) return
-    let fly = true, lat, lng, bounds, coordinates = d.geometry.coordinates
+    let lat, lng, bounds, coordinates = d.geometry.coordinates
     let zoom = wrapper.getZoom()
-
     // duplicate of what's in drawer.jsx recenter
     if (d.geometry.type === "Point") {
       [lng, lat] = coordinates
 
       // force a zoom if panning to location by search
-      if (fit) zoom = SEARCH_POINT_ZOOM
+      if (fit) {
+        // console.log("DEBUG: point set zoom to ", (MAX_ZOOM - MIN_ZOOM) / 2, "from", wrapper.getZoom())
+        zoom = MAX_ZOOM - ((MAX_ZOOM - MIN_ZOOM) / (2 + Number(IS_GALAXY ? 1 : 0)))
+      }
 
     } else {
 
@@ -201,43 +204,46 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       // zoom view to fit territory or guide when searched
 
       if (fit) {
+        // console.log("DEBUG: polygon set zoom to ", turf.bbox(d), "from", wrapper.getZoom())
         bounds = turf.bbox(d)
       }
     }
 
-    // offset for drawer (1/2)
-    if (!fit) {
-      const arbitraryNumber = 9
+    // attempt to add some offset if zoomed out
+    if (zoom > ((MAX_ZOOM - MIN_ZOOM) / 2) && fit) {
+      const arbitraryNumber = 13
       let zoomFactor = Math.pow(2, arbitraryNumber - wrapper.getZoom())
       zoomFactor = Math.max(zoomFactor, 4)
       const latDiff = (wrapper.getBounds().getNorth() - wrapper.getBounds().getSouth()) / zoomFactor
       lat = coordinates[1] - latDiff / 2
+      console.log('DEBUG: adding', latDiff / 2, " latitude compensation to zoom level")
     }
 
-    if (fly) {
-      if (bounds) {
-        wrapper.fitBounds([
-          [bounds[0], bounds[1]], // bottom-left corner
-          [bounds[2], bounds[3]]  // top-right corner
-        ], {
-          duration: 800,
-          padding: { top: 50, bottom: 50, left: 50, right: 50 },
-        });
-      } else {
-        wrapper.flyTo({ center: [lng, lat], duration: 700, zoom })
+    if (bounds) {
+      // console.log("DEBUG: pan using bounds", bounds)
 
-        // Hacky solution since trying to offset for the drawer when zoomed out is hard
-        // this will wait until more zoomed and closer to the target to then attempt
-        // offset for drawer (2/2)
-        setTimeout(() => {
-          const arbitraryNumber = 9
-          let zoomFactor = Math.pow(2, arbitraryNumber - wrapper.getZoom())
-          zoomFactor = Math.max(zoomFactor, 4)
-          const latDiff = (wrapper.getBounds().getNorth() - wrapper.getBounds().getSouth()) / zoomFactor
-          lat = coordinates[1] - latDiff / 2
-          wrapper.flyTo({ center: [lng, lat], duration: 1_000, zoom })
-        }, 600)
-      }
+      wrapper.fitBounds([
+        [bounds[0], bounds[1]], // bottom-left corner
+        [bounds[2], bounds[3]]  // top-right corner
+      ], {
+        duration: 800,
+        padding: { top: 50, bottom: 50, left: 50, right: 50 },
+      });
+    } else {
+      wrapper.flyTo({ center: [lng, lat], duration: 700, zoom })
+
+      // Hacky solution since trying to offset for the drawer when zoomed out is hard
+      // this will wait until more zoomed and closer to the target to then attempt
+      // offset for drawer (2/2)
+
+      // setTimeout(() => {
+      //   const arbitraryNumber = 9
+      //   let zoomFactor = Math.pow(2, arbitraryNumber - wrapper.getZoom())
+      //   zoomFactor = Math.max(zoomFactor, 4)
+      //   const latDiff = (wrapper.getBounds().getNorth() - wrapper.getBounds().getSouth()) / zoomFactor
+      //   lat = coordinates[1] - latDiff / 2
+      //   wrapper.flyTo({ center: [lng, lat], duration: 1_000, zoom })
+      // }, 600)
     }
 
     if (d.geometry.type === "Point") {
@@ -330,22 +336,12 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     }
 
     if (name === "starwars" || name === "alien" || name === "fallouty") {
+      const { formatLabels } = gridHelpers(name, GRID_DENSITY || 1)
       new GeoGrid({
         map: wrapper.getMap(),
         // beforeLayerId: 'line',
         gridDensity: () => GRID_DENSITY || 1,
-        formatLabels: (deg, alignment) => {
-          if (name === "alien") {
-            // round to nearest grid index, bias slightly to avoid float drift
-            const idx = Math.round(deg * (1 / GRID_DENSITY) + (deg === 0 ? 0 : Math.sign(deg) * 1e-9));
-            return String(idx === 0 ? 0 : idx);
-          } else if (name === "starwars") {
-            return gridAlgorithm(deg, alignment)
-          } else if (name === "fallout") {
-            return Math.floor(deg)
-          }
-          return deg.toFixed(1)
-        },
+        formatLabels,
         gridStyle: {
           color: `rgba(255, 255, 255, ${name === "fallout" ? 0.02 : 0.03})`,
           width: 2,
@@ -580,7 +576,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       <Tutorial name={name} IS_GALAXY={IS_GALAXY} />
       <Drawer {...drawerContent} passedLocationClick={locationClick} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} GENERATE_LOCATIONS={GENERATE_LOCATIONS} mobile={mobile} />
 
-      <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} COORD_OFFSET={COORD_OFFSET} />
+      <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} COORD_OFFSET={COORD_OFFSET} GRID_DENSITY={GRID_DENSITY} />
       {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} mobile={mobile} />}
     </>
   )
