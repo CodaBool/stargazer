@@ -32,7 +32,6 @@ export const metadata = {
     shortcut: '/icon.jpg',
     apple: '/icon.jpg',
   },
-  themeColor: '#0d0d0d',
 }
 
 // allows for mobile devices to properly style
