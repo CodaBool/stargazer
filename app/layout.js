@@ -4,7 +4,7 @@ export const metadata = {
   title,
   description,
   metadataBase: new URL(process.env.NEXT_PUBLIC_URL),
-  keywords: ['map', 'RPG', 'customizable', 'content', 'stargazer', 'cartographer', 'cyberpunk', 'lancer', 'starwars', 'custom', 'warhammer', 'alien'].,
+  keywords: ['map', 'RPG', 'customizable', 'content', 'stargazer', 'cartographer', 'cyberpunk', 'lancer', 'starwars', 'custom', 'warhammer', 'alien'],
   openGraph: {
     title,
     description,
