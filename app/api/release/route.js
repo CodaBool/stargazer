@@ -1,6 +1,6 @@
 
-export const revalidate = 60 * 60 * 2; // 2 hours
 
+export const runtime = 'edge';
 export async function GET(req) {
   try {
 
