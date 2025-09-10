@@ -18,6 +18,7 @@ import Tutorial from './tutorial'
 import { useDraw } from "./controls";
 import { Calibrate, Link } from './foundry'
 import Drawer from './drawer'
+import Debug from './ui/debug'
 
 let popup = new maplibregl.Popup({
   closeButton: false,
@@ -173,6 +174,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
   const territoryClick = (e, wrapper, IGNORE_POLY, IS_GALAXY, name) => {
     if (IGNORE_POLY?.includes(e.features[0].properties.type) || modeRef.current === "measure") return
+    console.log(e.features[0])
     const coordinates = e.lngLat;
     const popupContent = createPopupHTML(e, IS_GALAXY, name, setDrawerContent)
     popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap())
@@ -499,19 +501,18 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
         />
         <Layer
           type="symbol"
+          id="polygon-label"
           layout={{
             "symbol-placement": "point",
-            "text-overlap": "never",
+            // "text-overlap": "never",
+            "text-allow-overlap": name === "cyberpunk",
             "text-rotate": 30,
             "text-transform": "uppercase",
             "text-field": ["get", "name"],
             "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
           }}
           filter={["all", ["!=", "type", "line"], ["!=", "type", "bg"], ["!=", "type", "bg-texture"], ["==", "$type", "Polygon"]]}
-          paint={{
-            "text-color": "#ffffff",
-            "text-opacity": 0.4,
-          }}
+          paint={getPaint(name, "symbol", "polygon-label", STYLES)}
         />
         <Layer
           type="symbol"
@@ -573,6 +574,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       {params.get("secret") && <Link width={width} height={height} mobile={mobile} name={name} params={params} />}
       {params.get("calibrate") && <Calibrate width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}
 
+      <Debug />
       <Tutorial name={name} IS_GALAXY={IS_GALAXY} />
       <Drawer {...drawerContent} passedLocationClick={locationClick} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} GENERATE_LOCATIONS={GENERATE_LOCATIONS} mobile={mobile} />
 
