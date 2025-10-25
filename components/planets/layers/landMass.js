@@ -139,7 +139,7 @@ const fragmentShaderPlanet = () => {
     `;
 }
 
-export function createlandMassLayer(lightPos = new Vector2(0.39, 0.7), lightIntensity = 0.1, colors, rotationSpeed = 0.1, rotation = 0.0, land, pixels, seed) {
+export function createlandMassLayer(lightPos = new Vector2(0.39, 0.7), lightIntensity = 0.1, colors, rotationSpeed = 0.1, rotation = 0.0, landPercent, pixels, seed) {
   let colorPalette = [
     new Vector4(0.784314, 0.831373, 0.364706, 1),
     new Vector4(0.388235, 0.670588, 0.247059, 1),
@@ -156,7 +156,7 @@ export function createlandMassLayer(lightPos = new Vector2(0.39, 0.7), lightInte
   const planetMaterial = new ShaderMaterial({
     uniforms: {
       pixels: { value: pixels || 100.0 },
-      land_cutoff: { value: land || 0.6 },
+      land_cutoff: { value: (1 - landPercent) || 0.6 },
       col1: { value: colorPalette[0] },
       col2: { value: colorPalette[1] },
       col3: { value: colorPalette[2] },

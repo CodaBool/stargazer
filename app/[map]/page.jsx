@@ -3,12 +3,26 @@ import fs, { promises } from "fs"
 import path from "path"
 import Cartographer from "@/components/cartographer"
 import { combineAndDownload, getConsts, getDescriptionFromFaction } from "@/lib/utils"
+import { Skull } from "lucide-react"
+import Link from "next/link"
 
 export default async function mapLobby({ params }) {
   const { map } = await params
   if (map === "favicon.ico") return
   if (map === "custom") {
     return <Cartographer name={map} fid={0} data={{ type: "FeatureCollection", features: [] }} />
+  }
+
+  if (map !== "warhammer" && map !== "fallout" && map !== "lancer" && map !== "lancer_starwall" && map !== "starwars" && map !== "alien" && map !== "cyberpunk") {
+    console.log(`404 map "${map}"`)
+    return (
+      <div className="flex items-center justify-center min-h-[80vh]">
+        <Skull className="animate-bounce mr-1" />
+        <h1 className=" text-white">map "{map}" not found.</h1>
+        <hr />
+        <Link href="/" className="text-blue-400 ml-1">Go back.</Link>
+      </div>
+    )
   }
 
   // see bottom comment

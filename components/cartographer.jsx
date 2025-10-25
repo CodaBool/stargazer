@@ -25,7 +25,10 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
   const showControls = params.get("controls") !== "0" && !mobile && !uuid && !locked && !params.get("preview")
   const showEditor = params.get("editor") !== "0" && !mobile && !uuid && !locked && !params.get("preview")
 
-  useEffect(accelerationCheck, [])
+  useEffect(() => {
+    if (name === "warhammer" && window.alert("The Warhammer 40k map is still in an unfinished state. Follow on itch.io or GitHub for updates."))
+      accelerationCheck()
+  }, [])
   useEffect(() => {
     // set size
     if (params.get("width") && params.get("height")) {

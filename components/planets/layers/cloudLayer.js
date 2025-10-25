@@ -150,7 +150,7 @@ const fragmentShaderClouds = () => {
     `;
 }
 
-export function createCloudLayer(colors, lightPos = new Vector2(0.39, 0.7), rotationSpeed = 0.1, rotation = 0.0, cloudCover, stretch = 2.5, pixels, seed) {
+export function createCloudLayer(colors, lightPos = new Vector2(0.39, 0.7), rotationSpeed = 0.1, rotation = 0.0, cloudPercent, stretch = 2.5, pixels, seed) {
   let colorPalette = [
     new Vector4(0.882353, 0.94902, 1, 1),
     new Vector4(0.752941, 0.890196, 1, 1),
@@ -174,7 +174,7 @@ export function createCloudLayer(colors, lightPos = new Vector2(0.39, 0.7), rota
       outline_color: { value: colorPalette[1] },
       shadow_base_color: { value: colorPalette[2] },
       shadow_outline_color: { value: colorPalette[3] },
-      cloud_cover: { value: cloudCover || 0.546 },
+      cloud_cover: { value: (1 - cloudPercent) || 0.5 },
       rotation: { value: rotation },
       stretch: { value: stretch },
       time: { value: 0.0 }

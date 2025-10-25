@@ -3,7 +3,7 @@ import { createBasePlanet } from "./layers/basePlanet.js";
 import { createCraterLayer } from "./layers/craterLayer.js";
 import { createRiverLayer } from "./layers/riversLayer.js";
 
-export const createLavaPlanet = ({ colors, pixels, seed, rivers }) => {
+export const createLavaPlanet = ({ colors, pixels, seed, lavaPercent }) => {
   if (!colors.base) {
     colors.base = [
       new Vector4(0.560784, 0.301961, 0.341176, 1),
@@ -31,8 +31,8 @@ export const createLavaPlanet = ({ colors, pixels, seed, rivers }) => {
   const basePlanet = createBasePlanet(undefined, undefined, colors, undefined, undefined, pixels, seed)
   // ightPos = new Vector2(0.39, 0.7), colors, rotationSpeed = 0.1, rotation = 0.0, pixels, seed
   const craterLayer = createCraterLayer(undefined, colors, undefined, undefined, pixels, seed)
-  // lightPos = new Vector2(0.39, 0.7), rotationSpeed = 0.1, rivers = 0.6, colors, rotation = 0.0, pixels, seed
-  const riverLayer = createRiverLayer(undefined, undefined, rivers, colors, undefined, pixels, seed);
+  // lightPos = new Vector2(0.39, 0.7), rotationSpeed = 0.1, lavaPercent = 0.6, colors, rotation = 0.0, pixels, seed
+  const riverLayer = createRiverLayer(undefined, undefined, lavaPercent, colors, undefined, pixels, seed);
   planetGroup.add(basePlanet);
   planetGroup.add(craterLayer)
   planetGroup.add(riverLayer)

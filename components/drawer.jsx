@@ -8,10 +8,9 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer"
 import { Suspense, useEffect, useState } from "react"
-import { Button } from "./ui/button"
 import { Badge } from '@/components/ui/badge.jsx'
 import Link from "next/link"
-import { genLink, svgBase } from "@/lib/utils.js"
+import { genLink, gridHelpers, svgBase } from "@/lib/utils.js"
 import { useMap } from '@vis.gl/react-maplibre'
 import SolarSystemDiagram from "./solarSystem.jsx"
 import LocationSystem from "./locationSystem.jsx"
@@ -23,9 +22,9 @@ const MAX_GEN_LOCATIONS = 8
 let sharedRenderer = null;
 let sharedCanvas = null;
 
-export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GALAXY, coordinates, GENERATE_LOCATIONS, name, height, selectedId, mobile, d, myGroup, passedLocationClick, GEO_EDIT }) {
+export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GALAXY, coordinates, GENERATE_LOCATIONS, name, height, selectedId, mobile, d, myGroup, passedLocationClick, GEO_EDIT, GRID_DENSITY }) {
   const { map } = useMap()
-  const GROUP_NAME = IS_GALAXY ? "Celestial Bodies in this system" : "Nearby Locations"
+  const GROUP_NAME = IS_GALAXY ? "Celestial Bodies" : "Nearby Locations"
 
   const [squareSize, setSquareSize] = useState()
   const [display, setDisplay] = useState(fillMissingData(d))
@@ -110,6 +109,13 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
 
   if (!display || GEO_EDIT) return null
 
+
+  let coordinatesPretty = `${coordinates[1].toFixed(2)}, ${coordinates[0].toFixed(2)}`
+  if (IS_GALAXY) {
+    const { coordFromLngLat } = gridHelpers(name, GRID_DENSITY)
+    coordinatesPretty = coordFromLngLat(coordinates[0], coordinates[1]).cell.label
+  }
+
   const starNum = display.source?.properties?.starType?.split(",").length
 
   return (
@@ -139,16 +145,16 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
                   featureColors={display.featureColors}
                   layerColors={display.layerColors}
                   schemeColor={display.schemeColor}
-                  atmosphere={display.atmosphere}
-                  clouds={display.cloud}
-                  cloudCover={display.cloud}
+                  atmosphereColors={display.atmosphereColors}
+                  clouds={display.clouds}
+                  landPercent={display.landPercent}
+                  cloudPercent={display.cloudPercent}
+                  hydroPercent={display.hydroPercent}
+                  lavaPercent={display.lavaPercent}
+                  ringSize={display.ringSize}
                   size={display.size}
-                  land={display.hydrosphere}
-                  ringWidth={display.ringSize}
-                  lakes={display.ice}
-                  rivers={display.hydrosphere}
-                  seed={display.seed}
                   planetSize={display.planetSize}
+                  seed={display.seed}
                   propStyle={{ position: "absolute", top: 0 }}
                 /></Suspense>
                 : <img
@@ -180,9 +186,9 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
           </div>
 
           {/* TOP – Coordinates */}
-          <div className="absolute top-[0px] left-1/2 transform -translate-x-1/2 z-10 text-xs lg:text-sm text-gray-100">
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 z-10 text-xs lg:text-sm text-gray-100">
             <Crosshair size={mobile ? 14 : 20} onClick={recenter} className="inline mr-2 mb-1 cursor-pointer opacity-60" />
-            {`${coordinates[1].toFixed(2)}, ${coordinates[0].toFixed(2)}`}
+            {coordinatesPretty}
           </div>
 
 
@@ -192,8 +198,9 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
               <div>
                 {starNum === 2 && <Badge className="text-sm">binary</Badge>}
                 {starNum === 3 && <Badge className="text-sm">trinary</Badge>}
-                {display.source.properties.faction && <Badge className="text-sm text-center mx-auto lg:mx-0">{display.source.properties.faction}</Badge>}
-                {display.source.properties.locations && <p className="text-lg">{display.source.properties.locations} known locations</p>}
+                {display.source.properties.faction && display.source.properties.faction.split(",").map(f =>
+                  <Badge className="text-sm text-center mx-auto lg:mx-0" key={f}>{f}</Badge>
+                )}
                 {display.source.properties.destroyed && <Badge variant="secondary" className="text-base">Destroyed</Badge>}
                 {display.source.properties.unofficial && <Badge variant="destructive" className="text-base">Unofficial</Badge>}
               </div>
@@ -205,8 +212,8 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
               <div className="w-full h-full flex flex-col-reverse">
                 <div>
                   {typeof display.cloud === "number" && <p>{(1 - display.cloud).toFixed(2) * 100}% cloud coverage</p>}
-                  {typeof display.hydrosphere === "number" && <p>{(display.type === "ice_planet" ? (1 - display.ice) : display.hydrosphere).toFixed(2) * 100}% hydrosphere</p>}
-                  {typeof display.ice === "number" && display.type === "ice_planet" && <p>{(display.ice * 100).toFixed(1)}% ice coverage</p>}
+                  {typeof display.hydrosphere === "number" && <p>{(display.type === "ice planet" ? (1 - display.ice) : display.hydrosphere).toFixed(2) * 100}% hydrosphere</p>}
+                  {typeof display.ice === "number" && display.type === "ice planet" && <p>{(display.ice * 100).toFixed(1)}% ice coverage</p>}
                   {typeof display.radius === "number" && <p>{display.radius.toFixed(2)} {display.type === "star" ? "solar radii" : "km radius"}</p>}
                   {(typeof display.temperature === "number" && display.type !== "star") && <p>{Math.floor(display.temperature)}°C</p>}
                   {(typeof display.temperature === "number" && display.type === "star") && <p>{Math.floor(display.temperature) + 273}°K</p>}
@@ -224,7 +231,7 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
           </div>
 
           {/* BOTTOM – Name/Type */}
-          <div className={`absolute left-1/2 flex transform -translate-x-1/2 items-center`} style={{ top: `${(Number(squareSize) - 5).toString()}px` }}>
+          <div className={`absolute left-1/2 flex transform -translate-x-1/2 items-center bg-[rgba(0, 0, 0, 0.75)]`} style={{ top: `${(Number(squareSize) - 5).toString()}px` }}>
             <Link href={genLink(display.source, name, "href")} className="opacity-60" target={name === "lancer" ? "_self" : "_blank"}>
               <ExternalLink className="cursor-pointer me-1" size={mobile ? 14 : 19} />
             </Link>
@@ -244,13 +251,21 @@ export default function DrawerComponent({ drawerContent, setDrawerContent, IS_GA
           </>
         )}
 
-        {display.source.properties.description &&
+        {(display.source.properties.description || display.source.properties.locations) &&
           <>
             <hr className="my-2" />
             <div className="max-w-3xl mx-auto px-4 overflow-auto mb-28">
               <DrawerHeader className="m-0 p-0 mt-1 mb-3">
-                <DrawerTitle className="text-xl font-bold text-center">Description <span className="text-gray-500 text-sm"> - drawer can be pulled up</span></DrawerTitle>
+                <DrawerTitle className="text-xl font-bold text-center"><span className="text-gray-500 text-sm"> drawer can be pulled up</span></DrawerTitle>
               </DrawerHeader>
+              {display.source.properties.locations &&
+                <>
+                  <p className="text-base lg:text-lg leading-relaxed break-words">
+                    <b>Locations:</b> <span className="text-md">{display.source.properties.locations}</span>
+                  </p>
+                  <hr className="my-2" />
+                </>
+              }
               <p className="text-base lg:text-lg leading-relaxed break-words">
                 {display.source.properties.description}
               </p>
@@ -339,16 +354,16 @@ function fillMissingData(d) {
 }
 
 function genSeed(d) {
-  return d.geometry.coordinates.map(coord => coord.toFixed(1)).join(",").toString()
+  return `${d.properties.name}_${d.geometry.coordinates.map(c => c.toString()).join(",")}`
 }
 
 const tintMap = {
-  ice_planet: "blue",
+  "ice planet": "blue",
   terrestrial: "green",
   jovian: "brown",
-  lava_planet: "red",
-  desert_planet: "yellow",
-  ocean_planet: "blue",
+  "lava planet": "red",
+  "desert planet": "yellow",
+  "ocean planet": "blue",
   gate: "purple",
   // "neutron": "blue",
   "blue": "blue",
@@ -440,11 +455,11 @@ function generateLocation(seed, isMoon) {
   const rng = seedrandom(seed)
   const random = () => rng()
 
-  const types = ['barren_planet', 'ice_planet', 'terrestrial', 'jovian', 'lava_planet', 'desert_planet', 'ocean_planet', 'dwarf', 'supermassive', 'asteroid']
+  const types = ['barren planet', 'ice planet', 'terrestrial', 'jovian', 'lava planet', 'desert planet', 'ocean planet', 'dwarf', 'supermassive', 'asteroid']
   const rand = random()
   let type, ringed, sizeMod = 1
   if (isMoon) {
-    const moonTypes = ['barren_planet', 'ice_planet', 'terrestrial', 'lava_planet', 'desert_planet', 'ocean_planet', 'asteroid']
+    const moonTypes = ['barren planet', 'ice planet', 'terrestrial', 'lava planet', 'desert planet', 'ocean planet', 'asteroid']
     type = moonTypes[Math.floor(rand * moonTypes.length)]
     sizeMod = 0.3
   } else {
@@ -453,12 +468,12 @@ function generateLocation(seed, isMoon) {
 
   const sub = (Math.floor(Math.abs(rand) * 100) % 10) / 10
   if (type === "dwarf") {
-    const dwarf = ["barren_planet", "ice_planet"];
+    const dwarf = ["barren planet", "ice planet"];
     const subIndex = Math.floor(sub * dwarf.length)
     type = dwarf[subIndex]
     sizeMod = 0.5
   } else if (type === "supermassive") {
-    const supermassive = ["ice_planet", "terrestrial", "jovian", "lava_planet", "desert_planet", "ocean_planet"];
+    const supermassive = ["ice planet", "terrestrial", "jovian", "lava planet", "desert planet", "ocean planet"];
     const subIndex = Math.floor(sub * supermassive.length);
     type = supermassive[subIndex]
     sizeMod = 2
@@ -537,27 +552,28 @@ function checkRings(radius, random) {
   return subChance < chance;
 }
 
+// TODO: go back and add fluff data like ice to desert planet
 // Planet data structure
 const planetData = {
-  barren_planet: {
+  "barren planet": {
     gravity: [90, 1050],
     pressure: [0, 1],
     temperature: [-200, 350],
     radius: [800, 8000],
     year: [60, 130000],
     day: [250, 125000],
-    ice: [0, 30],
+    // ice: [0, 30],
     chemical: ["iron", "silicate", "carbon", "sulfur", "oxygen"]
   },
-  ice_planet: {
+  "ice planet": {
     gravity: [300, 1320],
     pressure: [7, 5802],
     temperature: [-250, -14],
     radius: [4200, 11000],
     year: [250, 125000],
     day: [12, 60],
-    cloud: [40, 90],
-    ice: [35, 75],
+    cloudPercent: [.4, .9],
+    hyrdoPercent: [.3, .7],
     chemical: ["ammonia", "methane", "oxygen", "carbon", "nitrogen", "sulfur"]
   },
   terrestrial: {
@@ -567,10 +583,9 @@ const planetData = {
     radius: [4224, 8382],
     year: [290, 800],
     day: [13, 40],
-    // lower is more land
-    hydro: [50, 60],
-    cloud: [50, 70],
-    ice: [0, 10],
+    cloudPercent: [.5, .7],
+    landPercent: [.99, .9],
+    // ice: [0, 10],
     chemical: ["silicate", "iron", "oxygen", "carbon", "nitrogen", "sulfur", "hydrogen", "helium"]
   },
   jovian: {
@@ -580,51 +595,45 @@ const planetData = {
     radius: [7800, 120000],
     year: [600, 98000],
     day: [5, 30],
-    cloud: [50, 100],
     ringSize: [0, 0.2],
-    ice: [0, 0],
     chemical: ["hydrogen", "helium", "methane", "ammonia", "sulfur", "carbon", "oxygen"]
   },
-  lava_planet: {
+  "lava planet": {
     gravity: [1000, 2400],
     pressure: [500, 100000],
     temperature: [400, 3000],
     radius: [4000, 9000],
     year: [200, 1000],
     day: [10, 35],
-    // use hydro as a lava proxy, lower is more lava
-    // TODO: this seems bugged, the percentage does not work as expected
-    hydro: [50, 64],
-    cloud: [30, 100],
+    lavaPercent: [.5, .6],
     chemical: ["oxygen", "iron", "silicate", "sulfur", "carbon", "hydrogen"]
   },
-  desert_planet: {
+  "desert planet": {
     gravity: [700, 1600],
     pressure: [50, 2000],
     temperature: [30, 90],
     radius: [4000, 9000],
     year: [300, 3000],
     day: [20, 50],
-    hydro: [0, 5],
-    cloud: [5, 50],
-    ice: [0, 2],
+    // hydro: [0, 5],
+    // ice: [0, 2],
     chemical: ["silicate", "oxygen", "iron", "carbon", "sulfur"]
   },
-  ocean_planet: {
+  "ocean planet": {
     gravity: [800, 1600],
     pressure: [500, 3000],
     temperature: [-10, 40],
     radius: [5000, 10000],
     year: [250, 1000],
     day: [12, 30],
-    hydro: [60, 95],
-    cloud: [25, 80],
-    ice: [0, 30],
+    landPercent: [.6, .95],
+    cloudPercent: [.25, .8],
+    // ice: [0, 30],
     chemical: ["oxygen", "hydrogen", "carbon", "nitrogen", "ammonia", "methane", "sulfur", "iron"]
   },
   asteroid: {
     radius: [10, 500],
-    year: [150, 10000],
+    year: [150, 8000],
     chemical: ["oxygen", "hydrogen", "carbon", "nitrogen", "silicate", "methane", "sulfur", "iron", "copper"],
   },
   gate: {

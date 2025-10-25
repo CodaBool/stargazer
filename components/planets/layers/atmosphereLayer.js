@@ -54,10 +54,10 @@ export const createAtmosphereLayer = (colors, pixels) => {
     new Vector4(0 / 255, 127 / 255, 255 / 255, 0.35),
     new Vector4(0 / 255, 0 / 255, 128 / 255, 0.45),
   ]
-  if (typeof colors.atmosphere === "string") {
-    colorPalette = colors.atmosphere.split(',').map(hexToVector4)
-  } else if (typeof colors.atmosphere === "object") {
-    colorPalette = colors.atmosphere
+  if (typeof colors.atmosphereColors === "string") {
+    colorPalette = colors.atmosphereColors.split(',').map(hexToVector4)
+  } else if (typeof colors.atmosphereColors === "object") {
+    colorPalette = colors.atmosphereColors
   }
 
   const atmopshereGeometry = new PlaneGeometry(1.02, 1.02);

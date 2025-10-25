@@ -114,7 +114,7 @@ const fragmentShaderLakes = () => {
     `;
 }
 
-export function createLakeLayer(lightPos = new Vector2(0.39, 0.7), rotationSpeed = 0.1, lakes, colors, rotation = 0.0, pixels, seed) {
+export function createLakeLayer(lightPos = new Vector2(0.39, 0.7), rotationSpeed = 0.1, hyrdoPercent, colors, rotation = 0.0, pixels, seed) {
 
 
   let colorPalette = [
@@ -135,7 +135,7 @@ export function createLakeLayer(lightPos = new Vector2(0.39, 0.7), rotationSpeed
       light_origin: { value: lightPos },
       seed: { value: seed || Math.random() > 0.5 ? Math.random() * 10 : Math.random() * 100 },
       time_speed: { value: rotationSpeed },
-      lake_cutoff: { value: lakes || 0.6 },
+      lake_cutoff: { value: (1 - hyrdoPercent) || 0.6 },
       rotation: { value: rotation },
       color1: { value: colorPalette[0] },
       color2: { value: colorPalette[1] },

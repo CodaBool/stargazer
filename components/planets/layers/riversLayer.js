@@ -119,7 +119,7 @@ const fragmentShaderRivers = () => {
     `;
 }
 
-export function createRiverLayer(lightPos = new Vector2(0.39, 0.7), rotationSpeed = 0.1, rivers, colors, rotation = 0.0, pixels, seed) {
+export function createRiverLayer(lightPos = new Vector2(0.39, 0.7), rotationSpeed = 0.1, lavaPercent, colors, rotation = 0.0, pixels, seed) {
 
   let colorPalette = [
     new Vector4(79 / 255, 164 / 255, 184 / 255, 1),
@@ -139,7 +139,7 @@ export function createRiverLayer(lightPos = new Vector2(0.39, 0.7), rotationSpee
       pixels: { value: pixels || 100.0 },
       seed: { value: seed || Math.random() > 0.5 ? Math.random() * 10 : Math.random() * 100 },
       time_speed: { value: 0.1 },
-      river_cutoff: { value: rivers || 0.6 },
+      river_cutoff: { value: (1 - lavaPercent) || 0.6 },
       rotation: { value: rotation },
       color1: { value: colorPalette[0] },
       color2: { value: colorPalette[1] },
