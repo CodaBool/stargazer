@@ -117,7 +117,7 @@ function ThreejsPlanet({
         dialog.style.textAlign = 'center';
         dialog.style.fontSize = '2em';
         dialog.style.paddingTop = '6em';
-        dialog.textContent = `No preview available for ${type.replaceAll("_", " ")}`;
+        dialog.textContent = `No preview available for ${type}`;
       }
       return
     }
@@ -300,10 +300,10 @@ function ThreejsPlanet({
 }
 
 // KEEP THESE IN SYNC WITH THE SWITCH BELOW!!!
-export const availableThreejsModels = ["barren_planet", "moon", "barren", "gate", "station", "ice_planet", "ice", "gas", "jovian", "ringed_planet", "ring", "comet", "asteroid", "asteroids", "neutron_star", "star", "lava_planet", "lava", "desert_planet", "desert", "terrestrial", "ocean_planet", "ocean"]
+export const availableThreejsModels = ["barren planet", "moon", "barren", "gate", "station", "ice planet", "ice", "gas", "jovian", "ringed planet", "ring", "comet", "asteroid", "asteroids", "neutron star", "star", "lava planet", "lava", "desert planet", "desert", "terrestrial", "ocean planet", "ocean"]
 function generatePlanetByType(params) {
   switch (params.type) {
-    case "barren_planet":
+    case "barren planet":
     case "moon":
     case "barren":
       return createNoAtmospherePlanet(params)
@@ -311,31 +311,31 @@ function generatePlanetByType(params) {
       return createGate(params)
     case "station":
       return createStation(params)
-    case "ice_planet":
+    case "ice planet":
     case "ice":
       return createIcePlanet(params)
     case "gas":
     case "jovian":
       return createGasGiant(params)
-    case "ringed_planet":
+    case "ringed planet":
     case "ring":
       return createGasGiantRing(params)
     case "comet":
     case "asteroid":
     case "asteroids":
       return createAsteroid(undefined, params.colors, undefined, params.pixels, params.seed, params.size)
-    case "neutron_star":
+    case "neutron star":
     case "star":
       return createStarPlanet(params)
-    case "lava_planet":
+    case "lava planet":
     case "lava":
       return createLavaPlanet(params)
-    case "desert_planet":
+    case "desert planet":
     case "desert":
       // lightPos = new Vector2(0.39, 0.7), colors, rotationSpeed = 0.1, rotation = 0.0, pixels, seed
       return createDryPlanet(undefined, params.colors, undefined, undefined, params.pixels, params.seed)
     case "terrestrial":
-    case "ocean_planet":
+    case "ocean planet":
     case "ocean":
       return createEarthPlanet(params)
   }
