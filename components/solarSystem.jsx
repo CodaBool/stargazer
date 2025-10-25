@@ -60,6 +60,8 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
     return body.tint ? `drop-shadow(0 0 6px ${body.tint})` : undefined
   }
 
+  console.log("group", group)
+
   return (
     <>
       <div className="w-full overflow-x-auto overflow-y-visible py-2">
