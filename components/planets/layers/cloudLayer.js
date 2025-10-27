@@ -174,7 +174,7 @@ export function createCloudLayer(colors, lightPos = new Vector2(0.39, 0.7), rota
       outline_color: { value: colorPalette[1] },
       shadow_base_color: { value: colorPalette[2] },
       shadow_outline_color: { value: colorPalette[3] },
-      cloud_cover: { value: (1 - cloudPercent) || 0.5 },
+      cloud_cover: { value: (1- cloudPercent) || 0.5 },
       rotation: { value: rotation },
       stretch: { value: stretch },
       time: { value: 0.0 }

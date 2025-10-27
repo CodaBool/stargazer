@@ -1,5 +1,5 @@
 import { Mesh, PlaneGeometry, ShaderMaterial, Vector2, Vector4 } from "three";
-import { hexToVector4 } from "../../threejsPlanet"
+import { hexToVector4 } from "../../threejsPlanet";
 
 const vertexShader = () => {
   return `
@@ -12,7 +12,7 @@ const vertexShader = () => {
       gl_Position = projectionMatrix * modelViewPosition;
     }
   `;
-}
+};
 
 const fragmentShaderPlanet = () => {
   return `
@@ -137,26 +137,35 @@ const fragmentShaderPlanet = () => {
             gl_FragColor = vec4(col.rgb, step(land_cutoff, fbm1) * a * col.a);
         }
     `;
-}
+};
 
-export function createlandMassLayer(lightPos = new Vector2(0.39, 0.7), lightIntensity = 0.1, colors, rotationSpeed = 0.1, rotation = 0.0, landPercent, pixels, seed) {
+export function createlandMassLayer(
+  lightPos = new Vector2(0.39, 0.7),
+  lightIntensity = 0.1,
+  colors,
+  rotationSpeed = 0.1,
+  rotation = 0.0,
+  hyrdoPercent,
+  pixels,
+  seed,
+) {
   let colorPalette = [
     new Vector4(0.784314, 0.831373, 0.364706, 1),
     new Vector4(0.388235, 0.670588, 0.247059, 1),
     new Vector4(0.184314, 0.341176, 0.32549, 1),
     new Vector4(0.156863, 0.207843, 0.25098, 1),
-  ]
+  ];
   if (typeof colors.feature === "string") {
-    colorPalette = colors.feature.split(',').map(hexToVector4)
+    colorPalette = colors.feature.split(",").map(hexToVector4);
   } else if (typeof colors.feature === "object") {
-    colorPalette = colors.feature
+    colorPalette = colors.feature;
   }
 
   const planetGeometry = new PlaneGeometry(1, 1);
   const planetMaterial = new ShaderMaterial({
     uniforms: {
       pixels: { value: pixels || 100.0 },
-      land_cutoff: { value: (1 - landPercent) || 0.6 },
+      land_cutoff: { value: hyrdoPercent || 0.6 },
       col1: { value: colorPalette[0] },
       col2: { value: colorPalette[1] },
       col3: { value: colorPalette[2] },
@@ -165,15 +174,19 @@ export function createlandMassLayer(lightPos = new Vector2(0.39, 0.7), lightInte
       light_origin: { value: lightPos },
       time_speed: { value: rotationSpeed },
       rotation: { value: rotation },
-      seed: { value: seed || (Math.random() > 0.5 ? Math.random() * 10 : Math.random() * 100) },
-      time: { value: 0.0 }
+      seed: {
+        value:
+          seed ||
+          (Math.random() > 0.5 ? Math.random() * 10 : Math.random() * 100),
+      },
+      time: { value: 0.0 },
     },
     vertexShader: vertexShader(),
     fragmentShader: fragmentShaderPlanet(),
     transparent: true,
   });
 
-  const landMassLayer = new Mesh(planetGeometry, planetMaterial)
+  const landMassLayer = new Mesh(planetGeometry, planetMaterial);
 
   return landMassLayer;
 }

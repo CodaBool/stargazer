@@ -1,8 +1,17 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, memo } from 'react';
-import { Clock, Group, Scene, WebGLRenderer, Vector4, PerspectiveCamera, AmbientLight, DirectionalLight } from 'three';
-import { createStars } from './planets/layers/stars'
+import { useEffect, useRef, memo } from "react";
+import {
+  Clock,
+  Group,
+  Scene,
+  WebGLRenderer,
+  Vector4,
+  PerspectiveCamera,
+  AmbientLight,
+  DirectionalLight,
+} from "three";
+import { createStars } from "./planets/layers/stars";
 
 // planet generation
 import { createAsteroid } from "./planets/asteroid.js";
@@ -32,7 +41,6 @@ function ThreejsPlanet({
   clouds,
   cloudPercent,
   size,
-  landPercent,
   ringSize,
   hyrdoPercent,
   lavaPercent,
@@ -59,9 +67,15 @@ function ThreejsPlanet({
       isNewRenderer = true;
     }
     if (disableListeners) {
-      sharedRenderer.setSize(width || container.clientWidth, height || container.clientHeight)
+      sharedRenderer.setSize(
+        width || container.clientWidth,
+        height || container.clientHeight,
+      );
     } else {
-      sharedRenderer.setSize(container.clientWidth - 10, container.clientHeight - 10)
+      sharedRenderer.setSize(
+        container.clientWidth - 10,
+        container.clientHeight - 10,
+      );
     }
 
     // Only append the sharedCanvas if it's not already attached to this container
@@ -73,22 +87,20 @@ function ThreejsPlanet({
       container.appendChild(sharedCanvas);
     }
 
-
-
-    const scene = new Scene()
+    const scene = new Scene();
     // fov, default 50
     // aspect, default 1
     // near, default 0.1
     // far, default 2000
-    const camera = new PerspectiveCamera(75)
+    const camera = new PerspectiveCamera(75);
     // move the planet away from the camera to create smaller planets
     // should be a 1-4 value
-    const zoomAwayAmount = planetSize || 1
-    camera.position.z = zoomAwayAmount
+    const zoomAwayAmount = planetSize || 1;
+    camera.position.z = zoomAwayAmount;
 
     // const camera = new PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 100000);
     const clock = new Clock();
-    const planetGroup = new Group()
+    const planetGroup = new Group();
 
     const planet = generatePlanetByType({
       pixels: pixels ? Number(pixels) : undefined,
@@ -103,23 +115,22 @@ function ThreejsPlanet({
       type: type || "terrestrial",
       size: size ? Number(size) : undefined,
       ringSize: ringSize ? Number(ringSize) : undefined,
-      landPercent: landPercent ? Number(landPercent) : undefined,
       cloudPercent: cloudPercent ? Number(cloudPercent) : undefined,
       hyrdoPercent: hyrdoPercent ? Number(hyrdoPercent) : undefined,
       lavaPercent: lavaPercent ? Number(lavaPercent) : undefined,
       seed: seed ? seed : undefined,
-    })
+    });
 
     if (!planet) {
       // fallback to text if no model for this type
-      const dialog = document.querySelector('.threejs-planet-dialog');
+      const dialog = document.querySelector(".threejs-planet-dialog");
       if (dialog) {
-        dialog.style.textAlign = 'center';
-        dialog.style.fontSize = '2em';
-        dialog.style.paddingTop = '6em';
+        dialog.style.textAlign = "center";
+        dialog.style.fontSize = "2em";
+        dialog.style.paddingTop = "6em";
         dialog.textContent = `No preview available for ${type}`;
       }
-      return
+      return;
     }
 
     planetGroup.add(planet);
@@ -142,9 +153,9 @@ function ThreejsPlanet({
       scene.add(directionalLight);
     }
 
-    sharedCanvas.style.display = 'block'
-    sharedCanvas.style.backgroundColor = 'transparent';
-    sharedCanvas.style.pointerEvents = 'none';
+    sharedCanvas.style.display = "block";
+    sharedCanvas.style.backgroundColor = "transparent";
+    sharedCanvas.style.pointerEvents = "none";
 
     let animationId, cameraStartTime, currentZ;
     let totalX = 0;
@@ -158,26 +169,24 @@ function ThreejsPlanet({
     const notLava = type !== "lava";
 
     if (warpDistance) {
-      const warpStartZ = warpDistance * 300 // Starting far away
-      camera.position.z = warpStartZ
-      currentZ = warpStartZ
+      const warpStartZ = warpDistance * 300; // Starting far away
+      camera.position.z = warpStartZ;
+      currentZ = warpStartZ;
     }
-
 
     const animate = () => {
       animationId = requestAnimationFrame(animate);
 
       if (warpDistance) {
-        if (!cameraStartTime) cameraStartTime = performance.now()
-        const damping = 0.1 // adjust for slower or snappier zoom
-        currentZ += (warpDistance - currentZ) * damping
-        camera.position.z = currentZ
+        if (!cameraStartTime) cameraStartTime = performance.now();
+        const damping = 0.1; // adjust for slower or snappier zoom
+        currentZ += (warpDistance - currentZ) * damping;
+        camera.position.z = currentZ;
       }
-
 
       planetGroup.children.forEach(planet => {
         planet.children.forEach(layer => {
-          if (!layer.material || !('uniforms' in layer.material)) return;
+          if (!layer.material || !("uniforms" in layer.material)) return;
 
           const u = layer.material.uniforms;
           if (!u?.time || !u?.time_speed) return;
@@ -187,13 +196,20 @@ function ThreejsPlanet({
 
           if (holding && notLava) {
             const rawDelta = moveX * 0.01;
-            const limitedDelta = Math.max(-maxAccel, Math.min(maxAccel, rawDelta));
+            const limitedDelta = Math.max(
+              -maxAccel,
+              Math.min(maxAccel, rawDelta),
+            );
             u.time_speed.value += limitedDelta;
           } else {
-            u.time_speed.value = baseSpeed + (u.time_speed.value - baseSpeed) * timeFriction;
+            u.time_speed.value =
+              baseSpeed + (u.time_speed.value - baseSpeed) * timeFriction;
           }
 
-          u.time_speed.value = Math.max(-maxTimeSpeed, Math.min(maxTimeSpeed, u.time_speed.value));
+          u.time_speed.value = Math.max(
+            -maxTimeSpeed,
+            Math.min(maxTimeSpeed, u.time_speed.value),
+          );
         });
       });
 
@@ -207,7 +223,7 @@ function ThreejsPlanet({
         planetGroup.rotation.z += 0.0002;
       }
 
-      if (type === 'gate') {
+      if (type === "gate") {
         planetGroup.children.forEach(child => {
           if (child.userData.animate) {
             child.userData.animate(clock.getElapsedTime());
@@ -243,7 +259,8 @@ function ThreejsPlanet({
       scene.traverse(obj => {
         if (obj.geometry) obj.geometry.dispose();
         if (obj.material) {
-          if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+          if (Array.isArray(obj.material))
+            obj.material.forEach(m => m.dispose());
           else obj.material.dispose();
         }
       });
@@ -261,7 +278,8 @@ function ThreejsPlanet({
         container.removeChild(sharedCanvas);
       }
     };
-  }, [sharedCanvas,
+  }, [
+    sharedCanvas,
     sharedRenderer,
     height,
     width,
@@ -275,14 +293,14 @@ function ThreejsPlanet({
     clouds,
     cloudPercent,
     size,
-    landPercent,
     ringSize,
     hyrdoPercent,
     lavaPercent,
     seed,
     planetSize,
     disableListeners,
-    warpDistance]);
+    warpDistance,
+  ]);
 
   return (
     <div
@@ -300,64 +318,103 @@ function ThreejsPlanet({
 }
 
 // KEEP THESE IN SYNC WITH THE SWITCH BELOW!!!
-export const availableThreejsModels = ["barren planet", "moon", "barren", "gate", "station", "ice planet", "ice", "gas", "jovian", "ringed planet", "ring", "comet", "asteroid", "asteroids", "neutron star", "star", "lava planet", "lava", "desert planet", "desert", "terrestrial", "ocean planet", "ocean"]
+export const availableThreejsModels = [
+  "barren planet",
+  "moon",
+  "barren",
+  "gate",
+  "station",
+  "ice planet",
+  "ice",
+  "gas",
+  "jovian",
+  "ringed planet",
+  "ring",
+  "comet",
+  "asteroid",
+  "asteroids",
+  "neutron star",
+  "star",
+  "lava planet",
+  "lava",
+  "desert planet",
+  "desert",
+  "terrestrial",
+  "ocean planet",
+  "ocean",
+];
 function generatePlanetByType(params) {
   switch (params.type) {
     case "barren planet":
     case "moon":
     case "barren":
-      return createNoAtmospherePlanet(params)
+      return createNoAtmospherePlanet(params);
     case "gate":
-      return createGate(params)
+      return createGate(params);
     case "station":
-      return createStation(params)
+      return createStation(params);
     case "ice planet":
     case "ice":
-      return createIcePlanet(params)
+      return createIcePlanet(params);
     case "gas":
     case "jovian":
-      return createGasGiant(params)
+      return createGasGiant(params);
     case "ringed planet":
     case "ring":
-      return createGasGiantRing(params)
+      return createGasGiantRing(params);
     case "comet":
     case "asteroid":
     case "asteroids":
-      return createAsteroid(undefined, params.colors, undefined, params.pixels, params.seed, params.size)
+      return createAsteroid(
+        undefined,
+        params.colors,
+        undefined,
+        params.pixels,
+        params.seed,
+        params.size,
+      );
     case "neutron star":
     case "star":
-      return createStarPlanet(params)
+      return createStarPlanet(params);
     case "lava planet":
     case "lava":
-      return createLavaPlanet(params)
+      return createLavaPlanet(params);
     case "desert planet":
     case "desert":
       // lightPos = new Vector2(0.39, 0.7), colors, rotationSpeed = 0.1, rotation = 0.0, pixels, seed
-      return createDryPlanet(undefined, params.colors, undefined, undefined, params.pixels, params.seed)
+      return createDryPlanet(
+        undefined,
+        params.colors,
+        undefined,
+        undefined,
+        params.pixels,
+        params.seed,
+      );
     case "terrestrial":
     case "ocean planet":
     case "ocean":
-      return createEarthPlanet(params)
+      return createEarthPlanet(params);
   }
 }
 
 export function hexToVector4(rawHex) {
-  let hex = rawHex.replace(/^#/, '');
+  let hex = rawHex.replace(/^#/, "");
 
   // expand shorthand (e.g. "abc" → "aabbcc")
   if (hex.length === 3) {
-    hex = hex.split('').map(c => c + c).join('');
+    hex = hex
+      .split("")
+      .map(c => c + c)
+      .join("");
   }
 
   const hasAlpha = hex.length === 8;
   const r = parseInt(hex.slice(0, 2), 16) / 255;
   const g = parseInt(hex.slice(2, 4), 16) / 255;
   const b = parseInt(hex.slice(4, 6), 16) / 255;
-  const a = hasAlpha
-    ? parseInt(hex.slice(6, 8), 16) / 255
-    : 1;
+  const a = hasAlpha ? parseInt(hex.slice(6, 8), 16) / 255 : 1;
 
   return new Vector4(r, g, b, a);
 }
 
-export default memo(ThreejsPlanet)
+export default memo(ThreejsPlanet);

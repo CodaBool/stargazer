@@ -207,21 +207,21 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
               // star ([blue, orange, red, white, yellow], default orange)
               schemeColor={activeBody.schemeColor}
               // 3 comma separated alpha hexes
-              atmosphere={activeBody.atmosphere}
+              atmosphereColors={activeBody.atmosphereColors}
               // ice & terrestrial (defaults true)
-              clouds={activeBody.cloud}
+              clouds={activeBody.clouds}
               // ice & terrestrial (lower is more clouds)
-              cloudCover={activeBody.cloud}
+              cloudPercent={activeBody.cloudPercent}
               // asteroid 1-9
               size={activeBody.size}
               // terrestrial, lower is more land
-              land={activeBody.hydrosphere}
+              hydroPercent={activeBody.hydroPercent}
               // ring size 0-.2
-              ringWidth={activeBody.ringSize}
+              ringSize={activeBody.ringSize}
               // ice (lower is more lakes)
-              lakes={activeBody.ice}
+              // lakes={activeBody.ice}
               // lava (lower is more lava)
-              rivers={activeBody.hydrosphere}
+              lavaPercent={activeBody.lavaPercent}
               // a number
               seed={activeBody.seed}
               planetSize={activeBody.planetSize}
@@ -239,9 +239,9 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
                   {activeBody.source.properties.destroyed && <Badge className="">destroyed</Badge>}
                   {activeBody.source.properties.capital && <Badge variant="destructive" className="">capital</Badge>}
 
-                  {activeBody.cloud && <Badge variant="destructive" className="">{1 - activeBody.cloud} cloud coverage</Badge>}
-                  {activeBody.hydrosphere && <Badge variant="destructive" className="">{activeBody.hydrosphere} hydrosphere</Badge>}
-                  {activeBody.ice && <Badge variant="destructive" className="">{activeBody.ice} ice coverage</Badge>}
+                  {activeBody.cloudPercent && <Badge variant="destructive" className="">{1 - activeBody.cloudPercent} cloud coverage</Badge>}
+                  {activeBody.hydroPercent && <Badge variant="destructive" className="">{activeBody.hydroPercent} hydrosphere</Badge>}
+                  {activeBody.icePercent && <Badge variant="destructive" className="">{activeBody.icePercent} ice coverage</Badge>}
                   {activeBody.radius && <Badge variant="destructive" className="">{activeBody.radius.toFixed(2)} {activeBody.type === "star" ? "solar radii" : "km radius"}</Badge>}
                   {(activeBody.temperature && activeBody.type !== "star") && <Badge variant="destructive" className="">{Math.floor(activeBody.temperature)}°C</Badge>}
                   {(activeBody.temperature && activeBody.type === "star") && <Badge variant="destructive" className="">{Math.floor(activeBody.temperature) + 273}°K</Badge>}
@@ -256,10 +256,11 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
                 </div>
               </div>
               : <div className="absolute top-[35px] flex flex-col text-xs pointer-events-none md:text-sm md:left-[35px] md:top-[65px] left-[18px]">
-                {(typeof activeBody.cloud === "number" && (activeBody.type === "terrestrial" || activeBody.type === "ice planet")) && <p variant="destructive" className="mt-2">{(1 - activeBody.cloud).toFixed(1) * 100} cloud coverage %</p>}
-                {(typeof activeBody.hydrosphere === "number" && activeBody.type !== "ice planet") && <p className="mt-2">{activeBody.hydrosphere.toFixed(1) * 100} hydrosphere %</p>}
-                {(typeof activeBody.hydrosphere === "number" && activeBody.type === "ice planet") && <p className="mt-2">{(1 - activeBody.ice).toFixed(1) * 100} hydrosphere %</p>}
-                {typeof activeBody.ice === "number" && activeBody.type === "ice planet" && <p variant="destructive" className="mt-2">{activeBody.ice.toFixed(1)} ice coverage %</p>}
+                {(typeof activeBody.cloudPercent === "number" && (activeBody.type === "terrestrial" || activeBody.type === "ice planet" || activeBody.type === "ocean planet")) && <p variant="destructive" className="mt-2">{Math.floor(activeBody.cloudPercent.toFixed(2) * 100)} cloud coverage %</p>}
+                {typeof activeBody.hydroPercent === "number" && <p className="mt-2">{Math.floor(activeBody.hydroPercent.toFixed(2) * 100)} hydrosphere %</p>}
+                {typeof activeBody.lavaPercent === "number" && activeBody.type === "lava planet" && <p className="mt-2">{Math.floor(activeBody.lavaPercent.toFixed(2) * 100)} lava %</p>}
+                {/* {(typeof activeBody.ice === "number" && activeBody.type === "ice planet") && <p className="mt-2">{(1 - activeBody.ice).toFixed(1) * 100} hydrosphere %</p>}*/}
+                {typeof activeBody.icePercent === "number" && <p variant="destructive" className="mt-2">{Math.floor(activeBody.icePercent.toFixed(2) * 100)} ice coverage %</p>}
                 {typeof activeBody.radius === "number" && <p variant="destructive" className="mt-2">{activeBody.radius.toFixed(2)} {activeBody.type === "star" ? "solar radii" : "km radius"}</p>}
                 {(typeof activeBody.temperature === "number" && activeBody.type !== "star") && <p variant="destructive" className="mt-2">{Math.floor(activeBody.temperature)}°C</p>}
                 {(typeof activeBody.temperature === "number" && activeBody.type === "star") && <p variant="destructive" className="mt-2">{Math.floor(activeBody.temperature) + 273}°K</p>}
