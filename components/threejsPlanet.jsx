@@ -361,6 +361,7 @@ function generatePlanetByType(params) {
     case "jovian":
       return createGasGiant(params);
     case "ringed_planet":
+    case "ringed":
     case "ring":
       return createGasGiantRing(params);
     case "comet":

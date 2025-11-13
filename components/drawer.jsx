@@ -151,7 +151,7 @@ export default function DrawerComponent({
                     height={squareSize}
                     width={squareSize}
                     disableListeners={true}
-                    type={display.ringed ? "ring" : display.type}
+                    type={display.ringed ? "ringed_planet" : display.type}
                     pixels={800}
                     baseColors={display.baseColors}
                     featureColors={display.featureColors}
@@ -294,7 +294,7 @@ export default function DrawerComponent({
               -{" "}
               {display.type === "star"
                 ? display.source.properties.starType || `${display.variant}`
-                : display.source.properties.type}
+                : display.source.properties.type.replace(/_/g, " ")}
             </span>
           </div>
         </div>
@@ -432,10 +432,31 @@ function fillMissingData(d) {
     starData.planetSize = 1.1;
   }
 
-  console.log("return", {
+
+  // if (d.properties.hyrdoPercent) {
+  //   starData.hyrdoPercent = d.properties.hyrdoPercent;
+  // }
+  // if (d.properties.cloudPercent) {
+  //   starData.cloudPercent = d.properties.cloudPercent;
+  // }
+
+  // pixels
+  // baseColors
+  // featureColors
+  // layerColors
+  // atmosphereColors
+  // schemeColor
+  // cloudPercent
+  // ringSize
+  // hyrdoPercent
+  // lavaPercent
+  // seed
+  // planetSize
+
+
+  console.log("return", "name", d.properties.name, {
     ...starData,
-    name: d.properties.name,
-    type: d.properties.type,
+    ...d.properties,
     planetSize: starData?.planetSize || 1,
     tint: "gray",
     source: d,
@@ -443,8 +464,9 @@ function fillMissingData(d) {
 
   return {
     ...starData,
-    name: d.properties.name,
-    type: d.properties.type,
+    ...d.properties,
+    // name: d.properties.name,
+    // type: d.properties.type,
     planetSize: starData?.planetSize || 1,
     tint: "gray",
     source: d,
