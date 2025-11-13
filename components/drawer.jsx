@@ -255,8 +255,8 @@ export default function DrawerComponent({
               <div className="w-full h-full flex flex-col-reverse">
                 <div>
                   {typeof display.cloudPercent === "number" && <p>{cloudPercent.toFixed(2) * 100}% cloud coverage</p>}
-                  {typeof display.hyrdoPercent === "number" && <p>{(display.type === "ice planet" ? (1 - display.icePercent) : display.hyrdoPercent).toFixed(2) * 100}% hydrosphere</p>}
-                  {typeof display.icePercent === "number" && display.type === "ice planet" && <p>{((1-display.hyrdoPercent) * 100).toFixed(1)}% ice coverage</p>}
+                  {typeof display.hyrdoPercent === "number" && <p>{(display.type === "ice_planet" ? (1 - display.icePercent) : display.hyrdoPercent).toFixed(2) * 100}% hydrosphere</p>}
+                  {typeof display.icePercent === "number" && display.type === "ice_planet" && <p>{((1-display.hyrdoPercent) * 100).toFixed(1)}% ice coverage</p>}
                   {typeof display.radius === "number" && <p>{display.radius.toFixed(2)} {display.type === "star" ? "solar radii" : "km radius"}</p>}
                   {(typeof display.temperature === "number" && display.type !== "star") && <p>{Math.floor(display.temperature)}°C</p>}
                   {(typeof display.temperature === "number" && display.type === "star") && <p>{Math.floor(display.temperature) + 273}°K</p>}
@@ -456,12 +456,12 @@ function genSeed(d) {
 }
 
 const tintMap = {
-  "ice planet": "blue",
+  "ice_planet": "blue",
   terrestrial: "green",
   jovian: "brown",
-  "lava planet": "red",
-  "desert planet": "yellow",
-  "ocean planet": "blue",
+  "lava_planet": "red",
+  "desert_planet": "yellow",
+  "ocean_planet": "blue",
   gate: "purple",
   // "neutron": "blue",
   blue: "blue",
@@ -634,13 +634,13 @@ function generateLocation(seed, isMoon) {
   const random = () => rng();
 
   const types = [
-    "barren planet",
-    "ice planet",
+    "barren_planet",
+    "ice_planet",
     "terrestrial",
     "jovian",
-    "lava planet",
-    "desert planet",
-    "ocean planet",
+    "lava_planet",
+    "desert_planet",
+    "ocean_planet",
     "dwarf",
     "supermassive",
     "asteroid",
@@ -651,12 +651,12 @@ function generateLocation(seed, isMoon) {
     sizeMod = 1;
   if (isMoon) {
     const moonTypes = [
-      "barren planet",
-      "ice planet",
+      "barren_planet",
+      "ice_planet",
       "terrestrial",
-      "lava planet",
-      "desert planet",
-      "ocean planet",
+      "lava_planet",
+      "desert_planet",
+      "ocean_planet",
       "asteroid",
     ];
     type = moonTypes[Math.floor(rand * moonTypes.length)];
@@ -667,18 +667,18 @@ function generateLocation(seed, isMoon) {
 
   const sub = (Math.floor(Math.abs(rand) * 100) % 10) / 10;
   if (type === "dwarf") {
-    const dwarf = ["barren planet", "ice planet"];
+    const dwarf = ["barren_planet", "ice_planet"];
     const subIndex = Math.floor(sub * dwarf.length);
     type = dwarf[subIndex];
     sizeMod = 0.5;
   } else if (type === "supermassive") {
     const supermassive = [
-      "ice planet",
+      "ice_planet",
       "terrestrial",
       "jovian",
-      "lava planet",
-      "desert planet",
-      "ocean planet",
+      "lava_planet",
+      "desert_planet",
+      "ocean_planet",
     ];
     const subIndex = Math.floor(sub * supermassive.length);
     type = supermassive[subIndex];
@@ -711,10 +711,10 @@ function generateLocation(seed, isMoon) {
   if (type === "station" || type === "gate" || type === "asteroid") {
     planetSize = 1.5;
   }
-  if (type === "ice planet") {
+  if (type === "ice_planet") {
     planetSize = 1.5;
   }
-  if (type === "ice planet") {
+  if (type === "ice_planet") {
     console.log("gen for ice", range(random, planetData[type].hyrdoPercent))
   }
   const hydroPercent = range(random, planetData[type].hyrdoPercent || [0, 0])
@@ -737,7 +737,7 @@ function generateLocation(seed, isMoon) {
     lavaPercent: range(random, planetData[type].lavaPercent || [0, 0]),
     cloudPercent: range(random, planetData[type].cloudPercent || [0, 0]),
     ringSize: range(random, planetData[type].ringSize || [0, 0]),
-    icePercent: type === "ice planet" ? 1-hydroPercent : range(random, planetData[type].icePercent || [0, 0]),
+    icePercent: type === "ice_planet" ? 1-hydroPercent : range(random, planetData[type].icePercent || [0, 0]),
     dominantChemical: pickWeightedChemical(type, random),
     moons: isMoon ? [] : generateMoons(radius, random, seed),
     modifier:
@@ -778,7 +778,7 @@ function checkRings(radius, random) {
 // TODO: go back and add fluff data like ice to desert planet
 // Planet data structure
 const planetData = {
-  "barren planet": {
+  "barren_planet": {
     gravity: [90, 1050],
     pressure: [0, 1],
     temperature: [-200, 350],
@@ -788,7 +788,7 @@ const planetData = {
     icePercent: [0, .3],
     chemical: ["iron", "silicate", "carbon", "sulfur", "oxygen"],
   },
-  "ice planet": {
+  "ice_planet": {
     gravity: [300, 1320],
     pressure: [7, 5802],
     temperature: [-250, -14],
@@ -838,7 +838,7 @@ const planetData = {
       "oxygen",
     ],
   },
-  "lava planet": {
+  "lava_planet": {
     gravity: [1000, 2400],
     pressure: [500, 100000],
     temperature: [400, 3000],
@@ -848,7 +848,7 @@ const planetData = {
     lavaPercent: [0.5, 0.6],
     chemical: ["oxygen", "iron", "silicate", "sulfur", "carbon", "hydrogen"],
   },
-  "desert planet": {
+  "desert_planet": {
     gravity: [700, 1600],
     pressure: [50, 2000],
     temperature: [30, 90],
@@ -859,7 +859,7 @@ const planetData = {
     icePercent: [0, 0.2], // flavor
     chemical: ["silicate", "oxygen", "iron", "carbon", "sulfur"],
   },
-  "ocean planet": {
+  "ocean_planet": {
     gravity: [800, 1600],
     pressure: [500, 3000],
     temperature: [-10, 40],

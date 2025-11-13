@@ -320,33 +320,33 @@ function ThreejsPlanet({
 
 // KEEP THESE IN SYNC WITH THE SWITCH BELOW!!!
 export const availableThreejsModels = [
-  "barren planet",
+  "barren_planet",
   "moon",
   "barren",
   "gate",
   "station",
-  "ice planet",
+  "ice_planet",
   "ice",
   "gas",
   "jovian",
-  "ringed planet",
+  "ringed_planet",
   "ring",
   "comet",
   "asteroid",
   "asteroids",
-  "neutron star",
+  "neutron_star",
   "star",
-  "lava planet",
+  "lava_planet",
   "lava",
-  "desert planet",
+  "desert_planet",
   "desert",
   "terrestrial",
-  "ocean planet",
+  "ocean_planet",
   "ocean",
 ];
 function generatePlanetByType(params) {
   switch (params.type) {
-    case "barren planet":
+    case "barren_planet":
     case "moon":
     case "barren":
       return createNoAtmospherePlanet(params);
@@ -354,13 +354,13 @@ function generatePlanetByType(params) {
       return createGate(params);
     case "station":
       return createStation(params);
-    case "ice planet":
+    case "ice_planet":
     case "ice":
       return createIcePlanet(params);
     case "gas":
     case "jovian":
       return createGasGiant(params);
-    case "ringed planet":
+    case "ringed_planet":
     case "ring":
       return createGasGiantRing(params);
     case "comet":
@@ -377,10 +377,10 @@ function generatePlanetByType(params) {
     case "neutron star":
     case "star":
       return createStarPlanet(params);
-    case "lava planet":
+    case "lava_planet":
     case "lava":
       return createLavaPlanet(params);
-    case "desert planet":
+    case "desert_planet":
     case "desert":
       // lightPos = new Vector2(0.39, 0.7), colors, rotationSpeed = 0.1, rotation = 0.0, pixels, seed
       return createDryPlanet(
@@ -392,7 +392,7 @@ function generatePlanetByType(params) {
         params.seed,
       );
     case "terrestrial":
-    case "ocean planet":
+    case "ocean_planet":
     case "ocean":
       return createEarthPlanet(params);
   }

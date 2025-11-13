@@ -196,7 +196,7 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
               sharedRenderer={sharedRenderer}
               height={squareSize}
               width={squareSize}
-              type={activeBody.ringed ? "ring" : activeBody.type}
+              type={activeBody.ringed ? "ringed_planet" : activeBody.type}
               pixels={800}
               // 4 comma separated hexes
               baseColors={activeBody.baseColors}
@@ -256,9 +256,9 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
                 </div>
               </div>
               : <div className="absolute top-[35px] flex flex-col text-xs pointer-events-none md:text-sm md:left-[35px] md:top-[65px] left-[18px]">
-                {(typeof activeBody.cloudPercent === "number" && (activeBody.type === "terrestrial" || activeBody.type === "ice planet" || activeBody.type === "ocean planet")) && <p variant="destructive" className="mt-2">{Math.floor(activeBody.cloudPercent.toFixed(2) * 100)} cloud coverage %</p>}
+                {(typeof activeBody.cloudPercent === "number" && (activeBody.type === "terrestrial" || activeBody.type === "ice_planet" || activeBody.type === "ocean_planet")) && <p variant="destructive" className="mt-2">{Math.floor(activeBody.cloudPercent.toFixed(2) * 100)} cloud coverage %</p>}
                 {typeof activeBody.hydroPercent === "number" && <p className="mt-2">{Math.floor(activeBody.hydroPercent.toFixed(2) * 100)} hydrosphere %</p>}
-                {typeof activeBody.lavaPercent === "number" && activeBody.type === "lava planet" && <p className="mt-2">{Math.floor(activeBody.lavaPercent.toFixed(2) * 100)} lava %</p>}
+                {typeof activeBody.lavaPercent === "number" && activeBody.type === "lava_planet" && <p className="mt-2">{Math.floor(activeBody.lavaPercent.toFixed(2) * 100)} lava %</p>}
                 {/* {(typeof activeBody.ice === "number" && activeBody.type === "ice planet") && <p className="mt-2">{(1 - activeBody.ice).toFixed(1) * 100} hydrosphere %</p>}*/}
                 {typeof activeBody.icePercent === "number" && <p variant="destructive" className="mt-2">{Math.floor(activeBody.icePercent.toFixed(2) * 100)} ice coverage %</p>}
                 {typeof activeBody.radius === "number" && <p variant="destructive" className="mt-2">{activeBody.radius.toFixed(2)} {activeBody.type === "star" ? "solar radii" : "km radius"}</p>}

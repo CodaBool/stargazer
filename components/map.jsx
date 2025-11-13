@@ -548,7 +548,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
             "icon-image": [
               "coalesce",
               ["get", "icon"],
-              ["get", "type"]
+              ["get", "type"],
             ],
             "text-transform": ['get', "text-transform"],
             "text-size": [

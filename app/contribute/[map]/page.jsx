@@ -112,7 +112,7 @@ export default async function Contribute({ params, searchParams }) {
                   <Link href={`/contribute/${map}/${location.id}`} className="block h-full">
                     <CardContent className="p-2 m-0">
                       <p className="font-bold text-xl text-center overflow-hidden text-ellipsis">{location.name}</p>
-                      <p className="text-center text-gray-500">{location.type}</p>
+                      <p className="text-center text-gray-500">{location.type.replaceAll('_', ' ')}</p>
                       <div className="flex justify-center flex-col">
                         {location.unofficial && <Badge variant="destructive" className="mx-auto">Unofficial</Badge>}
                         {location.capital && <Badge variant="secondary" className="mx-auto">Capital</Badge>}
@@ -139,7 +139,7 @@ export default async function Contribute({ params, searchParams }) {
               <Link href={`/contribute/${map}/${location.id}`} className="block h-full">
                 <CardContent className="p-2 m-0">
                   <p className="font-bold text-xl text-center overflow-hidden text-ellipsis">{location.name}</p>
-                  <p className="text-center text-gray-500">{location.type}</p>
+                  <p className="text-center text-gray-500">{location.type.replaceAll('_', ' ')}</p>
                   <div className="flex justify-center flex-col">
                     {location.unofficial && <Badge variant="destructive" className="mx-auto">Unofficial</Badge>}
                     {location.capital && <Badge variant="secondary" className="mx-auto">Capital</Badge>}
@@ -164,7 +164,7 @@ export default async function Contribute({ params, searchParams }) {
               <Link href={`/contribute/${map}/${location.id}`} className="block h-full">
                 <CardContent className="p-2 m-0">
                   <p className="font-bold text-xl text-center overflow-hidden text-ellipsis">{location.name}</p>
-                  <p className="text-center text-gray-500">{location.type}</p>
+                  <p className="text-center text-gray-500">{location.type.replaceAll('_', ' ')}</p>
                   <div className="flex justify-center flex-col">
                     {location.unofficial && <Badge variant="destructive" className="mx-auto">Unofficial</Badge>}
                     {location.faction && <Badge variant="secondary" className="mx-auto">{location.faction}</Badge>}
@@ -189,7 +189,7 @@ export default async function Contribute({ params, searchParams }) {
               <Link href={`/contribute/${map}/${location.id}`} className="block h-full">
                 <CardContent className="p-2 m-0">
                   <p className="font-bold text-xl text-center overflow-hidden text-ellipsis">{location.name}</p>
-                  <p className="text-center text-gray-500">{location.type}</p>
+                  <p className="text-center text-gray-500">{location.type.replaceAll('_', ' ')}</p>
                   <div className="flex justify-center flex-col">
                     {location.unofficial && <Badge variant="destructive" className="mx-auto">Unofficial</Badge>}
                     {location.faction && <Badge variant="secondary" className="mx-auto">{location.faction}</Badge>}
