@@ -152,7 +152,7 @@ export default function DrawerComponent({
                     width={squareSize}
                     disableListeners={true}
                     type={display.ringed ? "ringed_planet" : display.type}
-                    pixels={800}
+                    pixels={Number(display.pixels) || 800}
                     baseColors={display.baseColors}
                     featureColors={display.featureColors}
                     layerColors={display.layerColors}
