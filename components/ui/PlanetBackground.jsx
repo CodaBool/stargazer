@@ -2,8 +2,9 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import StarsBackground from './starbackground'
 import dynamic from 'next/dynamic'
-import { debounce } from '@/lib/utils'
+import { debounce, isMobile } from '@/lib/utils'
 
+const ismobile = isMobile()
 const LazyThreejsPlanet = dynamic(() => import('../threejsPlanet'), {
   ssr: false,
   loading: () => <div className="w-full h-full" />,
@@ -11,7 +12,6 @@ const LazyThreejsPlanet = dynamic(() => import('../threejsPlanet'), {
 
 const PLANET_TYPES = [
   'moon',
-  'ice',
   'jovian',
   'asteroid',
   'star',
@@ -20,6 +20,9 @@ const PLANET_TYPES = [
   'terrestrial',
   'ring',
 ]
+
+// BUG: ice has bugged box around it on mobile, just remove from pool
+if (!ismobile) PLANET_TYPES.push('ice')
 
 const randomIndex = Math.floor(Math.random() * PLANET_TYPES.length)
 const type = PLANET_TYPES[randomIndex]
@@ -48,7 +51,7 @@ export default function PlanetBackground() {
   if (!planetSize) return null
 
   return (
-    <StarsBackground delay={0} travelTime={1.2}>
+    <StarsBackground delay={0} travelTime={1.2} numStars={ismobile ? 40 : 300}>
       <div className="fixed inset-0 flex items-center justify-center">
         <div style={{ width: planetSize, height: planetSize }}>
           {beginWarp &&

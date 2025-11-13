@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 
-export default function StarsBackground({ children, delay = 1, travelTime = 0.5 }) {
+export default function StarsBackground({ children, delay = 1, travelTime = 0.5, numStars = 300 }) {
   const canvasRef = useRef()
   const [zIndex, setZIndex] = useState(100)
   const [showStatic, setShowStatic] = useState(false)
@@ -14,7 +14,6 @@ export default function StarsBackground({ children, delay = 1, travelTime = 0.5 
 
     let w = canvas.width = canvas.offsetWidth
     let h = canvas.height = canvas.offsetHeight
-    const numStars = 300
     let animationFrame
     let fadeAlpha = 0
 

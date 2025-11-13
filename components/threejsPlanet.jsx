@@ -49,6 +49,7 @@ function ThreejsPlanet({
   disableListeners,
   warpDistance,
   propStyle,
+  warpStars = 200,
 }) {
   const containerRef = useRef(null);
 
@@ -138,7 +139,7 @@ function ThreejsPlanet({
 
     let starGroup;
     if (!disableListeners) {
-      starGroup = createStars(200);
+      starGroup = createStars(warpStars);
       starGroup.position.z = -0.5;
       scene.add(starGroup);
     }
