@@ -281,7 +281,7 @@ export default function DrawerComponent({
             <Link
               href={genLink(display.source, name, "href")}
               className="opacity-60"
-              target={name === "lancer" ? "_self" : "_blank"}
+              target="_blank"
             >
               <ExternalLink
                 className="cursor-pointer me-1"
@@ -351,7 +351,8 @@ export default function DrawerComponent({
                   <hr className="my-2" />
                 </>
               )}
-              <p className="text-base lg:text-lg leading-relaxed break-words">
+
+              <p className="text-base lg:text-lg leading-relaxed break-words select-text">
                 {display.source.properties.description}
               </p>
             </div>
