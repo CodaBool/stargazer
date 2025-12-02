@@ -1,6 +1,7 @@
 import NextAuth from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import DiscordProvider from "next-auth/providers/discord"
+import GoogleProvider from "next-auth/providers/google"
 // import { withAuth } from "next-auth/middleware"
 import db from "@/lib/db"
 import { TITLE } from "@/lib/utils"
@@ -49,6 +50,10 @@ export const authOptions = {
     DiscordProvider({
       clientId: process.env.DISCORD_APP_ID,
       clientSecret: process.env.DISCORD_SECRET,
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET
     }),
   ],
   theme: {
