@@ -140,6 +140,9 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   window.setDrawerContent = setDrawerContent
 
 
+  console.log("view", VIEW)
+
+
   function locationClick(e, manual) {
     if (modeRef.current === "measure" || (modeRef.current === "crosshair" && mobile) || locked) return
 
