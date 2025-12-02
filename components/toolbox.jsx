@@ -52,7 +52,8 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
 
     // TODO: this will sometimes throw a map is undefined error, but returning early doesn't work
     // test to find out what could be happening
-    const geojson = map.getSource('toolbox')._data
+    const { geojson } = map.getSource('toolbox')._data
+    if (typeof geojson.features.length === 'undefined') return
 
     // Remove the linestring from the group
     // So we can redraw it based on the points collection
@@ -248,13 +249,13 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
     // })
 
     const updateLiveDistance = debounce((e) => {
-      if (mode === "crosshair") return
+      if (mode === "crosshair" || mode !== "measure") return
 
       // TODO: this will sometimes throw a map is undefined error, but returning early doesn't work
       // test to find out what could be happening
       const source = map.getSource('toolbox')
       if (!source) return
-      const geojson = source._data
+      const {geojson} = source._data
 
       const points = geojson.features.filter(f => f.geometry.type === "Point")
       const existingLineIndex = geojson.features.findIndex(f => f.geometry.type === "LineString")
@@ -380,6 +381,15 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
           if (maps.hasOwnProperty(`${name}-${urlParams.get("id")}`)) {
             router.push(`/${name}?id=${urlParams.get("id")}&preview=1`)
           }
+        }
+
+        // TODO: grid has issues when switching preview without a full reload
+        // this is a race condition
+        if (document.querySelector(".geogrid")) {
+          console.log("force reload, since grid is buggy")
+          setTimeout(() => {
+            window.location.reload();
+          }, 1_300)
         }
       }
     }

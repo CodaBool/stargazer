@@ -337,7 +337,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       });
     }
 
-    if (name === "starwars" || name === "alien" || name === "fallouty") {
+    if (name === "starwars" || name === "alien" || name === "fallout") {
       const { formatLabels } = gridHelpers(name, GRID_DENSITY || 1)
       new GeoGrid({
         map: wrapper.getMap(),
