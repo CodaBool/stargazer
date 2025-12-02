@@ -106,7 +106,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
     // }
     const latestFeature = draw.get(feature.id)
     const newFeature = { ...latestFeature, properties: newProperties }
-    console.log("new feature:", newFeature, "latest", latestFeature)
+    // console.log("new feature:", newFeature, "latest", latestFeature)
     draw.add(newFeature)
     setPopup(newFeature)
     setEditorTable(newFeature.properties)

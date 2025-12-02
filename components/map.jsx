@@ -399,6 +399,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   }, [wrapper, recreateListeners, params.get("preview"), mode, locationGroups, data])
 
   useEffect(() => {
+    // minimap fit to bounds of feature from query params
     if (!wrapper || !params.get("type") || !params.get("name")) return
     const feature = data.features.find(f => {
       if (f.geometry.type !== params.get("type")) return
@@ -421,6 +422,12 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
         duration: 800,
         padding: { top: 50, bottom: 50, left: 50, right: 50 },
       })
+    } else {
+      wrapper.flyTo({
+        center: feature.geometry.coordinates,
+        zoom: MAX_ZOOM - ((MAX_ZOOM - MIN_ZOOM) / 2),
+        duration: 800
+      });
     }
     wrapper.setFeatureState(
       { source: 'source', id: feature.id },
@@ -575,7 +582,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       {params.get("calibrate") && <Calibrate width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}
 
       <Debug />
-      <Tutorial name={name} IS_GALAXY={IS_GALAXY} />
+      {!locked && <Tutorial name={name} IS_GALAXY={IS_GALAXY} />}
       <Drawer {...drawerContent} passedLocationClick={locationClick} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} GENERATE_LOCATIONS={GENERATE_LOCATIONS} GRID_DENSITY={GRID_DENSITY || 1} mobile={mobile} />
 
       <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} COORD_OFFSET={COORD_OFFSET} GRID_DENSITY={GRID_DENSITY} />

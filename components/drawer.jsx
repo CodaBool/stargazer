@@ -738,7 +738,7 @@ function generateLocation(seed, isMoon) {
     planetSize = 1.5;
   }
   if (type === "ice_planet") {
-    console.log("gen for ice", range(random, planetData[type].hyrdoPercent))
+    // console.log("gen for ice", range(random, planetData[type].hyrdoPercent))
   }
   const hydroPercent = range(random, planetData[type].hyrdoPercent || [0, 0])
 

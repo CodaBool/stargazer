@@ -74,7 +74,7 @@ export async function PUT(req) {
     })
     if (map.userId !== user.id) throw "unauthorized"
 
-    console.log("authorized")
+    // console.log("authorized")
 
     const updates = { ...map }
     // let geojsonChange = false

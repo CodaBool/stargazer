@@ -31,7 +31,7 @@ model Location {
   type        String    @db.VarChar(25)
   geometry    String    @db.VarChar(25)
   coordinates String    @db.VarChar(100)
-  faction     String    @db.VarChar(50)
+  faction     String    @db.VarChar(400)
   source      String    @db.VarChar(100)
   userId      String
   published   Boolean   @default(false)
@@ -39,7 +39,7 @@ model Location {
   destroyed   Boolean   @default(false)
   resolved    Boolean   @default(false)
   unofficial  Boolean   @default(false)
-  alias       String?   @db.VarChar(50)
+  alias       String?   @db.VarChar(150)
   map         String
   comments    Comment[]
   user        User      @relation(fields: [userId], references: [id])
