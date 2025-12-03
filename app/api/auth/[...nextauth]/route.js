@@ -3,6 +3,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import DiscordProvider from "next-auth/providers/discord";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
+
 // import { withAuth } from "next-auth/middleware"
 import db from "@/lib/db";
 import { TITLE } from "@/lib/utils";
