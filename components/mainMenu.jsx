@@ -438,10 +438,16 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
                   <Check className="inline text-blue-300 relative top-[-3px] ms-1" />
                   {navigator.clipboard ? (
                     <div className="flex gap-2 m-0 flex-wrap">
-                      <Button variant="scifi" className="w-full" onClick={() => navigator.clipboard.writeText(data.id)}>
+                      <Button variant="scifi" className="w-full" onClick={() => {
+                        navigator.clipboard.writeText(data.id)
+                        toast.success(`copied ID ${data.id}`)
+                      }}>
                         <Copy className="mr-2" /> Copy ID
                       </Button>
-                      <Button variant="scifi" className="w-full mt-[.25em]" onClick={() => navigator.clipboard.writeText(`${NEXT_PUBLIC_URL}/${data.map}/${data.id}`)}>
+                      <Button variant="scifi" className="w-full mt-[.25em]" onClick={() => {
+                        navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_URL}/${data.map}/${data.id}`)
+                        toast.success(`copied URL`)
+                      }}>
                         <Copy className="mr-2" /> Copy URL
                       </Button>
                     </div>

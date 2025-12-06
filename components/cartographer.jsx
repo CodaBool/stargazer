@@ -46,6 +46,19 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
           ...remoteConfig,
         })
         console.log("remote config, skip local map read")
+        // duplicate code to below
+        const index = new RBush()
+        const features = data.features.filter(f =>
+          f.geometry.type === "Point" && f.properties.type !== "text"
+        ).map(f => ({
+          minX: f.geometry.coordinates[0],
+          minY: f.geometry.coordinates[1],
+          maxX: f.geometry.coordinates[0],
+          maxY: f.geometry.coordinates[1],
+          feature: f
+        }))
+        index.load(features)
+        setGroups(index)
         return
       }
       const maps = await getMaps()
