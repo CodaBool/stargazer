@@ -110,9 +110,8 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
         text.textContent = `${distance.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`
       } else if (UNIT === "parsec") {
         // alien
-        const ftlSpeedParsecsPerDay = Number(SPEED)
-        const travelTimeDays = distance / ftlSpeedParsecsPerDay;
-        text.textContent = `${distance.toFixed(1)}${UNIT} | ${travelTimeDays.toFixed(1)} days (${SPEED} FTL)`;
+        const days = distance / (1/Number(SPEED))
+        text.textContent = `${distance.toFixed(1)}${UNIT} | ${days.toFixed(1)} days (${SPEED} FTL)`;
       } else if (UNIT === "ly") {
         if (name === "starwars") {
           const vehicleSpeedLyPerHour = 300
@@ -304,9 +303,8 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
         text.textContent = `${distance.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`
       } else if (UNIT === "parsec") {
         // alien
-        const ftlSpeedParsecsPerDay = Number(SPEED)
-        const travelTimeDays = distance / ftlSpeedParsecsPerDay;
-        text.textContent = `${distance.toFixed(1)}${UNIT} | ${travelTimeDays.toFixed(1)} days (${SPEED} FTL)`;
+        const days = distance / (1/Number(SPEED))
+        text.textContent = `${distance.toFixed(1)}${UNIT} | ${days.toFixed(1)} days (${SPEED} FTL)`;
       } else if (UNIT === "ly") {
         if (name === "starwars") {
           const vehicleSpeedLyPerHour = 300
