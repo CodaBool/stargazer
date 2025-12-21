@@ -151,7 +151,7 @@ export default function Tutorial({ name }) {
                             <p>All maps have settings. You can define things like the bounds of the map. Toggle the pregenerated planets. This can be found on the home page. </p>
                             <hr className="my-2 mt-4" />
 
-                            <h3 className="text-lg">Expert script kitty <span style={{ color: "#5BCEFA" }}>co</span><span style={{ color: "#F5A9B8" }}>di</span><span style={{ color: "#FFFFFF" }}>ng</span><span style={{ color: "#F5A9B8" }}> so</span><span style={{ color: "#5BCEFA" }}>cks</span> vibe coder level</h3>
+                            <h3 className="text-lg">Expert script kitty <span style={{ color: "#5BCEFA" }}>co</span><span style={{ color: "#F5A9B8" }}>di</span><span style={{ color: "#FFFFFF" }}>ng</span><span style={{ color: "#F5A9B8" }}> so</span><span style={{ color: "#5BCEFA" }}>cks</span> level</h3>
                             <p>All the code is open source and under a copyleft license. Feel free to fork and tweak as desired (I can write a wiki guide on GitHub, just ping me using an issue. Then I will write one up for you). I do expose some Maplibre settings like the style spec and layout overrides for the symbol layer. You can find those configs in the map settings page.</p>
                           </CollapsibleContent>
                         </Collapsible>

@@ -1,9 +1,7 @@
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
@@ -37,6 +35,7 @@ export default function DrawerComponent({
   passedLocationClick,
   GEO_EDIT,
   GRID_DENSITY,
+  COORD_OFFSET,
 }) {
   const { map } = useMap();
   const GROUP_NAME = IS_GALAXY ? "Celestial Bodies" : "Nearby Locations";
@@ -126,6 +125,9 @@ export default function DrawerComponent({
     const { coordFromLngLat } = gridHelpers(name, GRID_DENSITY);
     coordinatesPretty = coordFromLngLat(coordinates[0], coordinates[1]).cell
       .label;
+  } else {
+    const offset = COORD_OFFSET || [0, 0]
+    coordinatesPretty = `${(coordinates[1] + offset[0]).toFixed(1)}, ${(coordinates[0] + offset[1]).toFixed(1)}`;
   }
 
   const starNum = display.source?.properties?.starType?.split(",").length;

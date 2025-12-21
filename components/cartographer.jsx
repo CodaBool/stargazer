@@ -88,7 +88,7 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
         f.id = fid++
       })
 
-      // TODO: this is most likely a race condition
+      // TODO: likely a race condition
       const combined = combineLayers([map.geojson, data])
       if (params.get("preview")) {
         setCombined(combined)

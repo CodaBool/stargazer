@@ -81,7 +81,11 @@ export default function MapSettings({ map, id }) {
       delete body.LAYOUT_OVERRIDE
     }
     if (body.MAX_BOUNDS) {
-      body.VIEW.maxBounds = body.MAX_BOUNDS.split(",").map(Number)
+      const bounds = body.MAX_BOUNDS.split(",").map(Number)
+      body.VIEW.maxBounds = [
+        [bounds[0], bounds[1]],
+        [bounds[2], bounds[3]]
+      ]
       delete body.MAX_BOUNDS
     }
 

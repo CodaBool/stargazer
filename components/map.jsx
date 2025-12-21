@@ -117,7 +117,7 @@ const removePopup = () => {
   if (popup._container) popup.remove()
 }
 
-export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET, VIEW, GRID_DENSITY, MIN_ZOOM, MAX_ZOOM }) {
+export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET, VIEW, GRID_DENSITY, MIN_ZOOM, MAX_ZOOM, SPEED }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
   const { mode } = useMode()
@@ -138,9 +138,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   const panMoveRef = useRef(null)
   const mouseUpRef = useRef(null)
   window.setDrawerContent = setDrawerContent
-
-
-  console.log("view", VIEW)
 
 
   function locationClick(e, manual) {
@@ -583,12 +580,10 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       {/* FOUNDRY */}
       {params.get("secret") && <Link width={width} height={height} mobile={mobile} name={name} params={params} />}
       {params.get("calibrate") && <Calibrate width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}
-
       <Debug />
       {!locked && <Tutorial name={name} IS_GALAXY={IS_GALAXY} />}
-      <Drawer {...drawerContent} passedLocationClick={locationClick} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} GENERATE_LOCATIONS={GENERATE_LOCATIONS} GRID_DENSITY={GRID_DENSITY || 1} mobile={mobile} />
-
-      <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} COORD_OFFSET={COORD_OFFSET} GRID_DENSITY={GRID_DENSITY} />
+      {!locked && <Drawer {...drawerContent} passedLocationClick={locationClick} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} GENERATE_LOCATIONS={GENERATE_LOCATIONS} GRID_DENSITY={GRID_DENSITY || 1} COORD_OFFSET={COORD_OFFSET} mobile={mobile} />}
+      <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} COORD_OFFSET={COORD_OFFSET} GRID_DENSITY={GRID_DENSITY} SPEED={SPEED} />
       {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} mobile={mobile} />}
     </>
   )

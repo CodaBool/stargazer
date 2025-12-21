@@ -3,6 +3,7 @@ import { Layer, Source } from '@vis.gl/react-maplibre'
 import * as turf from '@turf/turf'
 import { debounce, useMode, getMaps, gridHelpers } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 const linestring = {
   'type': 'Feature',
@@ -13,7 +14,7 @@ const linestring = {
 }
 let text, tutorial, crosshairX, crosshairY
 
-export default function Toolbox({ map, width, params, height, mobile, name, IS_GALAXY, DISTANCE_CONVERTER, UNIT, COORD_OFFSET, GRID_DENSITY }) {
+export default function Toolbox({ map, width, params, height, mobile, name, IS_GALAXY, DISTANCE_CONVERTER, UNIT, COORD_OFFSET, GRID_DENSITY, SPEED }) {
   const { mode, setMode } = useMode()
   const router = useRouter()
   const offset = COORD_OFFSET || [0, 0]
@@ -102,10 +103,16 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       - STARWARS: FFG has covering whole galaxy in 14 days for class 1.0
       */
 
+      // TODO: this is duplicated, DRY this
       if (UNIT === "miles" || UNIT === "mi") {
         const walkingSpeedMph = 3 // average walking speed in miles per hour
         const walkingTimeHours = distance / walkingSpeedMph
         text.textContent = `${distance.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`
+      } else if (UNIT === "parsec") {
+        // alien
+        const ftlSpeedParsecsPerDay = Number(SPEED)
+        const travelTimeDays = distance / ftlSpeedParsecsPerDay;
+        text.textContent = `${distance.toFixed(1)}${UNIT} | ${travelTimeDays.toFixed(1)} days (${SPEED} FTL)`;
       } else if (UNIT === "ly") {
         if (name === "starwars") {
           const vehicleSpeedLyPerHour = 300
@@ -295,6 +302,11 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
         const walkingSpeedMph = 3 // average walking speed in miles per hour
         const walkingTimeHours = distance / walkingSpeedMph
         text.textContent = `${distance.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`
+      } else if (UNIT === "parsec") {
+        // alien
+        const ftlSpeedParsecsPerDay = Number(SPEED)
+        const travelTimeDays = distance / ftlSpeedParsecsPerDay;
+        text.textContent = `${distance.toFixed(1)}${UNIT} | ${travelTimeDays.toFixed(1)} days (${SPEED} FTL)`;
       } else if (UNIT === "ly") {
         if (name === "starwars") {
           const vehicleSpeedLyPerHour = 300
@@ -356,8 +368,17 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       }
       text.style.visibility = 'visible'
     } else if (mode === "measure") {
-      text.textContent = `${mobile ? 'Tap two points' : 'Click'} to begin measuring`
-      text.style.visibility = 'visible'
+
+      getMaps().then(maps => {
+        const urlParams = new URLSearchParams(window.location.search)
+        const map = maps[name + "-" + urlParams.get("id")]
+        if (!map?.config.SPEED && name === "alien") {
+          // TODO: allow for any map to configure speed
+          toast.info(`You can configure your speed within settings. ${SPEED ? ("Using default " + SPEED) : ""}`)
+        }
+        text.textContent = `${mobile ? 'Tap two points' : 'Click'} to begin measuring`
+        text.style.visibility = 'visible'
+      })
     }
 
     const handleKeyDown = async event => {

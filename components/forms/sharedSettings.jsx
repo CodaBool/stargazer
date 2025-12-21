@@ -34,6 +34,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import POSTWAR_GREEN from '@/lib/style.json'
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -68,7 +69,10 @@ export default function SharedSettings({
   BG,
   STYLES,
   TYPES,
+  SPEED,
 }) {
+
+// console.log(data.config?.SPEED ? data.config?.SPEED : SPEED, SPEED, "LOOKY", data.config?.SPEED)
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(submit)} className="space-y-8 md:container mx-auto my-8">
@@ -260,7 +264,31 @@ export default function SharedSettings({
                     <Checkbox
                       checked={field.value}
                       className="cursor-pointer"
-                      onCheckedChange={field.onChange}
+                      onCheckedChange={e => {
+                        const proceed = window.confirm("This will permanently delete all data for this custom map. Are you sure you want to continue?")
+                        console.log("proceed", proceed, e)
+                        if (proceed) {
+                          field.onChange(e)
+                          let mapName = "custom"
+                          if (!e) {
+                            mapName = "fallout"
+                          }
+                          form.setValue("MAX_BOUNDS", getConsts(mapName).VIEW.maxBounds.flat().join(","));
+                          form.setValue("CENTER", `${getConsts(mapName).VIEW.latitude},${getConsts(mapName).VIEW.longitude}`)
+                          form.setValue("UNIT", getConsts(mapName).UNIT)
+                          form.setValue('STYLE', getConsts(mapName).STYLE)
+                          // TODO: add these as form options
+                          // form.setValue('GENERATE_LOCATIONS', getConsts(mapName).GENERATE_LOCATIONS)
+                          // form.setValue('SEARCH_POINT_ZOOM', getConsts(mapName).SEARCH_POINT_ZOOM)
+                          form.setValue('BG', getConsts(mapName).BG)
+                          form.setValue('MAX_ZOOM', getConsts(mapName).MAX_ZOOM)
+                          form.setValue('MIN_ZOOM', getConsts(mapName).MIN_ZOOM)
+                          form.setValue('DISTANCE_CONVERTER', getConsts(mapName).DISTANCE_CONVERTER)
+                          form.setValue('TYPES', JSON.stringify(getConsts(mapName).TYPES, null, 2))
+
+                          // delete all points on the map
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormDescription>
@@ -297,7 +325,7 @@ export default function SharedSettings({
               control={form.control}
               rules={{ validate: v => !isNaN(v) || "Value must be a number" }}
               name="DISTANCE_CONVERTER"
-              defaultValue={typeof data.config?.DISTANCE_CONVERTER ? data.config?.DISTANCE_CONVERTER : DISTANCE_CONVERTER}
+              defaultValue={data.config?.DISTANCE_CONVERTER ? data.config?.DISTANCE_CONVERTER : DISTANCE_CONVERTER}
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Unit Factor</FormLabel>
@@ -311,6 +339,29 @@ export default function SharedSettings({
                   </FormControl>
                   <FormDescription>
                     Scale up or down the distance per unit of measurement
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />}
+            {map === "alien" && <FormField
+              control={form.control}
+              rules={{ validate: v => !isNaN(v) || "Value must be a number" }}
+              name="SPEED"
+              defaultValue={data.config?.SPEED ? data.config?.SPEED : SPEED}
+              render={({ field }) => (
+                <FormItem className="py-4">
+                  <FormLabel>Speed</FormLabel>
+                  <FormControl>
+                    <div className="flex">
+                      <Input placeholder={SPEED} type="number" {...field} />
+                      <Button variant="outline" type="button" onClick={() => form.setValue("SPEED", SPEED)} className="ml-3">
+                        Reset
+                      </Button>
+                    </div>
+                  </FormControl>
+                  <FormDescription>
+                    Speed by which the distance is divided to find the time to travel
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import db from "@/lib/db"
-import { ArrowLeft, Star, CircleX } from "lucide-react"
+import { ArrowLeft, Star, CircleX, MapPin, Hexagon, Spline } from "lucide-react"
 import style from "../md.module.css"
 import sanitizeHtml from "sanitize-html"
 import { redirect } from "next/navigation"
@@ -151,7 +151,7 @@ export default async function Location({ params, searchParams }) {
     panX = Number(location.coordinates.split(",")[0].trim())
     panY = Number(location.coordinates.split(",")[1].trim())
     if (location.geometry === "Point") {
-      coordPretty = Math.floor(Number(panY)) + " " + Math.floor(Number(panX))
+      coordPretty = Number(panY).toFixed(2) + " " + Number(panX).toFixed(2)
     }
   }
 
@@ -197,7 +197,14 @@ export default async function Location({ params, searchParams }) {
               </Badge>
             )}
           </CardTitle>
-          <div className="text-gray-400">{location.type}</div>
+          <div>
+            <span className="cursor-help" title={`${location.geometry} Location`}>
+              {location.geometry === "Point" && <MapPin size={16} className="inline mb-1" />}
+              {location.geometry.includes("Poly") && <Hexagon size={16} className="inline mb-1" />}
+              {location.geometry.includes("LineString") && <Spline size={16} className="inline mb-1" />}
+            </span>
+            <span className="text-gray-400 ms-2">{location.type}</span>
+          </div>
           <span className="">
             Updated:{" "}
             <span className="text-gray-400">
