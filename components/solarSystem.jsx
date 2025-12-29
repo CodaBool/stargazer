@@ -27,12 +27,12 @@ export default function SolarSystemDiagram({
 
   function handleMouseOver(feature) {
     if (feature.properties.fake || !map) return;
-    map.setFeatureState({ source: "source", id: feature.source?.id }, { hover: true });
+    map.setFeatureState({ source: "source", id: feature.source?.id || feature.id }, { hover: true });
   }
 
   function handleMouseOut(feature) {
     if (feature.properties.fake || !map) return;
-    map.setFeatureState({ source: "source", id: feature.source.id }, { hover: false });
+    map.setFeatureState({ source: "source", id: feature.source?.id || feature.id }, { hover: false });
   }
 
   function getFilter(body) {

@@ -40,7 +40,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ArrowLeft, Download, LoaderCircle, Settings, X } from "lucide-react"
 import 'react-quill-new/dist/quill.bubble.css'
-import { combineAndDownload, combineLayers, getConsts, hexToRgb, localGet, localSet, TITLE } from "@/lib/utils"
+import { combineAndDownload, combineLayers, getConsts, getMaps, hexToRgb, localGet, localSet, TITLE } from "@/lib/utils"
 import randomName from '@scaleway/random-name'
 import Link from "next/link"
 import { Textarea } from "../ui/textarea"
@@ -66,6 +66,8 @@ export default function SharedSettings({
   IS_GALAXY,
   UNIT,
   DISTANCE_CONVERTER,
+  GENERATE_LOCATIONS,
+  SEARCH_SIZE,
   BG,
   STYLES,
   TYPES,
@@ -253,6 +255,36 @@ export default function SharedSettings({
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              rules={{
+                validate: v => {
+                  if (isNaN(v)) return "Value must be a number";
+                  if (v < 0 || v > 2) return "Value must be between 0 and 2 inclusively";
+                  return true;
+                }
+              }}
+              name="SEARCH_SIZE"
+              defaultValue={typeof data.config?.SEARCH_SIZE !== "undefined" ? data.config?.SEARCH_SIZE : SEARCH_SIZE}
+              render={({ field }) => (
+                <FormItem className="py-4">
+                  <FormLabel>Search Size</FormLabel>
+                  <p className="inline ml-5 text-gray-400 text-sm">{form.getValues("SEARCH_SIZE")}</p>
+                  <FormControl>
+                    <div className="flex">
+                      <Input type="range" min={0} max={2} step={0.001} {...field} />
+                      <Button variant="outline" type="button" onClick={() => form.setValue("SEARCH_SIZE", SEARCH_SIZE)} className="ml-3">
+                        Reset
+                      </Button>
+                    </div>
+                  </FormControl>
+                  <FormDescription>
+                    Determines the distance to pull nearby locations from. Larger values will add more nearby locations to the bottom drawer when clicking on a location.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             {map === "custom" && <FormField
               control={form.control}
               name="IS_GALAXY"
@@ -264,13 +296,16 @@ export default function SharedSettings({
                     <Checkbox
                       checked={field.value}
                       className="cursor-pointer"
-                      onCheckedChange={e => {
-                        const proceed = window.confirm("This will permanently delete all data for this custom map. Are you sure you want to continue?")
-                        console.log("proceed", proceed, e)
+                      onCheckedChange={async e => {
+                        const maps = await getMaps()
+                        const currentMap = maps[`${map}-${id}`]
+                        const proceed = window.confirm(`This will permanently delete all data (${currentMap.geojson.features.length} features) for this custom map. Are you sure you want to continue?`)
+
                         if (proceed) {
                           field.onChange(e)
                           let mapName = "custom"
                           if (!e) {
+                            // use Fallout's presets
                             mapName = "fallout"
                           }
                           form.setValue("MAX_BOUNDS", getConsts(mapName).VIEW.maxBounds.flat().join(","));
@@ -278,8 +313,8 @@ export default function SharedSettings({
                           form.setValue("UNIT", getConsts(mapName).UNIT)
                           form.setValue('STYLE', getConsts(mapName).STYLE)
                           // TODO: add these as form options
-                          // form.setValue('GENERATE_LOCATIONS', getConsts(mapName).GENERATE_LOCATIONS)
-                          // form.setValue('SEARCH_POINT_ZOOM', getConsts(mapName).SEARCH_POINT_ZOOM)
+                          form.setValue('GENERATE_LOCATIONS', getConsts(mapName).GENERATE_LOCATIONS)
+                          form.setValue('SEARCH_SIZE', getConsts(mapName).SEARCH_SIZE)
                           form.setValue('BG', getConsts(mapName).BG)
                           form.setValue('MAX_ZOOM', getConsts(mapName).MAX_ZOOM)
                           form.setValue('MIN_ZOOM', getConsts(mapName).MIN_ZOOM)
@@ -287,12 +322,44 @@ export default function SharedSettings({
                           form.setValue('TYPES', JSON.stringify(getConsts(mapName).TYPES, null, 2))
 
                           // delete all points on the map
+                          localSet("maps", {
+                            ...maps,
+                            [`${map}-${id}`]: {
+                              ...currentMap,
+                              updated: Date.now(),
+                              geojson: {
+                                type: "FeatureCollection",
+                                features: []
+                              },
+                            },
+                          })
                         }
                       }}
                     />
                   </FormControl>
                   <FormDescription>
                     Determines whether the map is a galaxy or on Earth
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />}
+            {(data.config?.IS_GALAXY || IS_GALAXY) && <FormField
+              control={form.control}
+              name="GENERATE_LOCATIONS"
+              defaultValue={typeof data.config?.GENERATE_LOCATIONS === 'boolean' ? data.config?.GENERATE_LOCATIONS : GENERATE_LOCATIONS}
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 py-2">
+                  <FormLabel>Generate Fake Locations</FormLabel>
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      className="cursor-pointer"
+                      onCheckedChange={e => field.onChange(e)}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Fill the map with generated locations. Generated data is based on a combination of the real locations coordinates and name.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

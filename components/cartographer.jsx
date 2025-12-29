@@ -111,6 +111,7 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
         feature: f,
       }))
       index.load(features)
+      console.log("rbush loading", index)
       setGroups(index)
     })()
 

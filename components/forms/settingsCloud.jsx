@@ -84,6 +84,9 @@ export default function MapSettings({ map, id, data, config }) {
     if (body.MIN_ZOOM) {
       body.MIN_ZOOM = Number(body.MIN_ZOOM)
     }
+    if (body.SEARCH_SIZE) {
+      body.SEARCH_SIZE = Number(body.SEARCH_SIZE)
+    }
 
 
     delete body.file

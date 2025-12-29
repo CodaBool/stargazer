@@ -77,6 +77,9 @@ export default function MapSettings({ map, id }) {
     if (body.MIN_ZOOM) {
       body.MIN_ZOOM = Number(body.MIN_ZOOM)
     }
+    if (body.SEARCH_SIZE) {
+      body.SEARCH_SIZE = Number(body.SEARCH_SIZE)
+    }
     if (JSON.stringify(body.LAYOUT_OVERRIDE)?.replaceAll(" ", "") === "{}") {
       delete body.LAYOUT_OVERRIDE
     }

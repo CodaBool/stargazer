@@ -168,12 +168,14 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
     const [lng, lat] = clicked.geometry.coordinates
 
+    console.log("lng", lng, "search", SEARCH_SIZE)
+
     // rbush uses a square but that's fine
     const rawNearby = index.search({
-      minX: lng - SEARCH_SIZE,
-      minY: lat - SEARCH_SIZE,
-      maxX: lng + SEARCH_SIZE,
-      maxY: lat + SEARCH_SIZE,
+      minX: lng - Number(SEARCH_SIZE),
+      minY: lat - Number(SEARCH_SIZE),
+      maxX: lng + Number(SEARCH_SIZE),
+      maxY: lat + Number(SEARCH_SIZE),
     })
 
     const myGroup = rawNearby

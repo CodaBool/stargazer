@@ -332,11 +332,11 @@ export default function DrawerComponent({
           </div>
         </div>
 
-        {Array.isArray(local) && local.length > 1 && (
+        {Array.isArray(local) && local.length > 0 && (
           <>
             <hr className="mt-6" />
             <DrawerDescription className="text-center text-xs md:text-sm my-2">
-              {local.length - 1} {GROUP_NAME}
+              {local.length} {GROUP_NAME}
             </DrawerDescription>
 
             {IS_GALAXY ? (
