@@ -1,144 +1,129 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import ThreejsPlanet from "./threejsPlanet";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { genLink, getIcon, SVG_BASE } from "@/lib/utils";
 import Link from "next/link";
+import { claimThreeCanvas } from "./threeHostRegistry.js";
 
-let sharedRenderer = null;
-let sharedCanvas = null;
+export default function SolarSystemDiagram({
+  group,
+  width,
+  height,
+  map,
+  name,
+  passedLocationClick,
+  d,
+}) {
+  const [activeBody, setActiveBody] = useState(null);
+  const [moonBodies, setMoonBodies] = useState(null);
 
-export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId, map, name, passedLocationClick }) {
-  const [squareSize, setSquareSize] = useState()
-  const [activeBody, setActiveBody] = useState()
-  const [moonBodies, setMoonBodies] = useState()
+  const squareSize = Math.min(700, Math.min(width, height) * 0.99);
 
-  useEffect(() => {
-    const updateSize = () => {
-      const vmin = Math.min(window.innerWidth, window.innerHeight);
-      setSquareSize(Math.min(700, vmin * 0.99));
-    };
-    updateSize();
-    window.addEventListener("resize", updateSize);
-    return () => window.removeEventListener("resize", updateSize);
-  }, [])
+  const closeDialog = (setter) => setter(null);
 
-  useEffect(() => {
-    if (!activeBody) return
-    console.log("opened", activeBody)
-  }, [activeBody]);
-
-  const closeDialog = func => {
-    func(null)
+  function handleMouseOver(feature) {
+    if (feature.properties.fake || !map) return;
+    map.setFeatureState({ source: "source", id: feature.source?.id }, { hover: true });
   }
 
-  function handleMouseOver(d) {
-    if (!d) return
-    // console.log("highlight group", group)
-    map.setFeatureState(
-      { source: 'source', id: d.id },
-      { hover: true }
-    )
-  }
-
-  function handleMouseOut(d) {
-    if (!d) return
-    map.setFeatureState(
-      { source: 'source', id: d.id },
-      { hover: false }
-    )
+  function handleMouseOut(feature) {
+    if (feature.properties.fake || !map) return;
+    map.setFeatureState({ source: "source", id: feature.source.id }, { hover: false });
   }
 
   function getFilter(body) {
-    return body.tint ? `drop-shadow(0 0 6px ${body.tint})` : undefined
+    const tint = body?.properties?.tint;
+    return tint ? `drop-shadow(0 0 6px ${tint})` : undefined;
   }
 
-  // console.log("group", group)
+  const bodies = group.filter((body) => {
+    if (d.id) {
+      if (body.source?.id === d.id) return false;
+    } else if (d.properties.id) {
+      if (body.properties.id === d.properties.id) return false;
+    }
+    return true;
+  });
 
   return (
     <>
       <div className="w-full overflow-x-auto overflow-y-visible py-2">
         <div className="flex items-baseline h-full space-x-6 px-4 justify-evenly">
-          {group.map((body, index) => {
-            const selected = (body.source?.id === selectedId) && typeof selectedId !== "undefined"
+          {bodies.map((body, index) => {
+            const { properties, source } = body;
+            const moons = Array.isArray(properties.moons) ? properties.moons : [];
             return (
               <div key={index} className="flex flex-col items-center relative min-w-[50px]">
                 <div className="flex flex-wrap items-center">
                   <img
-                    src={getIcon(body.source, body.type, name)}
-                    alt={body.name}
+                    src={getIcon(source, properties.type, name)}
+                    alt={properties.name}
                     onClick={() => {
-                      if (body.source) {
-                        passedLocationClick(null, body.source);
-                        return
+                      if (source) {
+                        passedLocationClick(null, source, properties.fake ? { group, d } : {});
+                        return;
                       }
-                      setActiveBody(body)
+                      setActiveBody(body);
                     }}
-                    onMouseOver={() => handleMouseOver(body.source)}
-                    onMouseOut={() => handleMouseOut(body.source)}
-                    className={`hover-grow-xl cursor-pointer ${(selected && selectedId) ? 'animate-pulse' : ''}`}
+                    onMouseOver={() => handleMouseOver(body)}
+                    onMouseOut={() => handleMouseOut(body)}
+                    className="hover-grow-xl cursor-pointer"
                     style={{
-                      width: 40 + "px",
-                      height: 40 + "px",
+                      width: "40px",
+                      height: "40px",
                       filter: getFilter(body),
                     }}
                   />
-                  {body.moons?.length > 0 && (
+
+                  {moons.length > 0 && (
                     <div className="flex flex-wrap items-center ms-1">
                       <img
                         src={SVG_BASE + "lancer/moon.svg"}
                         className="hover-grow-xl cursor-pointer"
                         onClick={() => {
-                          if (body.moons.length === 1) {
-                            setActiveBody(body.moons[0])
-                          } else {
-                            setMoonBodies(body.moons)
-                          }
+                          if (moons.length === 1) setActiveBody({ properties: moons[0] });
+                          else setMoonBodies(moons);
                         }}
-                        style={{ width: 25 + "px", height: 25 + "px" }}
+                        style={{ width: "25px", height: "25px" }}
+                        alt="Moons"
                       />
-                      <div className="text-ms opacity-70 text-center ms-1"
+                      <div
+                        className="text-ms opacity-70 text-center ms-1 cursor-pointer select-none"
                         onClick={() => {
-                          if (body.moons.length === 1) {
-                            setActiveBody(body.moons[0])
-                          } else {
-                            setMoonBodies(body.moons)
-                          }
-                        }}>
-                        {body.moons.length}x
+                          if (moons.length === 1) setActiveBody({ properties: moons[0] });
+                          else setMoonBodies(moons);
+                        }}
+                      >
+                        {moons.length}x
                       </div>
                     </div>
                   )}
                 </div>
 
                 <div className="text-xs text-center text-white lg:text-sm">
-                  {body.name}
+                  {!properties.fake && properties.name}
                 </div>
-                {body.source && (
+
+                {body?.source && (
                   <div className="text-xs lg:text-sm text-center text-white opacity-80">
-                    {/* {selected && <Badge variant="brightOrange" className="mx-auto">Selected</Badge>} */}
-                    {body.source.properties.faction && <Badge className="mx-auto">{body.source.properties.faction}</Badge>}
-                    {/* {body.source.properties.unofficial && <Badge variant="destructive" className="mx-auto">unofficial</Badge>}
-                    {body.source.properties.faction && <Badge className="mx-auto">{body.source.properties.faction}</Badge>}
-                    {body.source.properties.destroyed && <Badge className="mx-auto">destroyed</Badge>}
-                    {body.source.properties.capital && <Badge variant="destructive" className="mx-auto">capital</Badge>} */}
+                    {body.source.properties?.faction && (
+                      <Badge className="mx-auto">{body.source.properties.faction}</Badge>
+                    )}
                   </div>
                 )}
               </div>
-            )
+            );
           })}
         </div>
       </div>
 
-      <Dialog open={!!moonBodies} onOpenChange={open => !open && closeDialog(setMoonBodies)}>
-        {moonBodies && (
+      {/* Moons list dialog */}
+      <Dialog open={!!moonBodies} onOpenChange={(open) => !open && closeDialog(setMoonBodies)}>
+        {Array.isArray(moonBodies) && (
           <DialogContent
             className="p-4 m-0 md:p-8"
             style={{
@@ -151,31 +136,35 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
             }}
           >
             <DialogTitle style={{ height: "2em", maxHeight: "2em" }}>Moons</DialogTitle>
-
-            <div className={`flex flex-wrap justify-evenly content-start overflow-auto`}>
-              {moonBodies.map((moon, i) => {
-                // console.log("display moon", moon)
-                return (
-                  <img
-                    src={getIcon(moon.source, moon.type, name)}
-                    alt={moon.name}
-                    key={i}
-                    onClick={() => setActiveBody(moon)}
-                    style={{
-                      filter: getFilter(moon),
-                      cursor: "pointer",
-                      maxWidth: "50px", // Ensure images are small by default
-                      margin: "8px", // Margins for spacing between images
-                    }}
-                  />
-                )
-              })}
+            <div className="flex flex-wrap justify-evenly content-start overflow-auto">
+              {moonBodies.map((moon, i) => (
+                <img
+                  src={getIcon(moon?.source, moon.type, name)}
+                  alt={"moon " + i}
+                  key={i}
+                  onClick={() => setActiveBody({ properties: moon })}
+                  style={{
+                    filter: getFilter({ properties: moon }),
+                    cursor: "pointer",
+                    maxWidth: "50px",
+                    margin: "8px",
+                  }}
+                />
+              ))}
             </div>
           </DialogContent>
         )}
-      </Dialog >
+      </Dialog>
 
-      <Dialog open={!!activeBody} onOpenChange={(open) => !open && closeDialog(setActiveBody)}>
+      {/* Active body dialog */}
+      <Dialog
+        open={!!activeBody}
+        onOpenChange={(open) => {
+          if (open) claimThreeCanvas("modal", { force: true });
+          else claimThreeCanvas("drawer", { force: true });
+          if (!open) closeDialog(setActiveBody);
+        }}
+      >
         {activeBody && (
           <DialogContent
             className="p-2 m-0 md:p-4"
@@ -186,94 +175,180 @@ export default function SolarSystemDiagram({ group, height, isGalaxy, selectedId
               height: `${squareSize}px`,
               maxWidth: "98vw",
               maxHeight: "98vh",
-              backgroundColor: "black"
+              backgroundColor: "black",
             }}
           >
-            <DialogTitle>{(activeBody.name || "") + `${activeBody.variant ? ` (${activeBody.variant})` : ""}`}  {activeBody.type.replaceAll("_", " ")}</DialogTitle>
-            <div className="threejs-planet-dialog"></div>
-            <ThreejsPlanet
-              sharedCanvas={sharedCanvas}
-              sharedRenderer={sharedRenderer}
-              height={squareSize}
-              width={squareSize}
-              type={activeBody.ringed ? "ringed_planet" : activeBody.type}
-              pixels={800}
-              // 4 comma separated hexes
-              baseColors={activeBody.baseColors}
-              // 4 comma separated hexes
-              featureColors={activeBody.featureColors}
-              // 4 comma separated alpha hexes
-              layerColors={activeBody.layerColors}
-              // star ([blue, orange, red, white, yellow], default orange)
-              schemeColor={activeBody.schemeColor}
-              // 3 comma separated alpha hexes
-              atmosphereColors={activeBody.atmosphereColors}
-              // ice & terrestrial (defaults true)
-              clouds={activeBody.clouds}
-              // ice & terrestrial (lower is more clouds)
-              cloudPercent={activeBody.cloudPercent}
-              // asteroid 1-9
-              size={activeBody.size}
-              // terrestrial, lower is more land
-              hydroPercent={activeBody.hydroPercent}
-              // ring size 0-.2
-              ringSize={activeBody.ringSize}
-              // ice (lower is more lakes)
-              // lakes={activeBody.ice}
-              // lava (lower is more lava)
-              lavaPercent={activeBody.lavaPercent}
-              // a number
-              seed={activeBody.seed}
-              planetSize={activeBody.planetSize}
-            />
-            {(activeBody.source && !activeBody.source?.properties?.userCreated)
-              ? <div className="absolute top-[85px] left-[40px] flex flex-col items-center">
-                <Link href={genLink(activeBody.source, name, "href")} className="mb-2" target={`${name === "lancer" ? "_self" : "_blank"}`}>
-                  {name === "lancer" && <Button className="cursor-pointer rounded" variant="outline">Contribute</Button>}
-                  {name === "fallout" && <Button className="cursor-pointer">Wiki</Button>}
-                  {name === "starwars" && <Button className="cursor-pointer">Wiki</Button>}
-                </Link>
-                <div className="pointer-events-none">
-                  {activeBody.source.properties.unofficial && <Badge variant="destructive" className="">unofficial</Badge>}
-                  {activeBody.source.properties.faction && <Badge className="">{activeBody.source.properties.faction}</Badge>}
-                  {activeBody.source.properties.destroyed && <Badge className="">destroyed</Badge>}
-                  {activeBody.source.properties.capital && <Badge variant="destructive" className="">capital</Badge>}
+            {(() => {
+              const p = activeBody.properties || {};
+              const title = `${p.name || ""}${p.variant ? ` (${p.variant})` : ""} ${(p.type || "unknown").replaceAll("_", " ")}`;
 
-                  {activeBody.cloudPercent && <Badge variant="destructive" className="">{1 - activeBody.cloudPercent} cloud coverage</Badge>}
-                  {activeBody.hydroPercent && <Badge variant="destructive" className="">{activeBody.hydroPercent} hydrosphere</Badge>}
-                  {activeBody.icePercent && <Badge variant="destructive" className="">{activeBody.icePercent} ice coverage</Badge>}
-                  {activeBody.radius && <Badge variant="destructive" className="">{activeBody.radius.toFixed(2)} {activeBody.type === "star" ? "solar radii" : "km radius"}</Badge>}
-                  {(activeBody.temperature && activeBody.type !== "star") && <Badge variant="destructive" className="">{Math.floor(activeBody.temperature)}°C</Badge>}
-                  {(activeBody.temperature && activeBody.type === "star") && <Badge variant="destructive" className="">{Math.floor(activeBody.temperature) + 273}°K</Badge>}
-                  {activeBody.dominantChemical && <Badge variant="destructive" className="">Dominant Chemical: {activeBody.dominantChemical}</Badge>}
-                  {activeBody.daysInYear && <Badge variant="destructive" className="">{activeBody.daysInYear} days in year</Badge>}
-                  {activeBody.hoursInDay && <Badge variant="destructive" className="">{activeBody.hoursInDay} hours in day</Badge>}
-                  {activeBody.gravity && <Badge variant="destructive" className="">{activeBody.gravity} cm/sec²</Badge>}
-                  {activeBody.pressure && <Badge variant="destructive" className="">{activeBody.pressure} millibars</Badge>}
-                  {activeBody.moons && <Badge variant="destructive" className="">{activeBody.moons.length} moons</Badge>}
-                  {activeBody.modifier && <Badge variant="destructive" className="">{activeBody.modifier}</Badge>}
-                  {activeBody.isMoon && <Badge variant="destructive" className="">Moon</Badge>}
-                </div>
-              </div>
-              : <div className="absolute top-[35px] flex flex-col text-xs pointer-events-none md:text-sm md:left-[35px] md:top-[65px] left-[18px]">
-                {(typeof activeBody.cloudPercent === "number" && (activeBody.type === "terrestrial" || activeBody.type === "ice_planet" || activeBody.type === "ocean_planet")) && <p variant="destructive" className="mt-2">{Math.floor(activeBody.cloudPercent.toFixed(2) * 100)} cloud coverage %</p>}
-                {typeof activeBody.hydroPercent === "number" && <p className="mt-2">{Math.floor(activeBody.hydroPercent.toFixed(2) * 100)} hydrosphere %</p>}
-                {typeof activeBody.lavaPercent === "number" && activeBody.type === "lava_planet" && <p className="mt-2">{Math.floor(activeBody.lavaPercent.toFixed(2) * 100)} lava %</p>}
-                {/* {(typeof activeBody.ice === "number" && activeBody.type === "ice planet") && <p className="mt-2">{(1 - activeBody.ice).toFixed(1) * 100} hydrosphere %</p>}*/}
-                {typeof activeBody.icePercent === "number" && <p variant="destructive" className="mt-2">{Math.floor(activeBody.icePercent.toFixed(2) * 100)} ice coverage %</p>}
-                {typeof activeBody.radius === "number" && <p variant="destructive" className="mt-2">{activeBody.radius.toFixed(2)} {activeBody.type === "star" ? "solar radii" : "km radius"}</p>}
-                {(typeof activeBody.temperature === "number" && activeBody.type !== "star") && <p variant="destructive" className="mt-2">{Math.floor(activeBody.temperature)}°C</p>}
-                {(typeof activeBody.temperature === "number" && activeBody.type === "star") && <p variant="destructive" className="mt-2">{Math.floor(activeBody.temperature) + 273}°K</p>}
-                {typeof activeBody.dominantChemical === "string" && <p variant="destructive" className="mt-2">Dominant Chemical: {activeBody.dominantChemical}</p>}
-                {typeof activeBody.daysInYear === "number" && <p variant="destructive" className="mt-2">{activeBody.daysInYear} days in year</p>}
-                {typeof activeBody.hoursInDay === "number" && <p variant="destructive" className="mt-2">{activeBody.hoursInDay} hours in day</p>}
-                {typeof activeBody.gravity === "number" && <p variant="destructive" className="mt-2">Gavity: {(activeBody.gravity * 0.0010197162).toFixed(1)} g</p>}
-                {activeBody.pressure > 0 && <p variant="destructive" className="mt-2">Pressure: {(activeBody.pressure / 1000).toFixed(1)} bars</p>}
-                {activeBody.moons?.length > 0 && <p variant="destructive" className="mt-2">{activeBody.moons.length} moon{activeBody.moons.length === 1 ? "" : "s"}</p>}
-                {typeof activeBody.modifier === "string" && <p variant="destructive" className="mt-2">{activeBody.modifier}</p>}
-                {activeBody.isMoon && <p variant="destructive" className="mt-2">Moon</p>}
-              </div>
-            }
+              return (
+                <>
+                  <DialogTitle>{title}</DialogTitle>
+
+                  <ThreejsPlanet
+                    hostKey="modal"
+                    height={squareSize}
+                    width={squareSize}
+                    type={p.ringed ? "ringed_planet" : p.type}
+                    pixels={Number(p.pixels) || 800}
+                    baseColors={p.baseColors}
+                    featureColors={p.featureColors}
+                    layerColors={p.layerColors}
+                    schemeColor={p.schemeColor}
+                    atmosphereColors={p.atmosphereColors}
+                    clouds={p.clouds}
+                    cloudPercent={p.cloudPercent}
+                    size={p.size}
+                    hydroPercent={p.hydroPercent}
+                    ringSize={p.ringSize}
+                    lavaPercent={p.lavaPercent}
+                    seed={p.seed}
+                    planetSize={p.planetSize}
+                    disableListeners={false}
+                    propStyle={{ margin: "0 auto" }}
+                  />
+
+                  {/* Left side info + link */}
+                  {activeBody.source && !activeBody.source?.properties?.userCreated ? (
+                    <div className="absolute top-[85px] left-[40px] flex flex-col items-center">
+                      <Link
+                        href={genLink(activeBody.source, name, "href")}
+                        className="mb-2"
+                        target={name === "lancer" ? "_self" : "_blank"}
+                      >
+                        {name === "lancer" && (
+                          <Button className="cursor-pointer rounded" variant="outline">
+                            Contribute
+                          </Button>
+                        )}
+                        {name === "fallout" && <Button className="cursor-pointer">Wiki</Button>}
+                        {name === "starwars" && <Button className="cursor-pointer">Wiki</Button>}
+                      </Link>
+
+                      <div className="pointer-events-none">
+                        {activeBody.source.properties?.unofficial && (
+                          <Badge variant="destructive">unofficial</Badge>
+                        )}
+                        {activeBody.source.properties?.faction && (
+                          <Badge>{activeBody.source.properties.faction}</Badge>
+                        )}
+                        {activeBody.source.properties?.destroyed && <Badge>destroyed</Badge>}
+                        {activeBody.source.properties?.capital && (
+                          <Badge variant="destructive">capital</Badge>
+                        )}
+
+                        {typeof p.cloudPercent === "number" && (
+                          <Badge variant="destructive">
+                            {Math.floor(p.cloudPercent * 100)}% cloud coverage
+                          </Badge>
+                        )}
+                        {typeof p.hydroPercent === "number" && (
+                          <Badge variant="destructive">
+                            {Math.floor(p.hydroPercent * 100)}% hydrosphere
+                          </Badge>
+                        )}
+                        {typeof p.icePercent === "number" && (
+                          <Badge variant="destructive">
+                            {Math.floor(p.icePercent * 100)}% ice coverage
+                          </Badge>
+                        )}
+                        {typeof p.diameter === "number" && (
+                          <Badge variant="destructive">
+                            {p.diameter.toFixed(2)} {p.type === "star" ? "solar radii" : "km"}
+                          </Badge>
+                        )}
+                        {typeof p.temperature === "number" && (
+                          <Badge variant="destructive">
+                            {p.type === "star"
+                              ? `${Math.floor(p.temperature) + 273}°K`
+                              : `${Math.floor(p.temperature)}°C`}
+                          </Badge>
+                        )}
+                        {typeof p.dominantChemical === "string" && p.dominantChemical && (
+                          <Badge variant="destructive">
+                            Dominant Chemical: {p.dominantChemical}
+                          </Badge>
+                        )}
+                        {typeof p.daysInYear === "number" && (
+                          <Badge variant="destructive">{p.daysInYear} days in year</Badge>
+                        )}
+                        {typeof p.hoursInDay === "number" && (
+                          <Badge variant="destructive">{p.hoursInDay} hours in day</Badge>
+                        )}
+                        {typeof p.gravity === "number" && (
+                          <Badge variant="destructive">{p.gravity} cm/sec²</Badge>
+                        )}
+                        {typeof p.pressure === "number" && (
+                          <Badge variant="destructive">{p.pressure} millibars</Badge>
+                        )}
+                        {Array.isArray(p.moons) && (
+                          <Badge variant="destructive">{p.moons.length} moons</Badge>
+                        )}
+                        {typeof p.modifier === "string" && p.modifier && (
+                          <Badge variant="destructive">{p.modifier}</Badge>
+                        )}
+                        {p.isMoon && <Badge variant="destructive">Moon</Badge>}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="absolute top-[35px] flex flex-col text-xs pointer-events-none md:text-sm md:left-[35px] md:top-[65px] left-[18px]">
+                      {typeof p.cloudPercent === "number" &&
+                        (p.type === "terrestrial" ||
+                          p.type === "ice_planet" ||
+                          p.type === "ocean_planet") && (
+                          <p className="mt-2">{Math.floor(p.cloudPercent * 100)} cloud coverage %</p>
+                        )}
+                      {typeof p.hydroPercent === "number" && (
+                        <p className="mt-2">{Math.floor(p.hydroPercent * 100)} hydrosphere %</p>
+                      )}
+                      {typeof p.lavaPercent === "number" && p.type === "lava_planet" && (
+                        <p className="mt-2">{Math.floor(p.lavaPercent * 100)} lava %</p>
+                      )}
+                      {typeof p.icePercent === "number" && (
+                        <p className="mt-2">{Math.floor(p.icePercent * 100)} ice coverage %</p>
+                      )}
+                      {typeof p.diameter === "number" && (
+                        <p className="mt-2">
+                          {p.diameter.toFixed(2)} {p.type === "star" ? "solar radii" : "km"}
+                        </p>
+                      )}
+                      {typeof p.temperature === "number" && (
+                        <p className="mt-2">
+                          {p.type === "star"
+                            ? `${Math.floor(p.temperature) + 273}°K`
+                            : `${Math.floor(p.temperature)}°C`}
+                        </p>
+                      )}
+                      {typeof p.dominantChemical === "string" && p.dominantChemical && (
+                        <p className="mt-2">Dominant Chemical: {p.dominantChemical}</p>
+                      )}
+                      {typeof p.daysInYear === "number" && (
+                        <p className="mt-2">{p.daysInYear} days in year</p>
+                      )}
+                      {typeof p.hoursInDay === "number" && (
+                        <p className="mt-2">{p.hoursInDay} hours in day</p>
+                      )}
+                      {typeof p.gravity === "number" && (
+                        <p className="mt-2">Gravity: {(p.gravity * 0.0010197162).toFixed(1)} g</p>
+                      )}
+                      {typeof p.pressure === "number" && p.pressure > 0 && (
+                        <p className="mt-2">Pressure: {(p.pressure / 1000).toFixed(1)} bars</p>
+                      )}
+                      {Array.isArray(p.moons) && p.moons.length > 0 && (
+                        <p className="mt-2">
+                          {p.moons.length} moon{p.moons.length === 1 ? "" : "s"}
+                        </p>
+                      )}
+                      {typeof p.modifier === "string" && p.modifier && (
+                        <p className="mt-2">{p.modifier}</p>
+                      )}
+                      {p.isMoon && <p className="mt-2">Moon</p>}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </DialogContent>
         )}
       </Dialog>

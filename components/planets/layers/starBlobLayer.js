@@ -131,6 +131,29 @@ export function createStarBlobLayer(rotationSpeed = 0.1, colors, pixels, seed) {
     colorPalette = colors.base
   }
 
+  if (!colors.base) {
+    switch (colors.scheme) {
+      case 'blue':
+        colorPalette = [new Vector4(227 / 255, 231 / 255, 255 / 255, 1)];
+        break;
+      case 'orange':
+        colorPalette = [new Vector4(255 / 255, 165 / 255, 0 / 255, 1)];
+        break;
+      case 'red':
+        colorPalette = [new Vector4(155 / 255, 0 / 255, 0 / 255, 1)];
+        break;
+      case 'white':
+        colorPalette = [new Vector4(255 / 255, 255 / 255, 255 / 255, 1)];
+        break;
+      case 'yellow':
+        colorPalette = [new Vector4(255 / 255, 255 / 255, 170 / 255, 1)];
+        break;
+      default:
+        colorPalette = [new Vector4(255 / 255, 255 / 255, 255 / 255, 1)]; // Default to white if no match
+        break;
+    }
+  }
+
   const planetGeometry = new PlaneGeometry(1.3, 1.3);
   const planetMaterial = new ShaderMaterial({
     uniforms: {

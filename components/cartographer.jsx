@@ -108,11 +108,11 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
         minY: f.geometry.coordinates[1],
         maxX: f.geometry.coordinates[0],
         maxY: f.geometry.coordinates[1],
-        feature: f
+        feature: f,
       }))
       index.load(features)
       setGroups(index)
-    })();
+    })()
 
     // cleanup
     return () => window.removeEventListener('resize', handleResize)

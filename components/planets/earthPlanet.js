@@ -8,7 +8,7 @@ export const createEarthPlanet = ({
   colors,
   pixels,
   seed,
-  hyrdoPercent,
+  hydroPercent,
   cloudPercent,
   clouds,
 }) => {
@@ -31,14 +31,14 @@ export const createEarthPlanet = ({
     pixels,
     seed,
   );
-  // lightPos = new Vector2(0.39, 0.7), lightIntensity = 0.1, colors = null, rotationSpeed = 0.1, rotation = 0.0, hyrdoPercent = 0.6
+  // lightPos = new Vector2(0.39, 0.7), lightIntensity = 0.1, colors = null, rotationSpeed = 0.1, rotation = 0.0, hydroPercent = 0.6
   const landmass = createlandMassLayer(
     undefined,
     undefined,
     colors,
     undefined,
     undefined,
-    hyrdoPercent,
+    hydroPercent,
     pixels,
     seed,
   );

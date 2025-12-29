@@ -3,7 +3,7 @@ import { createBasePlanet } from "./layers/basePlanet.js"
 import { createCloudLayer } from "./layers/cloudLayer.js"
 import { createLakeLayer } from "./layers/lakeLayer.js"
 
-export const createIcePlanet = ({ colors, pixels, seed, clouds, hyrdoPercent, cloudPercent }) => {
+export const createIcePlanet = ({ colors, pixels, seed, clouds, hydroPercent, cloudPercent }) => {
   const icePlanet = new Group()
 
   if (!colors.base) {
@@ -17,8 +17,8 @@ export const createIcePlanet = ({ colors, pixels, seed, clouds, hyrdoPercent, cl
   // lightPos , lightIntensity , colors , rotationSpeed , rotation , pixels , seed )
   const basePlanet = createBasePlanet(undefined, undefined, colors, undefined, undefined, pixels, seed)
 
-  // ightPos = new Vector2(0.39, 0.7), rotationSpeed = 0.1, hyrdoPercent = 0.6, colors, rotation = 0.0
-  const lakeLayer = createLakeLayer(undefined, undefined, hyrdoPercent, colors, undefined, pixels, seed)
+  // ightPos = new Vector2(0.39, 0.7), rotationSpeed = 0.1, hydroPercent = 0.6, colors, rotation = 0.0
+  const lakeLayer = createLakeLayer(undefined, undefined, hydroPercent, colors, undefined, pixels, seed)
   icePlanet.add(basePlanet)
   icePlanet.add(lakeLayer)
 

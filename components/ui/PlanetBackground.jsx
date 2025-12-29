@@ -20,12 +20,17 @@ const PLANET_TYPES = [
   'terrestrial',
   'ring',
 ]
+const STAR_SCHEMES = ["blue", "orange", "red", "white", "yellow"];
 
 // BUG: ice has bugged box around it on mobile, just remove from pool
 if (!ismobile) PLANET_TYPES.push('ice')
 
 const randomIndex = Math.floor(Math.random() * PLANET_TYPES.length)
 const type = PLANET_TYPES[randomIndex]
+let scheme
+if (type === "star") {
+  scheme = STAR_SCHEMES[Math.floor(Math.random() * STAR_SCHEMES.length)]
+}
 
 export default function PlanetBackground() {
   const [planetSize, setPlanetSize] = useState()
@@ -58,6 +63,7 @@ export default function PlanetBackground() {
             <Suspense fallback={<div className="w-full h-full" />}>
               <LazyThreejsPlanet
                 type={type}
+                schemeColor={scheme}
                 pixels={700}
                 disableListeners={true}
                 width={planetSize}

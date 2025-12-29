@@ -142,8 +142,24 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
   function locationClick(e, manual) {
     if (modeRef.current === "measure" || (modeRef.current === "crosshair" && mobile) || locked) return
-
     const clicked = e?.features[0] || manual
+
+    // skip search & pan if generated location
+    if (clicked?.properties?.fake) {
+      let myGroup
+      if (drawerContent.d.properties.fake) {
+        myGroup = drawerContent.myGroup
+      } else {
+        myGroup = drawerContent.myGroup
+        // myGroup = [drawerContent.d, ...drawerContent.myGroup]
+      }
+      console.log(`clicked on ${clicked?.properties?.fake ? "fake" : "real"}, lets spill the beans`, myGroup, "d was", drawerContent.d)
+      setDrawerContent({ coordinates: clicked.geometry.coordinates, selectedId: clicked.id || clicked.properties.id, myGroup, d: clicked })
+
+      if (popup?._container) popup.remove()
+      return
+    }
+
     const index = locationGroupsRef.current
     if (!index) {
       console.error("ERR: spatial index failed")
@@ -157,7 +173,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       minX: lng - SEARCH_SIZE,
       minY: lat - SEARCH_SIZE,
       maxX: lng + SEARCH_SIZE,
-      maxY: lat + SEARCH_SIZE
+      maxY: lat + SEARCH_SIZE,
     })
 
     const myGroup = rawNearby
@@ -174,10 +190,18 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
   const territoryClick = (e, wrapper, IGNORE_POLY, IS_GALAXY, name) => {
     if (IGNORE_POLY?.includes(e.features[0].properties.type) || modeRef.current === "measure") return
-    console.log(e.features[0])
     const coordinates = e.lngLat;
     const popupContent = createPopupHTML(e, IS_GALAXY, name, setDrawerContent)
-    popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap())
+    if (mobile) {
+      // place in center of screen
+      popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap())
+      const popupElement = document.querySelector(".maplibregl-popup");
+      popupElement.style.top = "50%"
+      popupElement.style.left = "50%"
+      popupElement.style.transform = "translateX(-50%)"
+    } else {
+      popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap())
+    }
   }
 
   // fit will be true if a search
@@ -582,7 +606,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       {params.get("calibrate") && <Calibrate width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}
       <Debug />
       {!locked && <Tutorial name={name} IS_GALAXY={IS_GALAXY} />}
-      {!locked && <Drawer {...drawerContent} passedLocationClick={locationClick} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} height={height} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} GENERATE_LOCATIONS={GENERATE_LOCATIONS} GRID_DENSITY={GRID_DENSITY || 1} COORD_OFFSET={COORD_OFFSET} mobile={mobile} />}
+      {!locked && <Drawer {...drawerContent} passedLocationClick={locationClick} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} VIEW={VIEW} GENERATE_LOCATIONS={GENERATE_LOCATIONS} GRID_DENSITY={GRID_DENSITY || 1} COORD_OFFSET={COORD_OFFSET} SEARCH_SIZE={SEARCH_SIZE} mobile={mobile} width={width} height={height} />}
       <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} COORD_OFFSET={COORD_OFFSET} GRID_DENSITY={GRID_DENSITY} SPEED={SPEED} />
       {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} mobile={mobile} />}
     </>

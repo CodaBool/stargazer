@@ -145,7 +145,7 @@ export function createlandMassLayer(
   colors,
   rotationSpeed = 0.1,
   rotation = 0.0,
-  hyrdoPercent,
+  hydroPercent,
   pixels,
   seed,
 ) {
@@ -165,7 +165,7 @@ export function createlandMassLayer(
   const planetMaterial = new ShaderMaterial({
     uniforms: {
       pixels: { value: pixels || 100.0 },
-      land_cutoff: { value: hyrdoPercent || 0.6 },
+      land_cutoff: { value: hydroPercent || 0.6 },
       col1: { value: colorPalette[0] },
       col2: { value: colorPalette[1] },
       col3: { value: colorPalette[2] },

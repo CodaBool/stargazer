@@ -5,13 +5,18 @@ import {
   Clock,
   Group,
   Scene,
-  WebGLRenderer,
-  Vector4,
   PerspectiveCamera,
   AmbientLight,
   DirectionalLight,
 } from "three";
 import { createStars } from "./planets/layers/stars";
+import { acquireRenderer, releaseRenderer } from "./renderer.js";
+import {
+  claimThreeCanvas,
+  releaseThreeCanvas,
+  getThreeCanvasOwner,
+  onThreeOwnerChange,
+} from "./threeHostRegistry.js";
 
 // planet generation
 import { createAsteroid } from "./planets/asteroid.js";
@@ -26,296 +31,32 @@ import { createStarPlanet } from "./planets/starPlanet.js";
 import { createStation } from "./planets/stations.js";
 import { createGate } from "./planets/gate.js";
 
-function ThreejsPlanet({
-  sharedCanvas,
-  sharedRenderer,
-  height,
-  width,
-  type,
-  pixels,
-  baseColors,
-  featureColors,
-  layerColors,
-  schemeColor,
-  atmosphereColors,
-  clouds,
-  cloudPercent,
-  size,
-  ringSize,
-  hyrdoPercent,
-  lavaPercent,
-  seed,
-  planetSize,
-  disableListeners,
-  warpDistance,
-  propStyle,
-  warpStars = 200,
-}) {
-  const containerRef = useRef(null);
+function disposeMaterial(mat) {
+  for (const key in mat) {
+    const value = mat[key];
+    if (value && value.isTexture) value.dispose();
+  }
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    // Set up renderer if not shared
-    let isNewRenderer = false;
-
-    if (!sharedRenderer || !sharedCanvas) {
-      sharedRenderer = new WebGLRenderer({ antialias: true, alpha: true });
-      sharedRenderer.setClearColor(0x000000, 0);
-      sharedRenderer.setPixelRatio(window.devicePixelRatio);
-      sharedCanvas = sharedRenderer.domElement;
-      isNewRenderer = true;
+  if (mat.uniforms) {
+    for (const u of Object.values(mat.uniforms)) {
+      const v = u?.value;
+      if (v && v.isTexture) v.dispose();
+      if (Array.isArray(v)) v.forEach(t => t?.isTexture && t.dispose());
     }
-    if (disableListeners) {
-      sharedRenderer.setSize(
-        width || container.clientWidth,
-        height || container.clientHeight,
-      );
-    } else {
-      sharedRenderer.setSize(
-        container.clientWidth - 10,
-        container.clientHeight - 10,
-      );
+  }
+
+  mat.dispose();
+}
+
+function disposeScene(scene) {
+  scene.traverse(obj => {
+    if (obj.geometry) obj.geometry.dispose();
+    if (obj.material) {
+      if (Array.isArray(obj.material)) obj.material.forEach(disposeMaterial);
+      else disposeMaterial(obj.material);
     }
-
-    // Only append the sharedCanvas if it's not already attached to this container
-    if (sharedCanvas.parentElement !== container) {
-      // Remove from old parent if needed
-      if (sharedCanvas.parentElement) {
-        sharedCanvas.parentElement.removeChild(sharedCanvas);
-      }
-      container.appendChild(sharedCanvas);
-    }
-
-    const scene = new Scene();
-    // fov, default 50
-    // aspect, default 1
-    // near, default 0.1
-    // far, default 2000
-    const camera = new PerspectiveCamera(75);
-    // move the planet away from the camera to create smaller planets
-    // should be a 1-4 value
-    const zoomAwayAmount = planetSize || 1;
-    camera.position.z = zoomAwayAmount;
-
-    // const camera = new PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 100000);
-    const clock = new Clock();
-    const planetGroup = new Group();
-
-    const planet = generatePlanetByType({
-      pixels: pixels ? Number(pixels) : undefined,
-      colors: {
-        base: baseColors || undefined,
-        feature: featureColors || undefined,
-        layer: layerColors || undefined,
-        scheme: schemeColor || undefined,
-        atmosphereColors: atmosphereColors || undefined,
-      },
-      clouds: clouds === "false" ? false : true,
-      type: type || "terrestrial",
-      size: size ? Number(size) : undefined,
-      ringSize: ringSize ? Number(ringSize) : undefined,
-      cloudPercent: cloudPercent ? Number(cloudPercent) : undefined,
-      hyrdoPercent: hyrdoPercent ? Number(hyrdoPercent) : undefined,
-      lavaPercent: lavaPercent ? Number(lavaPercent) : undefined,
-      seed: seed ? seed : undefined,
-    });
-
-    if (!planet) {
-      // fallback to text if no model for this type
-      const dialog = document.querySelector(".threejs-planet-dialog");
-      if (dialog) {
-        dialog.style.textAlign = "center";
-        dialog.style.fontSize = "2em";
-        dialog.style.paddingTop = "6em";
-        dialog.textContent = `No preview available for ${type}`;
-      }
-      return;
-    }
-
-    planetGroup.add(planet);
-    scene.add(planetGroup);
-
-    let starGroup;
-    if (!disableListeners) {
-      starGroup = createStars(warpStars);
-      starGroup.position.z = -0.5;
-      scene.add(starGroup);
-    }
-
-    // Add ambient + directional lighting
-    if (type === "station" || type === "gate") {
-      const ambientLight = new AmbientLight(0xffffff, 0.02); // soft white light
-      scene.add(ambientLight);
-
-      const directionalLight = new DirectionalLight(0xffffff, 0.5);
-      directionalLight.position.set(5, 5, 5);
-      scene.add(directionalLight);
-    }
-
-    sharedCanvas.style.display = "block";
-    sharedCanvas.style.backgroundColor = "transparent";
-    sharedCanvas.style.pointerEvents = "none";
-
-    let animationId, cameraStartTime, currentZ;
-    let totalX = 0;
-    let moveX = 0;
-    let holding = false;
-    const skySpeed = 0.00001;
-    const baseSpeed = 0.5;
-    const maxTimeSpeed = 0.9;
-    const timeFriction = 0.95;
-    const maxAccel = 0.01;
-    const notLava = type !== "lava";
-
-    if (warpDistance) {
-      const warpStartZ = warpDistance * 300; // Starting far away
-      camera.position.z = warpStartZ;
-      currentZ = warpStartZ;
-    }
-
-    const animate = () => {
-      animationId = requestAnimationFrame(animate);
-
-      if (warpDistance) {
-        if (!cameraStartTime) cameraStartTime = performance.now();
-        const damping = 0.1; // adjust for slower or snappier zoom
-        currentZ += (warpDistance - currentZ) * damping;
-        camera.position.z = currentZ;
-      }
-
-      planetGroup.children.forEach(planet => {
-        planet.children.forEach(layer => {
-          if (!layer.material || !("uniforms" in layer.material)) return;
-
-          const u = layer.material.uniforms;
-          if (!u?.time || !u?.time_speed) return;
-
-          const elapsed = clock.getElapsedTime() % 10000;
-          u.time.value = elapsed;
-
-          if (holding && notLava) {
-            const rawDelta = moveX * 0.01;
-            const limitedDelta = Math.max(
-              -maxAccel,
-              Math.min(maxAccel, rawDelta),
-            );
-            u.time_speed.value += limitedDelta;
-          } else {
-            u.time_speed.value =
-              baseSpeed + (u.time_speed.value - baseSpeed) * timeFriction;
-          }
-
-          u.time_speed.value = Math.max(
-            -maxTimeSpeed,
-            Math.min(maxTimeSpeed, u.time_speed.value),
-          );
-        });
-      });
-
-      if (starGroup) {
-        starGroup.rotateY(skySpeed);
-        starGroup.rotateX(skySpeed);
-        starGroup.rotateZ(skySpeed);
-      }
-
-      if (type === "station") {
-        planetGroup.rotation.z += 0.0002;
-      }
-
-      if (type === "gate") {
-        planetGroup.children.forEach(child => {
-          if (child.userData.animate) {
-            child.userData.animate(clock.getElapsedTime());
-          }
-        });
-      }
-
-      sharedRenderer.render(scene, camera);
-      moveX = totalX = 0;
-    };
-
-    animate();
-
-    if (!disableListeners) {
-      const handleMouseDown = () => {
-        holding = true;
-        // document.body.style.cursor = 'grabbing';
-        // document.body.style.userSelect = 'none';
-      };
-      const handleMouseUp = () => {
-        holding = false;
-        // document.body.style.cursor = 'grab';
-        // document.body.style.userSelect = 'auto';
-      };
-
-      container.addEventListener("pointerdown", handleMouseDown, false);
-      container.addEventListener("pointerup", handleMouseUp, false);
-      // document.body.style.cursor = 'grab';
-    }
-
-    return () => {
-      cancelAnimationFrame(animationId);
-      scene.traverse(obj => {
-        if (obj.geometry) obj.geometry.dispose();
-        if (obj.material) {
-          if (Array.isArray(obj.material))
-            obj.material.forEach(m => m.dispose());
-          else obj.material.dispose();
-        }
-      });
-      scene.clear();
-      sharedRenderer.renderLists.dispose();
-      sharedRenderer.info.reset();
-
-      if (typeof handleMouseDown === "function") {
-        container.removeEventListener("pointerdown", handleMouseDown);
-        container.removeEventListener("pointerup", handleMouseUp);
-      }
-
-      // Do not remove sharedCanvas unless we created it
-      if (isNewRenderer && container.contains(sharedCanvas)) {
-        container.removeChild(sharedCanvas);
-      }
-    };
-  }, [
-    sharedCanvas,
-    sharedRenderer,
-    height,
-    width,
-    type,
-    pixels,
-    baseColors,
-    featureColors,
-    layerColors,
-    schemeColor,
-    atmosphereColors,
-    clouds,
-    cloudPercent,
-    size,
-    ringSize,
-    hyrdoPercent,
-    lavaPercent,
-    seed,
-    planetSize,
-    disableListeners,
-    warpDistance,
-  ]);
-
-  return (
-    <div
-      ref={containerRef}
-      style={{
-        ...propStyle,
-        width: "100%",
-        aspectRatio: "1 / 1",
-        height: "auto",
-        display: "flex",
-        justifyContent: disableListeners ? "center" : "normal",
-      }}
-    />
-  );
+  });
+  scene.clear();
 }
 
 // KEEP THESE IN SYNC WITH THE SWITCH BELOW!!!
@@ -344,6 +85,7 @@ export const availableThreejsModels = [
   "ocean_planet",
   "ocean",
 ];
+
 function generatePlanetByType(params) {
   switch (params.type) {
     case "barren_planet":
@@ -383,7 +125,6 @@ function generatePlanetByType(params) {
       return createLavaPlanet(params);
     case "desert_planet":
     case "desert":
-      // lightPos = new Vector2(0.39, 0.7), colors, rotationSpeed = 0.1, rotation = 0.0, pixels, seed
       return createDryPlanet(
         undefined,
         params.colors,
@@ -397,6 +138,368 @@ function generatePlanetByType(params) {
     case "ocean":
       return createEarthPlanet(params);
   }
+}
+
+function ThreejsPlanet({
+  height,
+  width,
+  type,
+  pixels,
+  baseColors,
+  featureColors,
+  layerColors,
+  schemeColor,
+  atmosphereColors,
+  clouds,
+  cloudPercent,
+  size,
+  ringSize,
+  hydroPercent,
+  lavaPercent,
+  seed,
+  planetSize,
+  disableListeners,
+  warpDistance,
+  propStyle,
+  warpStars = 200,
+  hostKey = "default",
+}) {
+  const containerRef = useRef(null);
+  const genRef = useRef(0);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const myGen = ++genRef.current;
+
+    const { renderer, canvas } = acquireRenderer();
+
+    // local vars we need for resume
+    let scene = null;
+    let camera = null;
+    let planetGroup = null;
+    let starGroup = null;
+    let clock = null;
+
+    let animationId = null;
+    let running = false;
+
+    const computeSize = () => {
+      const computedW = Math.max(
+        1,
+        Math.floor(width ?? container.clientWidth - (disableListeners ? 0 : 10)),
+      );
+      const computedH = Math.max(
+        1,
+        Math.floor(height ?? container.clientHeight - (disableListeners ? 0 : 10)),
+      );
+      return { computedW, computedH };
+    };
+
+    const attachToContainerAndResize = () => {
+      const { computedW, computedH } = computeSize();
+
+      if (canvas.parentElement !== container) {
+        canvas.parentElement?.removeChild(canvas);
+        container.appendChild(canvas);
+      }
+
+      renderer.setSize(computedW, computedH, false);
+      canvas.style.width = `${computedW}px`;
+      canvas.style.height = `${computedH}px`;
+      canvas.style.display = "block";
+      canvas.style.backgroundColor = "transparent";
+      // canvas.style.pointerEvents = "none";
+
+      if (camera) {
+        camera.aspect = computedW / computedH;
+        camera.updateProjectionMatrix();
+      }
+    };
+
+    const buildSceneOnce = () => {
+      scene = new Scene();
+
+      const { computedW, computedH } = computeSize();
+      camera = new PerspectiveCamera(75, computedW / computedH, 0.1, 2000);
+      camera.position.z = planetSize || 1;
+
+      clock = new Clock();
+      planetGroup = new Group();
+
+      const planet = generatePlanetByType({
+        pixels: pixels ? Number(pixels) : undefined,
+        colors: {
+          base: baseColors || undefined,
+          feature: featureColors || undefined,
+          layer: layerColors || undefined,
+          scheme: schemeColor || undefined,
+          atmosphereColors: atmosphereColors || undefined,
+        },
+        clouds: clouds === "false" ? false : true,
+        type: type || "terrestrial",
+        size: size ? Number(size) : undefined,
+        ringSize: ringSize ? Number(ringSize) : undefined,
+        cloudPercent: cloudPercent ? Number(cloudPercent) : undefined,
+        hydroPercent: hydroPercent ? Number(hydroPercent) : undefined,
+        lavaPercent: lavaPercent ? Number(lavaPercent) : undefined,
+        seed: seed ? seed : undefined,
+      });
+
+      if (!planet) return false;
+
+      planetGroup.add(planet);
+      scene.add(planetGroup);
+
+      if (!disableListeners) {
+        starGroup = createStars(warpStars);
+        starGroup.position.z = -0.5;
+        scene.add(starGroup);
+      }
+
+      if (type === "station" || type === "gate") {
+        scene.add(new AmbientLight(0xffffff, 0.02));
+        const dl = new DirectionalLight(0xffffff, 0.5);
+        dl.position.set(5, 5, 5);
+        scene.add(dl);
+      }
+
+      return true;
+    };
+
+    // animation state
+    let cameraStartTime;
+    let currentZ;
+    let totalX = 0;
+    let moveX = 0;
+    let holding = false;
+
+    const skySpeed = 0.00001;
+    const baseSpeed = 0.5;
+    const maxTimeSpeed = 0.9;
+    const timeFriction = 0.95;
+    const maxAccel = 0.01;
+    const notLava = type !== "lava";
+
+    if (warpDistance) {
+      const warpStartZ = warpDistance * 300;
+      currentZ = warpStartZ;
+    }
+
+    const stop = () => {
+      running = false;
+      if (animationId) cancelAnimationFrame(animationId);
+      animationId = null;
+    };
+
+    const start = () => {
+      if (running) return;
+      if (genRef.current !== myGen) return;
+      if (getThreeCanvasOwner() !== hostKey) return;
+      if (!scene || !camera) return;
+
+      running = true;
+
+      if (warpDistance && camera) {
+        const warpStartZ = warpDistance * 300;
+        camera.position.z = warpStartZ;
+        currentZ = warpStartZ;
+        cameraStartTime = undefined;
+      }
+
+      const animate = () => {
+        if (genRef.current !== myGen) return stop();
+        if (getThreeCanvasOwner() !== hostKey) return stop();
+
+        animationId = requestAnimationFrame(animate);
+
+        if (warpDistance && camera) {
+          if (!cameraStartTime) cameraStartTime = performance.now();
+          const damping = 0.1;
+          currentZ += (warpDistance - currentZ) * damping;
+          camera.position.z = currentZ;
+        }
+
+        if (planetGroup && clock) {
+          planetGroup.children.forEach(p => {
+            p.children.forEach(layer => {
+              if (!layer.material || !("uniforms" in layer.material)) return;
+              const u = layer.material.uniforms;
+              if (!u?.time || !u?.time_speed) return;
+
+              const elapsed = clock.getElapsedTime() % 10000;
+              u.time.value = elapsed;
+
+              if (holding && notLava) {
+                console.log("move!", moveX)
+                const rawDelta = moveX * 0.01;
+                const limitedDelta = Math.max(-maxAccel, Math.min(maxAccel, rawDelta));
+                u.time_speed.value += limitedDelta;
+              } else {
+                u.time_speed.value =
+                  baseSpeed + (u.time_speed.value - baseSpeed) * timeFriction;
+              }
+
+              u.time_speed.value = Math.max(
+                -maxTimeSpeed,
+                Math.min(maxTimeSpeed, u.time_speed.value),
+              );
+            });
+          });
+        }
+
+        if (starGroup) {
+          starGroup.rotateY(skySpeed);
+          starGroup.rotateX(skySpeed);
+          starGroup.rotateZ(skySpeed);
+        }
+
+        if (type === "station" && planetGroup) {
+          planetGroup.rotation.z += 0.0002;
+        }
+
+        if (type === "gate" && planetGroup && clock) {
+          planetGroup.children.forEach(child => {
+            if (child.userData.animate) child.userData.animate(clock.getElapsedTime());
+          });
+        }
+
+        renderer.render(scene, camera);
+        // moveX = totalX = 0;
+        moveX = 0;
+      };
+
+      animate();
+    };
+
+    // initial claim behavior
+    claimThreeCanvas(hostKey, { force: hostKey === "modal" });
+
+    // build scene regardless, but only attach/start if we are owner
+    const ok = buildSceneOnce();
+    if (!ok) {
+      releaseRenderer();
+      return;
+    }
+
+    if (getThreeCanvasOwner() === hostKey) {
+      attachToContainerAndResize();
+      start();
+    }
+
+    // if dialog layout changes sizes after mount
+    requestAnimationFrame(() => {
+      if (genRef.current !== myGen) return;
+      if (getThreeCanvasOwner() !== hostKey) return;
+      attachToContainerAndResize();
+    });
+
+    // Resume on ownership changes
+    const off = onThreeOwnerChange((newOwner) => {
+      if (genRef.current !== myGen) return;
+      if (newOwner === hostKey) {
+        attachToContainerAndResize();
+        start();
+      } else {
+        stop();
+      }
+    });
+
+    // listeners
+    let handleMouseDown = null;
+    let handleMouseUp = null;
+    let handlePointerMove = null;
+    let lastX = 0;
+    if (!disableListeners) {
+      handleMouseDown = (e) => {
+        holding = true;
+        lastX = e.clientX ?? 0;
+        container.style.cursor = "grabbing";
+      };
+
+      handleMouseUp = () => {
+        holding = false;
+        lastX = 0;
+        container.style.cursor = "grab";
+      };
+
+      handlePointerMove = (e) => {
+        if (!holding) return;
+        const x = e.clientX ?? 0;
+        const dx = x - lastX;
+        lastX = x;
+
+        // accumulate for this frame
+        moveX += dx;
+        totalX += dx;
+      };
+      window.addEventListener("pointerdown", handleMouseDown, false);
+      window.addEventListener("pointerup", handleMouseUp, false);
+      window.addEventListener("pointerleave", handleMouseUp, false);
+      window.addEventListener("pointermove", handlePointerMove, false);
+    }
+
+    return () => {
+      try {
+        genRef.current++;
+        off?.();
+        stop();
+
+        if (handleMouseDown) window.removeEventListener("pointerdown", handleMouseDown);
+        if (handleMouseUp) {
+          window.removeEventListener("pointerup", handleMouseUp);
+          window.removeEventListener("pointerleave", handleMouseUp);
+        }
+        if (handlePointerMove) window.removeEventListener("pointermove", handlePointerMove);
+        container.style.cursor = ""
+
+        if (scene) disposeScene(scene);
+
+        releaseThreeCanvas(hostKey);
+        releaseRenderer();
+      } catch (err) {
+        console.error("threejs cleanup error", err);
+      }
+    };
+  }, [
+    height,
+    width,
+    type,
+    pixels,
+    baseColors,
+    featureColors,
+    layerColors,
+    schemeColor,
+    atmosphereColors,
+    clouds,
+    cloudPercent,
+    size,
+    ringSize,
+    hydroPercent,
+    lavaPercent,
+    seed,
+    planetSize,
+    disableListeners,
+    warpDistance,
+    warpStars,
+    hostKey,
+  ]);
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        ...propStyle,
+        cursor: disableListeners ? "" : "grab",
+        width: typeof width === "number" ? `${width}px` : "100%",
+        height: typeof height === "number" ? `${height}px` : "100%",
+        aspectRatio: typeof width === "number" && typeof height === "number" ? undefined : "1 / 1",
+        display: "flex",
+        justifyContent: disableListeners ? "center" : "normal",
+      }}
+    />
+  );
 }
 
 export function hexToVector4(rawHex) {
