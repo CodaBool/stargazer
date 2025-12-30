@@ -14,6 +14,21 @@ export const useDraw = create(set => ({
   setRecreateListeners: () => set({ recreateListeners: Math.random() }),
 }))
 
+const neonColors = [
+  "#FF00FF", // Neon Magenta
+  "#00FFFF", // Neon Cyan
+  "#FFFF00", // Neon Yellow
+  "#FF1493", // Deep Pink
+  "#00FF00", // Lime
+  "#00FF7F", // Spring Green
+  "#FF4500", // Orange Red
+  "#7FFF00", // Chartreuse
+];
+
+function getRandomNeonColor() {
+  return neonColors[Math.floor(Math.random() * neonColors.length)];
+}
+
 export default function Controls({ name, params, setSize, TYPES, STYLES, GEO_EDIT }) {
   const [saveTrigger, setSaveTrigger] = useState()
   // const { setTutorial, tutorial } = useStore()
@@ -24,6 +39,8 @@ export default function Controls({ name, params, setSize, TYPES, STYLES, GEO_EDI
   const setDraw = useDraw(d => d.setDraw)
   const setRecreateListeners = useDraw(d => d.setRecreateListeners)
   const router = useRouter()
+  
+  
 
   useEffect(() => {
     if (!draw || !mapId) return
@@ -50,11 +67,19 @@ export default function Controls({ name, params, setSize, TYPES, STYLES, GEO_EDI
         draw.add(f)
       }
       if ((f.geometry.type === "Point" || f.geometry.type.includes("Poly")) && !f.properties.fill) {
-        f.properties.fill = STYLES.MAIN_COLOR
+        if (f.geometry.type.includes("Poly")) {
+          f.properties.fill = `rgba(${hexToRgb(getRandomNeonColor())}, 0.1)`
+        } else {
+          f.properties.fill = getRandomNeonColor()
+        }
         draw.add(f)
       }
       if ((f.geometry.type.includes("LineString") || f.geometry.type.includes("Poly")) && !f.properties.stroke) {
-        f.properties.stroke = `rgba(${hexToRgb(STYLES.HIGHLIGHT_COLOR)}, 0.5)`
+        if (f.properties.fill?.length > 7) {
+          f.properties.stroke = f.properties.fill.replace(/, \d+\.\d+\)$/, ', .5)');
+        } else {
+          f.properties.stroke = `rgba(${hexToRgb(getRandomNeonColor())}, 0.5)`
+        }
         draw.add(f)
       }
     })
