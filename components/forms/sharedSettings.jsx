@@ -165,7 +165,7 @@ export default function SharedSettings({
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Limits how far in any direction the map can be panned. Use this formatting "left, bottom, right, top" replacing each direction word with your chosen number (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#maxbounds">source</a>)
+                    Limits how far in any direction the map can be panned. Use this formatting "left, bottom, right, top" replacing each direction word with your chosen number. For Earth maps, this will be geographic coordinates: "lng (west), lat (south), lng (east), lat (north)" (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#maxbounds">source</a>)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -318,6 +318,8 @@ export default function SharedSettings({
                           form.setValue('BG', getConsts(mapName).BG)
                           form.setValue('MAX_ZOOM', getConsts(mapName).MAX_ZOOM)
                           form.setValue('MIN_ZOOM', getConsts(mapName).MIN_ZOOM)
+                          form.setValue('MAIN_COLOR', getConsts(mapName).MAIN_COLOR)
+                          form.setValue('HIGHLIGHT_COLOR', getConsts(mapName).HIGHLIGHT_COLOR)
                           form.setValue('DISTANCE_CONVERTER', getConsts(mapName).DISTANCE_CONVERTER)
                           form.setValue('TYPES', JSON.stringify(getConsts(mapName).TYPES, null, 2))
 
