@@ -318,8 +318,8 @@ export default function SharedSettings({
                           form.setValue('BG', getConsts(mapName).BG)
                           form.setValue('MAX_ZOOM', getConsts(mapName).MAX_ZOOM)
                           form.setValue('MIN_ZOOM', getConsts(mapName).MIN_ZOOM)
-                          form.setValue('MAIN_COLOR', getConsts(mapName).MAIN_COLOR)
-                          form.setValue('HIGHLIGHT_COLOR', getConsts(mapName).HIGHLIGHT_COLOR)
+                          form.setValue('MAIN_COLOR', getConsts(mapName).STYLES.MAIN_COLOR)
+                          form.setValue('HIGHLIGHT_COLOR', getConsts(mapName).STYLES.HIGHLIGHT_COLOR)
                           form.setValue('DISTANCE_CONVERTER', getConsts(mapName).DISTANCE_CONVERTER)
                           form.setValue('TYPES', JSON.stringify(getConsts(mapName).TYPES, null, 2))
 
