@@ -5,7 +5,7 @@ export async function GET(req) {
   try {
 
     const now = new Date();
-    const release = new Date('2025-12-31');
+    const release = new Date('2026-01-31');
     const diff = Math.ceil((release.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
     return new Response(
@@ -33,7 +33,7 @@ export async function GET(req) {
             </style>
         </head>
         <body>
-            <div>DELAYED! new Stargazer release will be in ${diff} days</div>
+            <div>DELAYED! main Stargazer code is finished. Just working on FoundryVTT code and promo now. New Stargazer release will be in ${diff} days</div>
         </body>
         </html>
         `,
