@@ -147,12 +147,12 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     // skip search & pan if generated location
     if (clicked?.properties?.fake) {
       let myGroup
-      if (drawerContent.d.properties.fake) {
-        myGroup = drawerContent.myGroup
-      } else {
-        myGroup = drawerContent.myGroup
-        // myGroup = [drawerContent.d, ...drawerContent.myGroup]
-      }
+      myGroup = drawerContent.myGroup
+      // if (drawerContent.d.properties.fake) {
+      // } else {
+      //   myGroup = drawerContent.myGroup
+      //   // myGroup = [drawerContent.d, ...drawerContent.myGroup]
+      // }
       console.log(`clicked on ${clicked?.properties?.fake ? "fake" : "real"}, lets spill the beans`, myGroup, "d was", drawerContent.d)
       setDrawerContent({ coordinates: clicked.geometry.coordinates, selectedId: clicked.id || clicked.properties.id, myGroup, d: clicked })
 
@@ -183,6 +183,9 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
         groupCenter: [lng, lat],
         ...item.feature
       }))
+
+
+    console.log("newGroup", myGroup, "full nearby results", clicked)
 
     pan(clicked, myGroup)
 
@@ -274,6 +277,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     }
 
     if (d.geometry.type === "Point") {
+      console.log("setting", myGroup, "d", d)
       setDrawerContent({ coordinates, selectedId: d.id, myGroup, d })
     }
   }

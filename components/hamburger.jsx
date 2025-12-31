@@ -17,7 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Pencil, User, Ruler, Menu, Crosshair, HeartHandshake, Eye, CircleHelp, House } from "lucide-react"
+import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Pencil, User, Ruler, Menu, Crosshair, HeartHandshake, Eye, CircleHelp, House, Settings } from "lucide-react"
 import { REPO, TITLE, useMode, USER, useStore } from "@/lib/utils"
 
 export default function Hamburger({ name, params, map, mobile }) {
@@ -97,11 +97,18 @@ export default function Hamburger({ name, params, map, mobile }) {
                 </DropdownMenuItem>
               </Link>
             }
-            <Link href={`/#${name}_local`}>
+            <Link href={`/${name}/`}>
               <DropdownMenuItem className="cursor-pointer">
                 <House className="ml-[.6em] inline" /> <span className="ml-[5px]">Home</span>
               </DropdownMenuItem>
             </Link>
+            {(!mobile && params.get("id")) &&
+              <Link href={`/${name}/${params.get("id")}/settings`}>
+                <DropdownMenuItem className="cursor-pointer">
+                  <Settings className="ml-[.6em] inline" /> <span className="ml-[5px]">Settings</span>
+                </DropdownMenuItem>
+              </Link>
+            }
             {(!params.get("preview") && !mobile && params.get("id")) &&
               <Link href={`/${name}?id=${params.get("id")}&preview=1`}>
                 <DropdownMenuItem className="cursor-pointer">

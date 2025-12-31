@@ -36,8 +36,7 @@ export default function SolarSystemDiagram({
   }
 
   function getFilter(body) {
-    const tint = body?.properties?.tint;
-    return tint ? `drop-shadow(0 0 6px ${tint})` : undefined;
+    return body?.properties?.tint ? `drop-shadow(0 0 6px ${body?.properties?.tint})` : undefined;
   }
 
   const bodies = group.filter((body) => {
@@ -271,7 +270,7 @@ export default function SolarSystemDiagram({
                           </Badge>
                         )}
                         {typeof p.daysInYear === "number" && (
-                          <Badge variant="destructive">{p.daysInYear} days in year</Badge>
+                          <Badge variant="destructive">{p.daysInYear} days in a year</Badge>
                         )}
                         {typeof p.hoursInDay === "number" && (
                           <Badge variant="destructive">{p.hoursInDay} hours in day</Badge>
@@ -324,7 +323,7 @@ export default function SolarSystemDiagram({
                         <p className="mt-2">Dominant Chemical: {p.dominantChemical}</p>
                       )}
                       {typeof p.daysInYear === "number" && (
-                        <p className="mt-2">{p.daysInYear} days in year</p>
+                        <p className="mt-2">{p.daysInYear} days in a year</p>
                       )}
                       {typeof p.hoursInDay === "number" && (
                         <p className="mt-2">{p.hoursInDay} hours in day</p>

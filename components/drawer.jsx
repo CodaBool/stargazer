@@ -143,6 +143,7 @@ export default function DrawerComponent({
       ? display.source.properties.starType.split(",").filter(Boolean).length
       : 0;
 
+  console.log("local", local)
   return (
     <Drawer
       open={!!drawerContent}
