@@ -185,7 +185,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       }))
 
 
-    console.log("newGroup", myGroup, "full nearby results", clicked)
+    // console.log("newGroup", myGroup, "full nearby results", clicked)
 
     pan(clicked, myGroup)
 
@@ -277,7 +277,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     }
 
     if (d.geometry.type === "Point") {
-      console.log("setting", myGroup, "d", d)
+      // console.log("setting", myGroup, "d", d)
       setDrawerContent({ coordinates, selectedId: d.id, myGroup, d })
     }
   }

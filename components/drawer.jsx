@@ -75,27 +75,21 @@ export default function DrawerComponent({
   const local = useMemo(() => {
     if (!d || !coordinates || !Array.isArray(myGroup)) return [];
     if (!GENERATE_LOCATIONS) return myGroup;
-
     if (d.geometry?.type !== "Point") return myGroup;
-    if (!VIEW?.maxBounds || typeof SEARCH_SIZE !== "number") return myGroup;
 
-    const [lng, lat] = coordinates;
-
-    const systemBodies = generateSystemAtClick({
-      lng,
-      lat,
+    // TODO: expose the *5 var here, it can be very useful for custom maps
+    return generateSystemAtClick({
+      lng: coordinates[0],
+      lat: coordinates[1],
       SEARCH_SIZE,
       clickedFeature: d,
       VIEW: { maxBounds: VIEW.maxBounds },
       nearbyRealFeatures: myGroup,
       snapCellSizeDeg: SEARCH_SIZE * 5,
-    });
-
-    return systemBodies;
+    })
   }, [
     d,
-    coordinates?.[0],
-    coordinates?.[1],
+    coordinates,
     myGroup,
     GENERATE_LOCATIONS,
     VIEW?.maxBounds,

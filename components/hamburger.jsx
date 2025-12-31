@@ -97,7 +97,7 @@ export default function Hamburger({ name, params, map, mobile }) {
                 </DropdownMenuItem>
               </Link>
             }
-            <Link href={`/${name}/`}>
+            <Link href={`/#${name}_local`}>
               <DropdownMenuItem className="cursor-pointer">
                 <House className="ml-[.6em] inline" /> <span className="ml-[5px]">Home</span>
               </DropdownMenuItem>
