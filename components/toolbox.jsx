@@ -387,10 +387,22 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
         // TODO: grid has issues when switching preview without a full reload
         // this is a race condition
         if (document.querySelector(".geogrid")) {
-          console.log("force reload, since grid is buggy")
-          setTimeout(() => {
-            window.location.reload();
-          }, 1_300)
+          console.log("force reload, since geo-grid is buggy")
+          document.querySelector("#map").innerHTML = `
+            <div class='transition-text' style='
+              position: absolute;
+              left: 50%;
+              top: 50%;
+              transform: translate(-50%, -50%);
+              font-size: 3em;
+              line-height: 1;
+              text-align: center;
+              background: rgba(0, 0, 0, 0.8);
+              padding: 0.5em 1em;
+              border-radius: 15px;
+            '>${urlParams.get("preview") ? 'Switching to Preview Mode' : 'Switching to Edit Mode'}</div>
+          `
+          setTimeout(() => window.location.reload(), 1_000)
         }
       }
     }

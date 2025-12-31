@@ -247,11 +247,11 @@ body {
   }
   .hamburger {
     right: 1em;
-    bottom: 0.5em;
+    bottom: 5em;
   }
   .zoom-controls {
     right: 1.8em;
-    bottom: 7em;
+    bottom: 12em;
   }
 }
 

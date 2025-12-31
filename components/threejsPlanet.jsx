@@ -332,7 +332,6 @@ function ThreejsPlanet({
               u.time.value = elapsed;
 
               if (holding && notLava) {
-                console.log("move!", moveX)
                 const rawDelta = moveX * 0.01;
                 const limitedDelta = Math.max(-maxAccel, Math.min(maxAccel, rawDelta));
                 u.time_speed.value += limitedDelta;

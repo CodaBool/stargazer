@@ -62,11 +62,11 @@ export default function DrawerComponent({
     const isSmall = window.innerWidth < 1200;
 
     if (isSmall) {
-      hamburger.style.bottom = drawerContent ? "45%" : "0.5em";
-      zoomControls.style.bottom = drawerContent ? "55%" : "7em";
+      hamburger.style.bottom = drawerContent ? "45%" : "5em";
+      zoomControls.style.bottom = drawerContent ? "55%" : "12em";
     } else {
-      if (hamburger.style.bottom === "0.5em") hamburger.style.removeProperty("bottom");
-      if (zoomControls.style.bottom === "7em") zoomControls.style.removeProperty("bottom");
+      if (hamburger.style.bottom === "5em") hamburger.style.removeProperty("bottom");
+      if (zoomControls.style.bottom === "12em") zoomControls.style.removeProperty("bottom");
       if (hamburger.style.bottom === "45%") hamburger.style.removeProperty("bottom");
       if (zoomControls.style.bottom === "55%") zoomControls.style.removeProperty("bottom");
     }
@@ -137,7 +137,6 @@ export default function DrawerComponent({
       ? display.source.properties.starType.split(",").filter(Boolean).length
       : 0;
 
-  console.log("truthy?", drawerContent, IS_GALAXY, availableThreejsModels.includes(display.type), "display", display)
   return (
     <Drawer
       open={!!drawerContent}

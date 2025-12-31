@@ -24,6 +24,28 @@ export default function Hamburger({ name, params, map, mobile }) {
   const { mode, setMode } = useMode()
   const { setTutorial } = useStore()
 
+  function geoGridWorkaround() {
+    if (document.querySelector(".geogrid")) {
+      const urlParams = new URLSearchParams(window.location.search);
+      console.log("force reload, since geo-grid is buggy")
+      document.querySelector("#map").innerHTML = `
+        <div class='transition-text' style='
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 3em;
+          line-height: 1;
+          text-align: center;
+          background: rgba(0, 0, 0, 0.8);
+          padding: 0.5em 1em;
+          border-radius: 15px;
+        '>${urlParams.get("preview") ? 'Switching to Preview Mode' : 'Switching to Edit Mode'}</div>
+      `
+      setTimeout(() => window.location.reload(), 1_000)
+    }
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger onPointerDown={e => e.stopPropagation()} className="m-5 ml-12 absolute hamburger cursor-pointer z-10" style={{ transition: 'bottom 0.5s ease-in-out' }}>
@@ -110,14 +132,14 @@ export default function Hamburger({ name, params, map, mobile }) {
               </Link>
             }
             {(!params.get("preview") && !mobile && params.get("id")) &&
-              <Link href={`/${name}?id=${params.get("id")}&preview=1`}>
+              <Link href={`/${name}?id=${params.get("id")}&preview=1`} onClick={geoGridWorkaround}>
                 <DropdownMenuItem className="cursor-pointer">
                   <Eye className="ml-[.6em] inline" /> <span className="ml-[5px]">Preview</span>
                 </DropdownMenuItem>
               </Link>
             }
             {(params.get("preview") && !mobile && params.get("id")) &&
-              <Link href={`/${name}?id=${params.get("id")}`}>
+              <Link href={`/${name}?id=${params.get("id")}`} onClick={geoGridWorkaround}>
                 <DropdownMenuItem className="cursor-pointer">
                   <Pencil className="ml-[.6em] inline" /> <span className="ml-[5px]">Edit</span>
                 </DropdownMenuItem>
