@@ -117,7 +117,7 @@ const removePopup = () => {
   if (popup._container) popup.remove()
 }
 
-export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET, VIEW, GRID_DENSITY, MIN_ZOOM, MAX_ZOOM, SPEED }) {
+export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET, VIEW, GRID_DENSITY, MIN_ZOOM, MAX_ZOOM, TRAVEL_RATE, TRAVEL_RATE_UNIT, TRAVEL_TIME_UNIT, SHIP_CLASS, TIME_DILATION }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
   const { mode } = useMode()
@@ -608,7 +608,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       <Debug />
       {!locked && <Tutorial name={name} IS_GALAXY={IS_GALAXY} />}
       {!locked && <Drawer {...drawerContent} passedLocationClick={locationClick} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} VIEW={VIEW} GENERATE_LOCATIONS={GENERATE_LOCATIONS} GRID_DENSITY={GRID_DENSITY || 1} COORD_OFFSET={COORD_OFFSET} SEARCH_SIZE={SEARCH_SIZE} mobile={mobile} width={width} height={height} />}
-      <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} COORD_OFFSET={COORD_OFFSET} GRID_DENSITY={GRID_DENSITY} SPEED={SPEED} />
+      <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} COORD_OFFSET={COORD_OFFSET} GRID_DENSITY={GRID_DENSITY} TRAVEL_RATE={Number(TRAVEL_RATE)} TRAVEL_RATE_UNIT={TRAVEL_RATE_UNIT} TRAVEL_TIME_UNIT={TRAVEL_TIME_UNIT} SHIP_CLASS={SHIP_CLASS} TIME_DILATION={TIME_DILATION} />
       {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} mobile={mobile} />}
     </>
   )

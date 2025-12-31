@@ -34,7 +34,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import POSTWAR_GREEN from '@/lib/style.json'
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -67,14 +66,16 @@ export default function SharedSettings({
   UNIT,
   DISTANCE_CONVERTER,
   GENERATE_LOCATIONS,
+  TRAVEL_RATE_UNIT,
+  TRAVEL_TIME_UNIT,
+  SHIP_CLASS,
+  TIME_DILATION,
+  TRAVEL_RATE,
   SEARCH_SIZE,
   BG,
   STYLES,
   TYPES,
-  SPEED,
 }) {
-
-// console.log(data.config?.SPEED ? data.config?.SPEED : SPEED, SPEED, "LOOKY", data.config?.SPEED)
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(submit)} className="space-y-8 md:container mx-auto my-8">
@@ -311,6 +312,8 @@ export default function SharedSettings({
                           form.setValue("MAX_BOUNDS", getConsts(mapName).VIEW.maxBounds.flat().join(","));
                           form.setValue("CENTER", `${getConsts(mapName).VIEW.latitude},${getConsts(mapName).VIEW.longitude}`)
                           form.setValue("UNIT", getConsts(mapName).UNIT)
+                          form.setValue("TRAVEL_RATE_UNIT", getConsts(mapName).TRAVEL_RATE_UNIT)
+                          form.setValue("TRAVEL_RATE", getConsts(mapName).TRAVEL_RATE)
                           form.setValue('STYLE', getConsts(mapName).STYLE)
                           // TODO: add these as form options
                           form.setValue('GENERATE_LOCATIONS', getConsts(mapName).GENERATE_LOCATIONS)
@@ -367,75 +370,189 @@ export default function SharedSettings({
                 </FormItem>
               )}
             />}
-            {map === "custom" && <FormField
-              control={form.control}
-              name="UNIT"
-              defaultValue={data.config?.UNIT || UNIT}
-              render={({ field }) => (
-                <FormItem className="py-4">
-                  <FormLabel>Unit of Measurement</FormLabel>
-                  <FormControl>
-                    <div className="flex">
-                      <Input placeholder={UNIT} {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("UNIT", UNIT)} className="ml-3">
-                        Reset
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    An arbitrary label for the unit of measurement. This has no impact on the measurement itself.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />}
             {/* TODO: look into scale control maplibre */}
-            {map === "custom" && <FormField
+            {map === "custom" &&
+              <>
+                {(data.config?.IS_GALAXY || IS_GALAXY) && <FormField
+                  control={form.control}
+                  name="TIME_DILATION"
+                  defaultValue={typeof data.config?.TIME_DILATION === 'boolean' ? data.config?.TIME_DILATION : TIME_DILATION}
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 py-2">
+                      <FormLabel>Time Dilation</FormLabel>
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          className="cursor-pointer"
+                          onCheckedChange={e => {
+                            field.onChange(e)
+                            if (e) {
+                              form.setValue("TRAVEL_RATE", getConsts("lancer").TRAVEL_RATE)
+                              form.setValue("TRAVEL_RATE_UNIT", getConsts("lancer").TRAVEL_RATE_UNIT)
+                            } else {
+                              form.setValue("TRAVEL_RATE", getConsts("").TRAVEL_RATE)
+                              form.setValue("TRAVEL_RATE_UNIT", getConsts("").TRAVEL_RATE_UNIT)
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        When measuring travel time, additionally calculate time from the perspective of a stationary observer.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />}
+                <FormField
+                  control={form.control}
+                  rules={{ validate: v => !isNaN(v) || "Value must be a number" }}
+                  name="DISTANCE_CONVERTER"
+                  defaultValue={data.config?.DISTANCE_CONVERTER ? data.config?.DISTANCE_CONVERTER : DISTANCE_CONVERTER}
+                  render={({ field }) => (
+                    <FormItem className="py-4">
+                      <FormLabel>Distance Scale Factor</FormLabel>
+                      <FormControl>
+                        <div className="flex">
+                          <Input placeholder={DISTANCE_CONVERTER} type="number" {...field} />
+                          <Button variant="outline" type="button" onClick={() => form.setValue("DISTANCE_CONVERTER", DISTANCE_CONVERTER)} className="ml-3">
+                            Reset
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormDescription>
+                        Scale up or down the distance between two points.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="UNIT"
+                  defaultValue={data.config?.UNIT || UNIT}
+                  render={({ field }) => (
+                    <FormItem className="py-4">
+                      <FormLabel>Distance Unit</FormLabel>
+                      <FormControl>
+                        <div className="flex">
+                          <Input placeholder={UNIT} {...field} />
+                          <Button variant="outline" type="button" onClick={() => form.setValue("UNIT", UNIT)} className="ml-3">
+                            Reset
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormDescription>
+                        An arbitrary label for a unit of distance. This has no impact on the measurement itself.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <p className="text-center">distance * distance_scale_factor (distance_unit)</p>
+                <p className="text-center">example: 2 ly</p>
+              </>
+            }
+
+            <FormField
               control={form.control}
               rules={{ validate: v => !isNaN(v) || "Value must be a number" }}
-              name="DISTANCE_CONVERTER"
-              defaultValue={data.config?.DISTANCE_CONVERTER ? data.config?.DISTANCE_CONVERTER : DISTANCE_CONVERTER}
+              name="TRAVEL_RATE"
+              defaultValue={data.config?.TRAVEL_RATE ? data.config?.TRAVEL_RATE : TRAVEL_RATE}
               render={({ field }) => (
                 <FormItem className="py-4">
-                  <FormLabel>Unit Factor</FormLabel>
+                  <FormLabel>Travel Rate</FormLabel>
                   <FormControl>
                     <div className="flex">
-                      <Input placeholder={DISTANCE_CONVERTER} type="number" {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("DISTANCE_CONVERTER", DISTANCE_CONVERTER)} className="ml-3">
+                      <Input placeholder={TRAVEL_RATE} type="number" {...field} />
+                      <Button variant="outline" type="button" onClick={() => form.setValue("TRAVEL_RATE", TRAVEL_RATE)} className="ml-3">
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Scale up or down the distance per unit of measurement
+                    The number by which the distance is divided to find the time to travel.
+                    {map === "alien" && <span className="font-bold"> ALIEN: this is your ship's FTL value</span>}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
-            />}
-            {map === "alien" && <FormField
+            />
+            <FormField
               control={form.control}
-              rules={{ validate: v => !isNaN(v) || "Value must be a number" }}
-              name="SPEED"
-              defaultValue={data.config?.SPEED ? data.config?.SPEED : SPEED}
+              name="TRAVEL_RATE_UNIT"
+              defaultValue={data.config?.TRAVEL_RATE_UNIT ? data.config?.TRAVEL_RATE_UNIT : TRAVEL_RATE_UNIT}
               render={({ field }) => (
                 <FormItem className="py-4">
-                  <FormLabel>Speed</FormLabel>
+                  <FormLabel>Travel Rate Unit</FormLabel>
                   <FormControl>
                     <div className="flex">
-                      <Input placeholder={SPEED} type="number" {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("SPEED", SPEED)} className="ml-3">
+                      <Input placeholder={TRAVEL_RATE_UNIT} {...field} />
+                      <Button variant="outline" type="button" onClick={() => form.setValue("TRAVEL_RATE_UNIT", TRAVEL_RATE_UNIT)} className="ml-3">
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Speed by which the distance is divided to find the time to travel
+                    Text to represent the units of your travel rate (e.g. mph, c). This has no impact on the measurement itself.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
-            />}
+            />
+            {map === "starwars" &&
+              <FormField
+                control={form.control}
+                name="SHIP_CLASS"
+                defaultValue={data.config?.SHIP_CLASS ? data.config?.SHIP_CLASS : SHIP_CLASS}
+                render={({ field }) => (
+                  <FormItem className="py-4">
+                    <FormLabel>Ship Class</FormLabel>
+                    <FormControl>
+                      <div className="flex">
+                        <Input placeholder={SHIP_CLASS} {...field} />
+                        <Button variant="outline" type="button" onClick={() => form.setValue("SHIP_CLASS", SHIP_CLASS)} className="ml-3">
+                          Reset
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormDescription>
+                      Text to label the class of your ship. This has no impact on the measurement itself.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            }
+            <p className="text-center">(distance / travel_rate) time_unit (travel_rate travel_rate_unit)</p>
+
+            {(data.config?.IS_GALAXY || IS_GALAXY)
+              ? <p className="text-center"><b>example:</b> 2 years (.995 c)</p>
+              : <p className="text-center"><b>example:</b> 2 hours (3 mph)</p>
+            }
+
+            {/* {<FormField
+              control={form.control}
+              rules={{ validate: v => !isNaN(v) || "Value must be a number" }}
+              name="TRAVEL_TIME_UNIT"
+              defaultValue={data.config?.TRAVEL_TIME_UNIT ? data.config?.TRAVEL_TIME_UNIT : TRAVEL_TIME_UNIT}
+              render={({ field }) => (
+                <FormItem className="py-4">
+                  <FormLabel>Time Unit</FormLabel>
+                  <FormControl>
+                    <div className="flex">
+                      <Input disabled placeholder={TRAVEL_TIME_UNIT} type="number" {...field} />
+                      <Button variant="outline" type="button" onClick={() => form.setValue("TRAVEL_TIME_UNIT", TRAVEL_TIME_UNIT)} className="ml-3">
+                        Reset
+                      </Button>
+                    </div>
+                  </FormControl>
+                  <FormDescription>
+                    Optional: The unit shown for travel time. This has no impact on the measurement itself. [disabled, I've generally covered most units and will allow for setting this unit in a future update]
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />}*/}
             <FormField
               control={form.control}
               name="BG"

@@ -14,7 +14,8 @@ const linestring = {
 }
 let text, tutorial, crosshairX, crosshairY
 
-export default function Toolbox({ map, width, params, height, mobile, name, IS_GALAXY, DISTANCE_CONVERTER, UNIT, COORD_OFFSET, GRID_DENSITY, SPEED }) {
+export default function Toolbox({ map, width, params, height, mobile, name, IS_GALAXY, DISTANCE_CONVERTER, UNIT, COORD_OFFSET, GRID_DENSITY, TRAVEL_RATE_UNIT, TRAVEL_TIME_UNIT, TIME_DILATION, TRAVEL_RATE, SHIP_CLASS
+ }) {
   const { mode, setMode } = useMode()
   const router = useRouter()
   const offset = COORD_OFFSET || [0, 0]
@@ -23,6 +24,54 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
   const GRID = (typeof GRID_DENSITY === "number" && GRID_DENSITY > 0) ? GRID_DENSITY : 1
   const { coordFromLngLat } = useMemo(() => gridHelpers(name, GRID), [name, GRID])
 
+  function updateCrosshairLabels(distance) {
+
+    if (IS_GALAXY) {
+      let time
+      let extraText = ""
+      let timeUnit = TRAVEL_TIME_UNIT
+
+      if (name === "alien") {
+        // days
+        time = distance / (1 / TRAVEL_RATE)
+        timeUnit = "days"
+        // convert to hours if less than 1 day
+        if (time < 1) {
+          time = time * 24
+          timeUnit = "hours"
+        }
+      } else if (name === "starwars") {
+        extraText = "| class " + SHIP_CLASS
+      }
+
+      if (!time) {
+        time = distance / TRAVEL_RATE
+      }
+
+      let textContent = `${distance.toFixed(1)} ${UNIT} | ${time.toFixed(1)} ${timeUnit} (${TRAVEL_RATE} ${TRAVEL_RATE_UNIT}) ${extraText}`;
+      if (TIME_DILATION) {
+        // assumes travel rate is 0-1 number in speed of light units
+        time = (distance / Math.sinh(Math.atanh(TRAVEL_RATE))).toFixed(2)
+        let timeUnit = "years"
+        if (time < 1) {
+          time = (time * 12).toFixed(1);
+          timeUnit = "months";
+        }
+        textContent = `${distance.toFixed(1)} ${UNIT} | ${time} ${timeUnit} (${TRAVEL_RATE} ${TRAVEL_RATE_UNIT}) | ${(distance / TRAVEL_RATE).toFixed(1)} observer years`
+      }
+      text.textContent = textContent
+
+
+    } else {
+      let textContent = `${distance.toFixed(1)} ${UNIT} | ${(distance / TRAVEL_RATE).toFixed(1)} ${TRAVEL_TIME_UNIT} (${TRAVEL_RATE} ${TRAVEL_RATE_UNIT})`
+      // convert to days if larger than 24
+      if ((distance / TRAVEL_RATE > 24) && TRAVEL_TIME_UNIT === "hours") {
+        textContent = `${distance.toFixed(1)} ${UNIT} | ${((distance / TRAVEL_RATE)/24).toFixed(1)} days (${TRAVEL_RATE} ${TRAVEL_RATE_UNIT})`
+      }
+      text.textContent = textContent
+    }
+    text.style.visibility = 'visible'
+  }
   // Projects [lng, lat] to Mercator meters, using projection EPSG:3857
   function mercatorLength(lineString) {
     const R_MAJOR = 6378137.0
@@ -103,38 +152,7 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       - STARWARS: FFG has covering whole galaxy in 14 days for class 1.0
       */
 
-      // TODO: this is duplicated, DRY this
-      if (UNIT === "miles" || UNIT === "mi") {
-        const walkingSpeedMph = 3 // average walking speed in miles per hour
-        const walkingTimeHours = distance / walkingSpeedMph
-        text.textContent = `${distance.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`
-      } else if (UNIT === "parsec") {
-        // alien
-        const days = distance / (1/Number(SPEED))
-        text.textContent = `${distance.toFixed(1)}${UNIT} | ${days.toFixed(1)} days (${SPEED} FTL)`;
-      } else if (UNIT === "ly") {
-        if (name === "starwars") {
-          const vehicleSpeedLyPerHour = 300
-          let relativeTime = (distance / vehicleSpeedLyPerHour) / 24
-          let relTimeUnit = "days"
-          if (relativeTime < 1) {
-            relativeTime = relativeTime * 24
-            relTimeUnit = "hours"
-          }
-          text.textContent = `${distance.toFixed(1)}${UNIT} | ${relativeTime.toFixed(1)} ${relTimeUnit} | class 1.0`
-        } else {
-          let relativeTime = (distance / Math.sinh(Math.atanh(0.995))).toFixed(1)
-          let relTimeUnit = "years"
-          if (relativeTime < 1) {
-            relativeTime = (relativeTime * 12).toFixed(1);
-            relTimeUnit = "months";
-          }
-          text.textContent = `${distance.toFixed(1)}${UNIT} | ${relativeTime} rel. ${relTimeUnit} (.995u) | ${(distance / 0.995).toFixed(1)} observer years`
-        }
-      } else {
-        text.textContent = `${distance.toFixed(1)}${UNIT}`
-      }
-      text.style.visibility = 'visible'
+      updateCrosshairLabels(distance)
 
       // show tutorial text now
       tutorial.textContent = `Toggle measure off to reset`
@@ -231,7 +249,7 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
     tutorial.style.lineHeight = '1.4'
     tutorial.style.zIndex = 2;
     tutorial.style.transform = 'translateX(-50%)';
-    tutorial.style.top = mobile ? '160px' : '140px'
+    tutorial.style.top = '180px'
     tutorial.style.color = 'white'
     tutorial.style.opacity = 0.7
     tutorial.style.fontSize = mobile ? '1.2em' : '1.8em'
@@ -252,7 +270,7 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
     // })
 
     const updateLiveDistance = debounce((e) => {
-      if (mode === "crosshair" || mode !== "measure") return
+      if (mode === "crosshair" || mode !== "measure" || !map) return
 
       // TODO: this will sometimes throw a map is undefined error, but returning early doesn't work
       // test to find out what could be happening
@@ -294,38 +312,8 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       const distance = km * DISTANCE_CONVERTER
       // console.log("km", km)
 
-      if (UNIT === "miles" || UNIT === "mi") {
-        const walkingSpeedMph = 3 // average walking speed in miles per hour
-        const walkingTimeHours = distance / walkingSpeedMph
-        text.textContent = `${distance.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`
-      } else if (UNIT === "parsec") {
-        // alien
-        const days = distance / (1/Number(SPEED))
-        text.textContent = `${distance.toFixed(1)}${UNIT} | ${days.toFixed(1)} days (${SPEED} FTL)`;
-      } else if (UNIT === "ly") {
-        if (name === "starwars") {
-          const vehicleSpeedLyPerHour = 300
-          let relativeTime = (distance / vehicleSpeedLyPerHour) / 24
-          let relTimeUnit = "days"
-          if (relativeTime < 1) {
-            relativeTime = relativeTime * 24
-            relTimeUnit = "hours"
-          }
-          text.textContent = `${distance.toFixed(1)}${UNIT} | ${relativeTime.toFixed(1)} ${relTimeUnit} | class 1.0`
-        } else {
-          let relativeTime = (distance / Math.sinh(Math.atanh(0.995))).toFixed(1)
-          let relTimeUnit = "years"
-          if (relativeTime < 1) {
-            relativeTime = (relativeTime * 12).toFixed(1);
-            relTimeUnit = "months";
-          }
-          text.textContent = `${distance.toFixed(1)}${UNIT} | ${relativeTime} rel. ${relTimeUnit} (.995u) | ${(distance / 0.995).toFixed(1)} observer years`
-        }
-      } else {
-        text.textContent = `${distance.toFixed(1)}${UNIT}`
-      }
+      updateCrosshairLabels(distance)
 
-      text.style.visibility = 'visible'
       source.setData(geojson)
     }, 1)
 
@@ -365,9 +353,8 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
       getMaps().then(maps => {
         const urlParams = new URLSearchParams(window.location.search)
         const map = maps[name + "-" + urlParams.get("id")]
-        if (!map?.config.SPEED && name === "alien") {
-          // TODO: allow for any map to configure speed
-          toast.info(`You can configure your speed within settings. ${SPEED ? ("Using default " + SPEED) : ""}`)
+        if (!map?.config.TRAVEL_RATE) {
+          toast.info(`You can configure your speed within settings. Using default ${TRAVEL_RATE} ${TRAVEL_RATE_UNIT}`)
         }
         text.textContent = `${mobile ? 'Tap two points' : 'Click'} to begin measuring`
         text.style.visibility = 'visible'
