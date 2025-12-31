@@ -32,7 +32,7 @@ export default async function Page({ searchParams }) {
   } else {
     // pre-Auth screen
     return (
-      <div className="flex items-center justify-center min-h-[80vh]">
+      <div className="flex items-center justify-center min-h-[80vh] starfield">
         <Card className="mx-auto my-8 max-w-2xl" scifi="true">
           <CardHeader>
             <div className="flex items-center justify-between">

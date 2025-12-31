@@ -75,7 +75,7 @@ export const availableThreejsModels = [
   "comet",
   "asteroid",
   "asteroids",
-  "neutron_star",
+  // "neutron_star",
   "star",
   "lava_planet",
   "lava",
@@ -117,7 +117,7 @@ function generatePlanetByType(params) {
         params.seed,
         params.size,
       );
-    case "neutron star":
+    // case "neutron star":
     case "star":
       return createStarPlanet(params);
     case "lava_planet":

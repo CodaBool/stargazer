@@ -34,6 +34,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { useWatch } from "react-hook-form"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -76,6 +77,8 @@ export default function SharedSettings({
   STYLES,
   TYPES,
 }) {
+  const isGalaxy = useWatch({ control: form.control, name: "IS_GALAXY" })
+  console.log("isGalaxy", isGalaxy, "!!", !!isGalaxy, data.config?.IS_GALAXY)
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(submit)} className="space-y-8 md:container mx-auto my-8">
@@ -349,7 +352,7 @@ export default function SharedSettings({
                 </FormItem>
               )}
             />}
-            {(data.config?.IS_GALAXY || IS_GALAXY) && <FormField
+            {((typeof isGalaxy === 'undefined' && data.config?.IS_GALAXY) || isGalaxy) && <FormField
               control={form.control}
               name="GENERATE_LOCATIONS"
               defaultValue={typeof data.config?.GENERATE_LOCATIONS === 'boolean' ? data.config?.GENERATE_LOCATIONS : GENERATE_LOCATIONS}
@@ -373,7 +376,7 @@ export default function SharedSettings({
             {/* TODO: look into scale control maplibre */}
             {map === "custom" &&
               <>
-                {(data.config?.IS_GALAXY || IS_GALAXY) && <FormField
+                {((typeof isGalaxy === 'undefined' && data.config?.IS_GALAXY) || isGalaxy) && <FormField
                   control={form.control}
                   name="TIME_DILATION"
                   defaultValue={typeof data.config?.TIME_DILATION === 'boolean' ? data.config?.TIME_DILATION : TIME_DILATION}

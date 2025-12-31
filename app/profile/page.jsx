@@ -13,6 +13,8 @@ export default async function Profile() {
   if (!user) redirect('/login?back=/&callback=/profile')
 
   return (
-    <ProfileForm user={user} />
+    <div className='starfield'>
+      <ProfileForm user={user} />
+    </div>
   )
 }

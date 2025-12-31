@@ -143,6 +143,75 @@ body {
   user-select: none;
   /* bug fix for vaul drawer, which sets this to none like a dummy */
   pointer-events: auto !important;
+  position: relative;
+}
+
+.starfield::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background-repeat: repeat;
+  background-image:
+    /* tiny stars (mostly white) */
+    radial-gradient(0.6px 0.6px at 2% 8%,    #fff 80%, transparent),
+    radial-gradient(0.5px 0.5px at 6% 42%,   #ccd9ff 80%, transparent),
+    radial-gradient(0.6px 0.6px at 9% 73%,   #fff 80%, transparent),
+    radial-gradient(0.5px 0.5px at 13% 18%,  #ffd7a3 80%, transparent),
+    radial-gradient(0.6px 0.6px at 16% 91%,  #fff 80%, transparent),
+    radial-gradient(0.5px 0.5px at 19% 55%,  #ffb3b3 80%, transparent),
+    radial-gradient(0.6px 0.6px at 23% 7%,   #fff 80%, transparent),
+    radial-gradient(0.5px 0.5px at 26% 66%,  #b3c7ff 80%, transparent),
+    radial-gradient(0.6px 0.6px at 29% 34%,  #fff 80%, transparent),
+    radial-gradient(0.5px 0.5px at 32% 84%,  #ffcf99 80%, transparent),
+
+    radial-gradient(0.6px 0.6px at 35% 12%,  #fff 80%, transparent),
+    radial-gradient(0.5px 0.5px at 38% 48%,  #ccd9ff 80%, transparent),
+    radial-gradient(0.6px 0.6px at 41% 78%,  #fff 80%, transparent),
+    radial-gradient(0.5px 0.5px at 44% 26%,  #ffd7a3 80%, transparent),
+    radial-gradient(0.6px 0.6px at 47% 92%,  #fff 80%, transparent),
+    radial-gradient(0.5px 0.5px at 50% 57%,  #ffb3b3 80%, transparent),
+    radial-gradient(0.6px 0.6px at 53% 5%,   #fff 80%, transparent),
+    radial-gradient(0.5px 0.5px at 56% 69%,  #b3c7ff 80%, transparent),
+    radial-gradient(0.6px 0.6px at 59% 38%,  #fff 80%, transparent),
+    radial-gradient(0.5px 0.5px at 62% 87%,  #ffcf99 80%, transparent),
+
+    radial-gradient(0.6px 0.6px at 65% 14%,  #fff 80%, transparent),
+    radial-gradient(0.5px 0.5px at 68% 52%,  #ccd9ff 80%, transparent),
+    radial-gradient(0.6px 0.6px at 71% 81%,  #fff 80%, transparent),
+    radial-gradient(0.5px 0.5px at 74% 29%,  #ffd7a3 80%, transparent),
+    radial-gradient(0.6px 0.6px at 77% 94%,  #fff 80%, transparent),
+    radial-gradient(0.5px 0.5px at 80% 61%,  #ffb3b3 80%, transparent),
+    radial-gradient(0.6px 0.6px at 83% 9%,   #fff 80%, transparent),
+    radial-gradient(0.5px 0.5px at 86% 71%,  #b3c7ff 80%, transparent),
+    radial-gradient(0.6px 0.6px at 89% 41%,  #fff 80%, transparent),
+    radial-gradient(0.5px 0.5px at 92% 88%,  #ffcf99 80%, transparent),
+
+    /* a few slightly larger stars */
+    radial-gradient(1.0px 1.0px at 15% 32%,  rgba(255,255,255,0.9) 80%, transparent),
+    radial-gradient(0.9px 0.9px at 28% 59%,  rgba(179,199,255,0.9) 80%, transparent),
+    radial-gradient(1.0px 1.0px at 41% 21%,  rgba(255,207,153,0.9) 80%, transparent),
+    radial-gradient(0.9px 0.9px at 54% 74%,  rgba(255,255,255,0.9) 80%, transparent),
+    radial-gradient(1.0px 1.0px at 67% 44%,  rgba(255,179,179,0.9) 80%, transparent),
+    radial-gradient(0.9px 0.9px at 79% 17%,  rgba(204,217,255,0.9) 80%, transparent),
+    radial-gradient(1.0px 1.0px at 91% 63%,  rgba(255,255,255,0.9) 80%, transparent),
+    radial-gradient(0.9px 0.9px at 12% 86%,  rgba(255,207,153,0.9) 80%, transparent),
+    radial-gradient(1.0px 1.0px at 48% 6%,   rgba(255,255,255,0.9) 80%, transparent),
+    radial-gradient(0.9px 0.9px at 73% 92%,  rgba(179,199,255,0.9) 80%, transparent);
+
+  background-size: 1200px 800px;
+  animation:
+    twinkleOpacity 14s ease-in-out infinite alternate,
+    twinkleBrightness 22s ease-in-out infinite alternate;
+}
+@keyframes twinkleOpacity {
+  from { opacity: 0.55; }
+  to   { opacity: 0.9; }
+}
+@keyframes twinkleBrightness {
+  from { filter: brightness(0.9); }
+  to   { filter: brightness(1.15); }
 }
 
 /* landing page */

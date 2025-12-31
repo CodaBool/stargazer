@@ -20,9 +20,7 @@ export default function SolarSystemDiagram({
 }) {
   const [activeBody, setActiveBody] = useState(null);
   const [moonBodies, setMoonBodies] = useState(null);
-
   const squareSize = Math.min(700, Math.min(width, height) * 0.99);
-
   const closeDialog = (setter) => setter(null);
 
   function handleMouseOver(feature) {

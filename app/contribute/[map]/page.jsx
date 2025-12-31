@@ -51,7 +51,7 @@ export default async function Contribute({ params, searchParams }) {
   const submissions = locations.filter(l => l.userId === user?.id) || []
 
   return (
-    <div className="md:container mx-auto my-10 md:p-0 p-2">
+    <div className="md:container mx-auto my-10 md:p-0 p-2 starfield">
       {openLocationForm
         ? <CreateLocation map={map} />
         : <Link href={session ? `/contribute/${map}?p=1` : authURL}><Button variant="outline" className="w-full my-1"><Plus /> Create a new Location</Button ></Link>

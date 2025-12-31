@@ -163,7 +163,7 @@ export default async function Location({ params, searchParams }) {
   )
 
   return (
-    <div className="mx-auto my-4 flex justify-center flex-col md:container select-text">
+    <div className="mx-auto my-4 flex justify-center flex-col md:container select-text starfield">
       <Link href={`/contribute/${map}`} className="w-[50px] block">
         <div
           className="w-[50px] h-[50px] rounded-2xl border border-[#1E293B] mb-2 ml-6 md:ml-0"

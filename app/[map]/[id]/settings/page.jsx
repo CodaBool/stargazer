@@ -49,5 +49,9 @@ export default async function mapLobby({ params }) {
     }
     return <CloudSettingsForm map={map} id={id} data={cloud} config={config} />
   }
-  return <SettingsForm map={map} id={id} />
+  return (
+    <div className="starfield">
+      <SettingsForm map={map} id={id} />
+    </div>
+  )
 }

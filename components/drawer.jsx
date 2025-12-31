@@ -137,7 +137,7 @@ export default function DrawerComponent({
       ? display.source.properties.starType.split(",").filter(Boolean).length
       : 0;
 
-  console.log("local", local)
+  console.log("truthy?", drawerContent, IS_GALAXY, availableThreejsModels.includes(display.type), "display", display)
   return (
     <Drawer
       open={!!drawerContent}
