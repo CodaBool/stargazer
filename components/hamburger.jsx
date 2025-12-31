@@ -40,7 +40,7 @@ export default function Hamburger({ name, params, map, mobile }) {
           background: rgba(0, 0, 0, 0.8);
           padding: 0.5em 1em;
           border-radius: 15px;
-        '>${urlParams.get("preview") ? 'Switching to Preview Mode' : 'Switching to Edit Mode'}</div>
+        '>${urlParams.get("preview") ? 'Switching to Edit Mode' : 'Switching to Preview Mode'}</div>
       `
       setTimeout(() => window.location.reload(), 1_000)
     }

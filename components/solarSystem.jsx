@@ -271,7 +271,7 @@ export default function SolarSystemDiagram({
                           <Badge variant="destructive">{p.daysInYear} days in a year</Badge>
                         )}
                         {typeof p.hoursInDay === "number" && (
-                          <Badge variant="destructive">{p.hoursInDay} hours in day</Badge>
+                          <Badge variant="destructive">{p.hoursInDay} hours in a day</Badge>
                         )}
                         {typeof p.gravity === "number" && (
                           <Badge variant="destructive">{p.gravity} cm/sec²</Badge>
@@ -324,7 +324,7 @@ export default function SolarSystemDiagram({
                         <p className="mt-2">{p.daysInYear} days in a year</p>
                       )}
                       {typeof p.hoursInDay === "number" && (
-                        <p className="mt-2">{p.hoursInDay} hours in day</p>
+                        <p className="mt-2">{p.hoursInDay} hours in a day</p>
                       )}
                       {typeof p.gravity === "number" && (
                         <p className="mt-2">Gravity: {(p.gravity * 0.0010197162).toFixed(1)} g</p>
