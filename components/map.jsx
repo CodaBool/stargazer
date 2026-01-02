@@ -7,7 +7,7 @@ import maplibregl, {
 import { useMap, Layer, Source, Popup } from '@vis.gl/react-maplibre'
 import { GeoGrid } from 'geogrid-maplibre-gl'
 import { useEffect, useRef, useState, Fragment } from 'react'
-import { createPopupHTML, localSet, getMaps, useMode, getPaint, gridAlgorithm, useGrid, gridHelpers } from "@/lib/utils.js"
+import { createPopupHTML, localSet, getMaps, useMode, getPaint, gridAlgorithm, useGrid, gridHelpers, boundsToCoord } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import SearchBar from './searchbar'
 import * as turf from '@turf/turf'
@@ -117,7 +117,7 @@ const removePopup = () => {
   if (popup._container) popup.remove()
 }
 
-export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET, VIEW, GRID_DENSITY, MIN_ZOOM, MAX_ZOOM, TRAVEL_RATE, TRAVEL_RATE_UNIT, TRAVEL_TIME_UNIT, SHIP_CLASS, TIME_DILATION }) {
+export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET, VIEW, GRID_DENSITY, MIN_ZOOM, MAX_ZOOM, TRAVEL_RATE, TRAVEL_RATE_UNIT, TRAVEL_TIME_UNIT, SHIP_CLASS, TIME_DILATION, BG_IMAGE }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
   const { mode } = useMode()
@@ -138,7 +138,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   const panMoveRef = useRef(null)
   const mouseUpRef = useRef(null)
   window.setDrawerContent = setDrawerContent
-
 
   function locationClick(e, manual) {
     if (modeRef.current === "measure" || (modeRef.current === "crosshair" && mobile) || locked) return
@@ -504,6 +503,10 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
   return (
     <>
+      {IS_GALAXY && <Starfield width={width} height={height} BOUNDS={VIEW.maxBounds} />}
+      {BG_IMAGE && <Source id="custom-image" type="image" url={BG_IMAGE} coordinates={boundsToCoord(VIEW.maxBounds)}>
+        <Layer type="raster" id="custom-image-layer" />
+      </Source>}
       <Source id="source" type="geojson" data={data}>
         <Layer
           type="fill"
@@ -600,7 +603,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
           filter={['==', '$type', 'Point']}
         />
       </Source>
-      {IS_GALAXY && <Starfield width={width} height={height} BOUNDS={VIEW.maxBounds} />}
       {params.get("zoom") !== "0" && <div className="absolute mt-28 ml-11 mr-[.3em] cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" style={{ transition: 'bottom 0.5s ease-in-out' }}>
         <ZoomIn size={34} onClick={() => wrapper.zoomIn()} className='m-2 hover:stroke-blue-200' />
         <ZoomOut size={34} onClick={() => wrapper.zoomOut()} className='m-2 mt-4 hover:stroke-blue-200' />

@@ -49,8 +49,6 @@ export default function MapSettings({ map, id }) {
       newObj.geojson = data.geojson
     }
 
-    // console.log("prefix body", body)
-
     // massage data into proper nesting
     body.STYLES = {}
     body.VIEW = {}

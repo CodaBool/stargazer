@@ -46,6 +46,7 @@ import Link from "next/link"
 import { Textarea } from "../ui/textarea"
 import { toast } from "sonner"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible"
+import { useMemo } from "react"
 
 export default function SharedSettings({
   isCloud,
@@ -75,10 +76,19 @@ export default function SharedSettings({
   SEARCH_SIZE,
   BG,
   STYLES,
+  BG_IMAGE,
   TYPES,
 }) {
   const isGalaxy = useWatch({ control: form.control, name: "IS_GALAXY" })
-  console.log("isGalaxy", isGalaxy, "!!", !!isGalaxy, data.config?.IS_GALAXY)
+  const onBgImageChange = useMemo(() =>
+      makeBgImageOnChangeHandler({
+        form,
+        maxDen: 30, // search range for "small whole numbers"
+        debounceMs: 600,
+        getCurrentBounds: () => form.getValues("MAX_BOUNDS"),
+      }),
+    [form]
+  );
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(submit)} className="space-y-8 md:container mx-auto my-8">
@@ -145,7 +155,40 @@ export default function SharedSettings({
                 </FormItem>
               )}
             />
-
+            <FormField
+              control={form.control}
+              name="BG_IMAGE"
+              rules={{
+                validate: v => {
+                  if (!v.includes("http")) return "Background image URL must contain 'http'";
+                }
+              }}
+              defaultValue={typeof data.config?.BG_IMAGE !== "undefined" ? data.config?.BG_IMAGE : (BG_IMAGE ? BG_IMAGE : "")}
+              render={({ field }) => (
+                <FormItem className="py-4">
+                  <FormLabel>Background Image</FormLabel>
+                  <FormControl>
+                    <div className="flex">
+                      <Input
+                        placeholder=""
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e)
+                          onBgImageChange(e.target.value)
+                        }}
+                      />
+                      <Button variant="outline" type="button" onClick={() => form.setValue("BG_IMAGE", BG_IMAGE)} className="ml-3">
+                        Reset
+                      </Button>
+                    </div>
+                  </FormControl>
+                  <FormDescription>
+                    Sets a background image for the map. Must be a remote URL. The map bounds will be adjusted to fit the image aspect ratio.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="MAX_BOUNDS"
@@ -931,4 +974,135 @@ export default function SharedSettings({
       </form>
     </Form >
   )
+}
+
+
+// Put these helpers somewhere in your component file (or a utils file).
+
+/** Load an image and return its natural dimensions. */
+function probeImageDimensions(url, timeoutMs = 10000) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    let done = false;
+
+    const cleanup = () => {
+      done = true;
+      img.onload = null;
+      img.onerror = null;
+    };
+
+    const t = setTimeout(() => {
+      if (done) return;
+      cleanup();
+      reject(new Error("Image load timed out"));
+    }, timeoutMs);
+
+    img.onload = () => {
+      clearTimeout(t);
+      if (done) return;
+      cleanup();
+
+      const w = img.naturalWidth || img.width;
+      const h = img.naturalHeight || img.height;
+      if (!w || !h) return reject(new Error("Loaded, but could not read dimensions"));
+      resolve({ width: w, height: h });
+    };
+
+    img.onerror = () => {
+      clearTimeout(t);
+      if (done) return;
+      cleanup();
+      reject(new Error("Failed to load image (not an image, bad URL, or blocked)"));
+    };
+
+    // CORS does NOT prevent reading naturalWidth/naturalHeight if the image loads.
+    // (CORS mainly affects reading pixel data via canvas.)
+    img.decoding = "async";
+    img.referrerPolicy = "no-referrer"; // optional; helps some hosts
+    img.src = url;
+  });
+}
+
+/** Find small whole-number ratio a:b closest to width/height. */
+function closestWholeRatio(width, height, maxDen = 30) {
+  const r = width / height;
+  let best = { a: 16, b: 9, err: Infinity }; // default fallback
+
+  for (let b = 1; b <= maxDen; b++) {
+    const a = Math.max(1, Math.round(r * b));
+    const err = Math.abs(a / b - r);
+
+    // Prefer smaller numbers when error ties
+    if (
+      err < best.err - 1e-12 ||
+      (Math.abs(err - best.err) < 1e-12 && (a + b) < (best.a + best.b))
+    ) {
+      best = { a, b, err };
+    }
+  }
+
+  return { a: best.a, b: best.b };
+}
+
+/** Build "-a, -b, a, b" bounds string */
+function boundsStringFromHalfExtents(a, b) {
+  return `${-a}, ${-b}, ${a}, ${b}`;
+}
+
+/**
+ * Debounced onChange handler factory.
+ * - checks "http"
+ * - checks valid image by actually loading it
+ * - computes aspect ratio and suggests smallest-ish whole-number maxBounds
+ * - confirm before overwriting MAX_BOUNDS via form.setValue(...)
+ */
+function makeBgImageOnChangeHandler({ form, getCurrentBounds, maxDen = 30, debounceMs = 600 }) {
+  let timer = null;
+  let lastValue = "";
+
+  return function onBgImageChange(url) {
+    // Basic guard
+    if (typeof url !== "string") return;
+
+    // Avoid spamming while typing
+    lastValue = url;
+    if (timer) clearTimeout(timer);
+
+    timer = setTimeout(async () => {
+      const v = lastValue.trim();
+
+      // 1) must contain http
+      if (!v.includes("http")) return;
+
+      // Optional: if user keeps changing quickly, this prevents stale prompts
+      const myValue = v;
+
+      try {
+        // 2) validate it's an image by loading it
+        const { width, height } = await probeImageDimensions(myValue);
+
+        // 3) compute closest matching whole-number ratio (small-ish)
+        const { a, b } = closestWholeRatio(width, height, maxDen);
+        const suggested = boundsStringFromHalfExtents(a, b);
+
+        // If user already has same value, do nothing
+        const current = String(getCurrentBounds?.() ?? "").trim();
+        if (current === suggested) return;
+
+        // 4) ask user
+        const ok = window.confirm(
+          `That image is ${width}px×${height}px (≈ ${(width / height).toFixed(4)})\n\n` +
+          `Suggested Bounds for this aspect ratio: ${suggested}\n\n` +
+          `Overwrite your current Bounds to: ${current ? current : ""}?`
+        );
+
+        if (ok) {
+          form.setValue("MAX_BOUNDS", suggested, { shouldDirty: true, shouldValidate: true });
+        }
+      } catch (err) {
+        // If you want, you can surface this in your UI instead of console
+        console.warn("BG image validation failed:", err?.message ?? err);
+      }
+    }, debounceMs);
+  };
 }
