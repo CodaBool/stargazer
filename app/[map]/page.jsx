@@ -13,14 +13,14 @@ export default async function mapLobby({ params }) {
     return <Cartographer name={map} fid={0} data={{ type: "FeatureCollection", features: [] }} />
   }
 
+  // 404
   if (map !== "warhammer" && map !== "fallout" && map !== "lancer" && map !== "lancer_starwall" && map !== "starwars" && map !== "alien" && map !== "cyberpunk") {
-    console.log(`404 map "${map}"`)
+    // console.log(`404 map "${map}"`)
     return (
-      <div className="flex items-center justify-center min-h-[80vh]">
-        <Skull className="animate-bounce mr-1" />
-        <h1 className=" text-white">map "{map}" not found.</h1>
-        <hr />
-        <Link href="/" className="text-blue-400 ml-1">Go back.</Link>
+      <div className="flex items-center justify-center min-h-[80vh] starfield flex-col text-2xl select-text">
+        <Skull className="animate-bounce" size={64} />
+        <h1 className=" text-white"><span className="text-green-300">{map}</span> map not found</h1>
+        <Link href="/" className="text-blue-400">Go back</Link>
       </div>
     )
   }

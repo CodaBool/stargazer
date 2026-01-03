@@ -160,6 +160,7 @@ export default function SharedSettings({
               name="BG_IMAGE"
               rules={{
                 validate: v => {
+                  if (!v) return
                   if (!v.includes("http")) return "Background image URL must contain 'http'";
                 }
               }}

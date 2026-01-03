@@ -158,6 +158,9 @@ export function Link({ mobile, name, params }) {
       const id = params.get("id")
       const secret = params.get("secret")
       const map = maps[name + "-" + id]
+      
+      
+      console.log("maps", name, id, maps?.result, "|", map)
       if (!map || !id || !secret) {
         console.log('ERR: missing map, uuid, or secret', map, id, secret)
         toast.warning("Something was wrong with your request")

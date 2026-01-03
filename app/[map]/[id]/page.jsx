@@ -7,6 +7,8 @@ import db from "@/lib/db"
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3"
 import { redirect } from "next/navigation"
 import { combineAndDownload, getConsts } from "@/lib/utils"
+import { Skull } from "lucide-react"
+import Link from "next/link"
 const s3 = new S3Client({
   region: "auto",
   endpoint: `https://${process.env.CF_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -35,9 +37,17 @@ export default async function mapLobby({ params }) {
   const mapDB = await db.map.findUnique({
     where: { id },
   })
-  if (isUUID && !mapDB) {
-    // probably a new map that's not in the cache yet
 
+  // 404
+  if (isUUID && !mapDB) {
+    return (
+      <div className="flex items-center justify-center min-h-[80vh] starfield flex-col text-2xl select-text">
+        <Skull className="animate-bounce" size={64} />
+        <h1 className=" text-white"><span className="text-green-300">{map}</span> map not found</h1>
+        <p className="text-gray-600">{id}</p>
+        <Link href="/" className="text-blue-400">Go back</Link>
+      </div>
+    )
   }
 
   // TODO: should there be a way to see unpublished maps?

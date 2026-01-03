@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import MapComponent from './map'
-import { combineLayers, getConsts, getLocationGroups, getMaps, isMobile, accelerationCheck } from '@/lib/utils'
+import { combineLayers, getConsts, getMaps, isMobile, accelerationCheck, localSet } from '@/lib/utils'
 import Map from '@vis.gl/react-maplibre'
 import Controls from './controls.jsx'
 import Editor from './editor'
@@ -41,45 +41,60 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
 
     (async () => {
       if (remoteConfig) {
-        setConfig({
-          ...CONFIG,
-          ...remoteConfig,
-        })
         console.log("remote config, skip local map read")
-        // duplicate code to below
-        const index = new RBush()
-        const features = data.features.filter(f =>
-          f.geometry.type === "Point" && f.properties.type !== "text"
-        ).map(f => ({
-          minX: f.geometry.coordinates[0],
-          minY: f.geometry.coordinates[1],
-          maxX: f.geometry.coordinates[0],
-          maxY: f.geometry.coordinates[1],
-          feature: f
-        }))
-        index.load(features)
-        setGroups(index)
+        setupMap({ ...CONFIG, ...remoteConfig }, data)
         return
+      }
+
+      if (params.get("id") === "foundry") {
+        await fetch(`/api/v1/map/${params.get("uuid")}`)
+          .then(res => res.json())
+          .then(res => {
+            console.log("remote map pull", res)
+            if (res.error) {
+              window.parent.postMessage({
+                type: 'error',
+                message: res.error,
+              }, '*')
+            } else {
+              if (res.geojson.type !== "FeatureCollection") {
+                window.parent.postMessage({
+                  type: 'error',
+                  message: res.error,
+                }, '*')
+                return
+              }
+
+              getMaps().then(maps => {
+                console.log("maps",maps)
+                localSet("maps", {
+                  ...maps, [`${params.get("map")}-foundry`]: {
+                    geojson: res.geojson,
+                    name: `temporary foundry ${params.get("map")} map`,
+                    updated: Date.now(),
+                    id: Date.now(),
+                    map: params.get("map"),
+                    config: res.config,
+                  }
+                })
+              })
+              console.log("redirect to", `/${name}?id=${params.get("uuid")}&hamburger=0&search=0&link=foundry&secret=${params.get("secret")}`)
+              router.replace(`/${name}?id=${params.get("uuid")}&hamburger=0&search=0&link=foundry&secret=${params.get("secret")}`)
+            }
+          })
+          .catch(message => {
+            window.parent.postMessage({
+              type: 'error',
+              message,
+            }, '*');
+          })
       }
       const maps = await getMaps()
       const map = maps[name + "-" + params.get("id")]
 
       if (!map || !params.get("id")) {
         console.log("map not found or new map, skip local map read")
-        setConfig(CONFIG)
-        // duplicate code to below
-        const index = new RBush()
-        const features = data.features.filter(f =>
-          f.geometry.type === "Point" && f.properties.type !== "text"
-        ).map(f => ({
-          minX: f.geometry.coordinates[0],
-          minY: f.geometry.coordinates[1],
-          maxX: f.geometry.coordinates[0],
-          maxY: f.geometry.coordinates[1],
-          feature: f
-        }))
-        index.load(features)
-        setGroups(index)
+        setupMap(CONFIG, data)
         return
       }
       // console.log("read local map", map)
@@ -95,28 +110,29 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
       } else {
         setCombined(null)
       }
-      setConfig({
-        ...CONFIG,
-        ...map.config,
-      })
-      // what's better than 2 race conditions...3!
-      const index = new RBush()
-      const features = (combined || data).features.filter(f =>
-        f.geometry?.type === "Point" && f.properties.type !== "text"
-      ).map(f => ({
-        minX: f.geometry.coordinates[0],
-        minY: f.geometry.coordinates[1],
-        maxX: f.geometry.coordinates[0],
-        maxY: f.geometry.coordinates[1],
-        feature: f,
-      }))
-      index.load(features)
-      setGroups(index)
+      setupMap({ ...CONFIG, ...map.config }, combined || data)
     })()
 
     // cleanup
     return () => window.removeEventListener('resize', handleResize)
   }, [params])
+
+  function setupMap(config, data) {
+    setConfig(config)
+    // what's better than 2 race conditions...3!
+    const index = new RBush()
+    const features = data.features.filter(f =>
+      f.geometry?.type === "Point" && f.properties.type !== "text"
+    ).map(f => ({
+      minX: f.geometry.coordinates[0],
+      minY: f.geometry.coordinates[1],
+      maxX: f.geometry.coordinates[0],
+      maxY: f.geometry.coordinates[1],
+      feature: f,
+    }))
+    index.load(features)
+    setGroups(index)
+  }
 
   if (!size || !config || !groups) {
     return (

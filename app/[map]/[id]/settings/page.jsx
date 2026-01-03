@@ -28,6 +28,7 @@ export default async function mapLobby({ params }) {
         id,
       },
     })
+    // map not found code a
     if (!cloud) redirect('/?error=map%20not%20found%20code%20a')
     const command = new GetObjectCommand({
       Bucket: "maps",
@@ -47,7 +48,11 @@ export default async function mapLobby({ params }) {
       // style can be large, don't pass the full STYLE
       config.STYLE = true
     }
-    return <CloudSettingsForm map={map} id={id} data={cloud} config={config} />
+    return (
+      <div className="starfield">
+        <CloudSettingsForm map={map} id={id} data={cloud} config={config} />
+      </div>
+    )
   }
   return (
     <div className="starfield">
