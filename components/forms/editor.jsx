@@ -29,7 +29,7 @@ import { RgbaColorPicker } from "react-colorful"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
-import { CircleHelp, Image, Pencil, Plus, Save, Trash2, Link as Chain, Notebook, StickyNote, Code } from "lucide-react"
+import { CircleHelp, Image, Pencil, Plus, Save, Trash2, Link as Chain, Notebook, StickyNote, Code, Map, MessageCircleWarning } from "lucide-react"
 import { AVAILABLE_PROPERTIES, SVG_BASE, useStore, getIconHTML } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import IconSelector from "../iconSelector"
@@ -412,9 +412,10 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
 export const Link = ({ editProp, handleSave }) => {
   const [documentId, setDocumentId] = useState()
   const [open, setOpen] = useState()
+  const [hasQuests, setHasQuests] = useState()
 
-  const handleSubmit = doc => {
-    window.parent.postMessage({ type: 'listen', doc }, '*')
+  const handleSubmit = (tab, doc) => {
+    window.parent.postMessage({ type: 'listen', tab, doc }, '*')
   }
 
   const saveUUID = value => {
@@ -428,9 +429,14 @@ export const Link = ({ editProp, handleSave }) => {
       if (e.data.type === 'uuid') {
         setDocumentId(e.data.uuid)
         saveUUID(e.data.uuid)
+      } else if (e.data.type === "modules") {
+        if (e.data.modules.includes("forien-quest-log")) {
+          setHasQuests(true)
+        }
       }
     }
     window.addEventListener('message', listener)
+    window.parent.postMessage({type: "modules", desc: "give me all active modules"}, "*")
     return () => {
       window.removeEventListener('message', listener)
     }
@@ -453,15 +459,21 @@ export const Link = ({ editProp, handleSave }) => {
             <Chain className="ml-[.6em] inline" /> <span className="ml-[5px]">Link</span>
           </Button>
         }
-        <Button className="cursor-pointer w-full my-2 mt-6" variant="secondary" onClick={() => handleSubmit('journal')}>
+        <Button className="cursor-pointer w-full my-2 mt-6" variant="secondary" onClick={() => handleSubmit('journal', "journal")}>
           <Notebook className="ml-[.6em] inline" /> <span className="ml-[5px]">Journal</span>
         </Button>
-        <Button className="cursor-pointer w-full my-2" variant="secondary" onClick={() => handleSubmit('journal page')}>
+        <Button className="cursor-pointer w-full my-2" variant="secondary" onClick={() => handleSubmit('journal', "journal page")}>
           <StickyNote className="ml-[.6em] inline" /> <span className="ml-[5px]">Journal Page</span>
         </Button>
-        <Button className="cursor-pointer w-full my-2" variant="secondary" onClick={() => handleSubmit('macro')}>
+        <Button className="cursor-pointer w-full my-2" variant="secondary" onClick={() => handleSubmit('macros', "macro")}>
           <Code className="ml-[.6em] inline" /> <span className="ml-[5px]">Macro</span>
         </Button>
+        <Button className="cursor-pointer w-full my-2" variant="secondary" onClick={() => handleSubmit('scenes', "scene")}>
+          <Map className="ml-[.6em] inline" /> <span className="ml-[5px]">Scene</span>
+        </Button>
+        {hasQuests && <Button className="cursor-pointer w-full my-2" variant="secondary" onClick={() => handleSubmit(null, "quest")}>
+          <MessageCircleWarning className="ml-[.6em] inline" /> <span className="ml-[5px]">Quest</span>
+        </Button>}
       </PopoverContent>
     </Popover>
 

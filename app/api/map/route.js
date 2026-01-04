@@ -2,7 +2,6 @@ import db from "@/lib/db"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from '../auth/[...nextauth]/route'
 import { S3Client, PutObjectCommand, DeleteObjectsCommand, GetObjectCommand } from "@aws-sdk/client-s3"
-import crypto from 'crypto'
 const s3 = new S3Client({
   region: "auto",
   endpoint: `https://${process.env.CF_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -68,13 +67,16 @@ export async function PUT(req) {
     } else {
       throw "unauthorized"
     }
+
     if (!user) throw "there is an issue with your account or session"
     const map = await db.map.findUnique({
-      where: { id: body.id },
+      where: {
+        id: body.id,
+        userId: user.id,
+      },
     })
+    if (!map) throw "map not found"
     if (map.userId !== user.id) throw "unauthorized"
-
-    // console.log("authorized")
 
     const updates = { ...map }
     // let geojsonChange = false

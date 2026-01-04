@@ -5,7 +5,7 @@ import distance from '@turf/distance'
 import { point as turfPoint } from '@turf/helpers'
 import maplibregl from 'maplibre-gl'
 import { toast } from "sonner"
-import { localGet } from "@/lib/utils"
+import { getMaps } from "@/lib/utils"
 
 let text, zText, crosshairX, crosshairY
 
@@ -152,28 +152,33 @@ export function Link({ mobile, name, params }) {
     mapContainer.appendChild(zoomText)
 
     const handleSubmit = async () => {
-      const maps = await localGet('maps') || {}
-      console.log('submitting', maps, params.get("id"), params.get("secret"), maps[params.get("id")])
-
+      const maps = await getMaps()
       const id = params.get("id")
       const secret = params.get("secret")
+
+      if (!id || !secret || !name) {
+        console.log('ERR: missing id, or secret, or name', id, name, maps)
+        toast.warning("Something was wrong with your request")
+        return
+      }
+
       const map = maps[name + "-" + id]
-      
-      
-      console.log("maps", name, id, maps?.result, "|", map)
-      if (!map || !id || !secret) {
-        console.log('ERR: missing map, uuid, or secret', map, id, secret)
+      if (!map || !map?.meta?.uuid) {
+        console.log('ERR: could not find map', id, name, maps)
         toast.warning("Something was wrong with your request")
         return
       }
 
       // TODO: capture config changes here too
+      // ??? RETURNING COMMENT: why would I though? Unless this is a reused component ???
+      // I'm definitely assuming things here about the meta uuid and id here
+      // if this is used in multiple places, this should be rewored likely
       fetch('/api/map', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ geojson: map.geojson, id, secret, source: 'foundry iframe' }),
+        body: JSON.stringify({ geojson: map.geojson, id: map.meta.uuid, secret }),
       })
         .then(response => response.json())
         .then(data => {

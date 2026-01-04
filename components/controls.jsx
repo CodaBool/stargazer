@@ -39,8 +39,6 @@ export default function Controls({ name, params, setSize, TYPES, STYLES, GEO_EDI
   const setDraw = useDraw(d => d.setDraw)
   const setRecreateListeners = useDraw(d => d.setRecreateListeners)
   const router = useRouter()
-  
-  
 
   useEffect(() => {
     if (!draw || !mapId) return
@@ -62,6 +60,7 @@ export default function Controls({ name, params, setSize, TYPES, STYLES, GEO_EDI
         draw.add(f)
       }
       if (!f.properties.type) {
+        console.log("Found point with no type, setting randomly from", TYPES)
         // console.log("found missing type for feature", f, "adding", availableTypes[0])
         f.properties.type = types[0] || "placeholder"
         draw.add(f)
@@ -90,7 +89,8 @@ export default function Controls({ name, params, setSize, TYPES, STYLES, GEO_EDI
           geojson,
           name: maps[mapId]?.name || randomName('', ' '),
           updated: Date.now(),
-          id: Number(mapId.split("-")[1]),
+          id: Number(mapId.split("-")[1]) || Date.now(),
+          meta: maps[mapId]?.meta || {},
           map: name,
           config: maps[mapId]?.config || {},
         }

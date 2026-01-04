@@ -46,7 +46,7 @@ export async function GET(req) {
 
     const data = JSON.parse(r2Obj)
 
-    return Response.json(data)
+    return Response.json({ ...data, meta: {uuid: id} })
   } catch (error) {
     console.error(error)
     if (typeof error === 'string') {

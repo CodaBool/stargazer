@@ -58,8 +58,9 @@ export default function Editor({ mapName, params, TYPES, data, GEO_EDIT }) {
           geojson,
           name: maps[mapId]?.name || randomName('', ' '),
           updated: Date.now(),
-          id: Number(params.get('id')),
+          id: Number(params.get('id')) || Date.now(),
           map: mapName,
+          meta: maps[mapId]?.meta || {},
           config: maps[mapId]?.config || {},
         }
       })

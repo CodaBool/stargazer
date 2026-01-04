@@ -50,7 +50,7 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
         await fetch(`/api/v1/map/${params.get("uuid")}`)
           .then(res => res.json())
           .then(res => {
-            console.log("remote map pull", res)
+            // console.log("remote map pull", res)
             if (res.error) {
               window.parent.postMessage({
                 type: 'error',
@@ -66,7 +66,6 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
               }
 
               getMaps().then(maps => {
-                console.log("maps",maps)
                 localSet("maps", {
                   ...maps, [`${params.get("map")}-foundry`]: {
                     geojson: res.geojson,
@@ -74,7 +73,8 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
                     updated: Date.now(),
                     id: Date.now(),
                     map: params.get("map"),
-                    config: res.config,
+                    meta: res.meta || {},
+                    config: res.config || {},
                   }
                 })
               })
@@ -91,6 +91,8 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
       }
       const maps = await getMaps()
       const map = maps[name + "-" + params.get("id")]
+
+      // console.log("remote map", map, "set the config", { ...CONFIG, ...map.config }, "source", CONFIG, "mine", map.config)
 
       if (!map || !params.get("id")) {
         console.log("map not found or new map, skip local map read")
@@ -119,6 +121,7 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
 
   function setupMap(config, data) {
     setConfig(config)
+    // console.log("writing", config)
     // what's better than 2 race conditions...3!
     const index = new RBush()
     const features = data.features.filter(f =>
@@ -141,6 +144,8 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
       </div>
     )
   }
+
+  // console.log("root", config.TYPES)
 
   return (
     <>
