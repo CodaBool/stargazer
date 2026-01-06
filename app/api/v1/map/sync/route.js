@@ -15,9 +15,10 @@ export async function POST(req) {
 
     const localMaps = body.maps
     const updatedLocalMaps = { ...localMaps }
+    delete updatedLocalMaps.meta
 
-    console.log("maps", maps)
-    console.log("localMaps", updatedLocalMaps)
+    // console.log("maps", maps)
+    // console.log("localMaps", updatedLocalMaps)
     let length = 0
     let added = 0
     const hashChanged = []
@@ -46,7 +47,7 @@ export async function POST(req) {
       }
     }
 
-    return Response.json({ msg: "success", maps: updatedLocalMaps, length, hashChanged, added });
+    return Response.json({ msg: "success", maps: updatedLocalMaps, length, hashChanged, added, meta: body.maps?.meta || {} });
   } catch (error) {
     console.error(error)
     if (typeof error === 'string') {
