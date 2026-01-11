@@ -12,9 +12,11 @@ import { fillMissingData, generateSystemAtClick } from "@/lib/fakeData.js";
 import { useMap } from "@vis.gl/react-maplibre";
 import SolarSystem from "./solarSystem.jsx";
 import LocationSystem from "./locationSystem.jsx";
-import { Crosshair, ExternalLink } from "lucide-react";
+import { Book, Code, Crosshair, Drama, ExternalLink, MessageCircleWarning, StickyNote } from "lucide-react";
 import ThreejsPlanet, { availableThreejsModels } from "./threejsPlanet";
 import { claimThreeCanvas } from "./threeHostRegistry.js";
+import { Button } from "./ui/button.jsx";
+import { toast } from 'sonner'
 
 export default function DrawerComponent({
   drawerContent,
@@ -30,6 +32,7 @@ export default function DrawerComponent({
   d,
   myGroup,
   passedLocationClick,
+  params,
   GEO_EDIT,
   GRID_DENSITY,
   COORD_OFFSET,
@@ -118,6 +121,14 @@ export default function DrawerComponent({
   }
 
   if (!coordinates || !d || !display || GEO_EDIT) return null;
+
+  function foundryClick() {
+    if (!params.get("iframe")) {
+      toast.success(`Foundry only feature [${display?.source?.properties?.link}]`)
+      return
+    }
+    window.parent.postMessage({type: "link", link: display?.source?.properties?.link}, "*")
+  }
 
   let coordinatesPretty = `${coordinates[1].toFixed(2)}, ${coordinates[0].toFixed(2)}`;
   if (IS_GALAXY) {
@@ -229,6 +240,25 @@ export default function DrawerComponent({
                   <Badge variant="destructive" className="text-base">
                     Unofficial
                   </Badge>
+                )}
+                {display?.source?.properties?.link && (
+                  <Button variant="outline" size="icon" onClick={foundryClick}>
+                    {(display?.source?.properties?.link.length === 29 && display?.source?.properties?.link.includes("JournalEntry.")) && (
+                      <Book />
+                    )}
+                    {(display?.source?.properties?.link.length === 63 && display?.source?.properties?.link.includes(".JournalEntryPage.")) && (
+                      <StickyNote />
+                    )}
+                    {display?.source?.properties?.link.includes("Macro.") && (
+                      <Code />
+                    )}
+                    {display?.source?.properties?.link.includes("forien-quest-log.") && (
+                      <MessageCircleWarning />
+                    )}
+                    {display?.source?.properties?.link.includes("Scene.") && (
+                      <Drama />
+                    )}
+                  </Button>
                 )}
               </div>
             </div>

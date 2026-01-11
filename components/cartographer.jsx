@@ -42,7 +42,14 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
     (async () => {
       if (remoteConfig) {
         console.log("remote config, skip local map read")
-        setupMap({ ...CONFIG, ...remoteConfig }, data)
+        // screenshot or plain remote
+        let config = { ...CONFIG, ...remoteConfig }
+        if (params.get('img') === "1") {
+          config.VIEW.zoom = params.get("z")
+          config.VIEW.longitude = params.get("lng")
+          config.VIEW.latitude = params.get("lat")
+        }
+        setupMap(config, data)
         return
       }
 

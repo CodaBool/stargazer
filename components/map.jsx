@@ -613,7 +613,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       {params.get("calibrate") && <Calibrate width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}
       <Debug />
       {!locked && <Tutorial name={name} IS_GALAXY={IS_GALAXY} />}
-      {!locked && <Drawer {...drawerContent} passedLocationClick={locationClick} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} VIEW={VIEW} GENERATE_LOCATIONS={GENERATE_LOCATIONS} GRID_DENSITY={GRID_DENSITY || 1} COORD_OFFSET={COORD_OFFSET} SEARCH_SIZE={SEARCH_SIZE} mobile={mobile} width={width} height={height} />}
+      {!locked && <Drawer {...drawerContent} passedLocationClick={locationClick} params={params} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} VIEW={VIEW} GENERATE_LOCATIONS={GENERATE_LOCATIONS} GRID_DENSITY={GRID_DENSITY || 1} COORD_OFFSET={COORD_OFFSET} SEARCH_SIZE={SEARCH_SIZE} mobile={mobile} width={width} height={height} />}
       <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} COORD_OFFSET={COORD_OFFSET} GRID_DENSITY={GRID_DENSITY} TRAVEL_RATE={Number(TRAVEL_RATE)} TRAVEL_RATE_UNIT={TRAVEL_RATE_UNIT} TRAVEL_TIME_UNIT={TRAVEL_TIME_UNIT} SHIP_CLASS={SHIP_CLASS} TIME_DILATION={TIME_DILATION} />
       {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} mobile={mobile} />}
     </>
