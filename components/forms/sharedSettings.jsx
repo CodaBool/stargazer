@@ -88,7 +88,19 @@ export default function SharedSettings({
         getCurrentBounds: () => form.getValues("MAX_BOUNDS"),
       }),
     [form]
-  );
+  )
+
+  const realGalaxy = (((typeof isGalaxy === 'undefined' && (typeof data.config?.IS_GALAXY === 'boolean' ? data.config?.IS_GALAXY : IS_GALAXY)) || isGalaxy))
+
+  function defaults() {
+    let mapName = map
+    if (map === "custom" && !realGalaxy) {
+      // use Fallout's presets
+      mapName = "fallout"
+    }
+    return getConsts(mapName)
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(submit)} className="space-y-8 md:container mx-auto my-8">
@@ -143,7 +155,7 @@ export default function SharedSettings({
                   <FormControl>
                     <div className="flex">
                       <Input placeholder={[VIEW.latitude, VIEW.longitude].toString()} {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("CENTER", [VIEW.latitude, VIEW.longitude].toString())} className="ml-3">
+                      <Button variant="outline" type="button" onClick={() => form.setValue("CENTER", [defaults().VIEW.latitude, defaults().VIEW.longitude].toString())} className="ml-3">
                         Reset
                       </Button>
                     </div>
@@ -207,7 +219,7 @@ export default function SharedSettings({
                   <FormControl>
                     <div className="flex">
                       <Input placeholder="" {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("MAX_BOUNDS", VIEW.maxBounds?.toString())} className="ml-3">
+                      <Button variant="outline" type="button" onClick={() => form.setValue("MAX_BOUNDS", defaults().VIEW.maxBounds?.toString())} className="ml-3">
                         Reset
                       </Button>
                     </div>
@@ -261,7 +273,7 @@ export default function SharedSettings({
                   <FormControl>
                     <div className="flex">
                       <Input type="range" min={0} max={24} step={0.1} {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("MAX_ZOOM", MAX_ZOOM)} className="ml-3">
+                      <Button variant="outline" type="button" onClick={() => form.setValue("MAX_ZOOM", defaults().MAX_ZOOM)} className="ml-3">
                         Reset
                       </Button>
                     </div>
@@ -291,7 +303,7 @@ export default function SharedSettings({
                   <FormControl>
                     <div className="flex">
                       <Input type="range" min={0} max={24} step={0.1} {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("MIN_ZOOM", MIN_ZOOM)} className="ml-3">
+                      <Button variant="outline" type="button" onClick={() => form.setValue("MIN_ZOOM", defaults().MIN_ZOOM)} className="ml-3">
                         Reset
                       </Button>
                     </div>
@@ -321,7 +333,7 @@ export default function SharedSettings({
                   <FormControl>
                     <div className="flex">
                       <Input type="range" min={0} max={2} step={0.001} {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("SEARCH_SIZE", SEARCH_SIZE)} className="ml-3">
+                      <Button variant="outline" type="button" onClick={() => form.setValue("SEARCH_SIZE", defaults().SEARCH_SIZE)} className="ml-3">
                         Reset
                       </Button>
                     </div>
@@ -396,7 +408,7 @@ export default function SharedSettings({
                 </FormItem>
               )}
             />}
-            {((typeof isGalaxy === 'undefined' && data.config?.IS_GALAXY) || isGalaxy) && <FormField
+            {realGalaxy && <FormField
               control={form.control}
               name="GENERATE_LOCATIONS"
               defaultValue={typeof data.config?.GENERATE_LOCATIONS === 'boolean' ? data.config?.GENERATE_LOCATIONS : GENERATE_LOCATIONS}
@@ -420,7 +432,7 @@ export default function SharedSettings({
             {/* TODO: look into scale control maplibre */}
             {map === "custom" &&
               <>
-                {((typeof isGalaxy === 'undefined' && data.config?.IS_GALAXY) || isGalaxy) && <FormField
+                {realGalaxy && <FormField
                   control={form.control}
                   name="TIME_DILATION"
                   defaultValue={typeof data.config?.TIME_DILATION === 'boolean' ? data.config?.TIME_DILATION : TIME_DILATION}
@@ -449,7 +461,37 @@ export default function SharedSettings({
                       <FormMessage />
                     </FormItem>
                   )}
-                />}
+                  />}
+                {!realGalaxy && (
+                  <div className="flex space-x-2 py-2 justify-evenly">
+                    <Button
+                      variant="outline"
+                      type="button"
+                      className="w-1/2"
+                      onClick={() => {
+                        form.setValue("DISTANCE_CONVERTER", 0.621371, { shouldDirty: true });
+                        form.setValue("UNIT", "miles", { shouldDirty: true });
+                        form.setValue("TRAVEL_RATE", 3, { shouldDirty: true });
+                        form.setValue("TRAVEL_RATE_UNIT", "mph", { shouldDirty: true });
+                      }}
+                    >
+                      Imperial Preset
+                    </Button>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      className="w-1/2"
+                      onClick={() => {
+                        form.setValue("DISTANCE_CONVERTER", 1, { shouldDirty: true });
+                        form.setValue("UNIT", "km", { shouldDirty: true });
+                        form.setValue("TRAVEL_RATE", 5, { shouldDirty: true });
+                        form.setValue("TRAVEL_RATE_UNIT", "kmph", { shouldDirty: true });
+                      }}
+                    >
+                      Metric Preset
+                    </Button>
+                  </div>
+                )}
                 <FormField
                   control={form.control}
                   rules={{ validate: v => !isNaN(v) || "Value must be a number" }}
@@ -461,7 +503,7 @@ export default function SharedSettings({
                       <FormControl>
                         <div className="flex">
                           <Input placeholder={DISTANCE_CONVERTER} type="number" {...field} />
-                          <Button variant="outline" type="button" onClick={() => form.setValue("DISTANCE_CONVERTER", DISTANCE_CONVERTER)} className="ml-3">
+                          <Button variant="outline" type="button" onClick={() => form.setValue("DISTANCE_CONVERTER", defaults().DISTANCE_CONVERTER)} className="ml-3">
                             Reset
                           </Button>
                         </div>
@@ -483,7 +525,7 @@ export default function SharedSettings({
                       <FormControl>
                         <div className="flex">
                           <Input placeholder={UNIT} {...field} />
-                          <Button variant="outline" type="button" onClick={() => form.setValue("UNIT", UNIT)} className="ml-3">
+                          <Button variant="outline" type="button" onClick={() => form.setValue("UNIT", defaults().UNIT)} className="ml-3">
                             Reset
                           </Button>
                         </div>
@@ -496,7 +538,10 @@ export default function SharedSettings({
                   )}
                 />
                 <p className="text-center">distance * distance_scale_factor (distance_unit)</p>
-                <p className="text-center">example: 2 ly</p>
+                {realGalaxy
+                  ? <p className="text-center">example: 2 ly</p>
+                  : <p className="text-center">example: 2 miles</p>
+                }
               </>
             }
 
@@ -511,7 +556,7 @@ export default function SharedSettings({
                   <FormControl>
                     <div className="flex">
                       <Input placeholder={TRAVEL_RATE} type="number" {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("TRAVEL_RATE", TRAVEL_RATE)} className="ml-3">
+                      <Button variant="outline" type="button" onClick={() => form.setValue("TRAVEL_RATE", defaults().TRAVEL_RATE)} className="ml-3">
                         Reset
                       </Button>
                     </div>
@@ -534,7 +579,7 @@ export default function SharedSettings({
                   <FormControl>
                     <div className="flex">
                       <Input placeholder={TRAVEL_RATE_UNIT} {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("TRAVEL_RATE_UNIT", TRAVEL_RATE_UNIT)} className="ml-3">
+                      <Button variant="outline" type="button" onClick={() => form.setValue("TRAVEL_RATE_UNIT", defaults().TRAVEL_RATE_UNIT)} className="ml-3">
                         Reset
                       </Button>
                     </div>
@@ -572,7 +617,7 @@ export default function SharedSettings({
             }
             <p className="text-center">(distance / travel_rate) time_unit (travel_rate travel_rate_unit)</p>
 
-            {(data.config?.IS_GALAXY || IS_GALAXY)
+            {realGalaxy
               ? <p className="text-center"><b>example:</b> 2 years (.995 c)</p>
               : <p className="text-center"><b>example:</b> 2 hours (3 mph)</p>
             }
@@ -610,7 +655,7 @@ export default function SharedSettings({
                   <FormControl>
                     <div className="flex">
                       <Input placeholder={BG} {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("BG", BG)} className="ml-3">
+                      <Button variant="outline" type="button" onClick={() => form.setValue("BG", defaults().BG)} className="ml-3">
                         Reset
                       </Button>
                     </div>
@@ -639,7 +684,7 @@ export default function SharedSettings({
                   <FormControl>
                     <div className="flex">
                       <Input placeholder={STYLES.MAIN_COLOR} {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("MAIN_COLOR", STYLES.MAIN_COLOR)} className="ml-3">
+                      <Button variant="outline" type="button" onClick={() => form.setValue("MAIN_COLOR", defaults().STYLES.MAIN_COLOR)} className="ml-3">
                         Reset
                       </Button>
                     </div>
@@ -668,7 +713,7 @@ export default function SharedSettings({
                   <FormControl>
                     <div className="flex">
                       <Input placeholder={STYLES.HIGHLIGHT_COLOR} {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("HIGHLIGHT_COLOR", STYLES.HIGHLIGHT_COLOR)} className="ml-3">
+                      <Button variant="outline" type="button" onClick={() => form.setValue("HIGHLIGHT_COLOR", defaults().STYLES.HIGHLIGHT_COLOR)} className="ml-3">
                         Reset
                       </Button>
                     </div>
@@ -700,7 +745,7 @@ export default function SharedSettings({
                   <FormControl>
                     <div className="flex">
                       <Textarea placeholder="{}" {...field} rows={11} readOnly disabled />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("TYPES", JSON.stringify(TYPES, null, 2))} className="ml-3">
+                      <Button variant="outline" type="button" onClick={() => form.setValue("TYPES", JSON.stringify(defaults().TYPES, null, 2))} className="ml-3">
                         Reset
                       </Button>
                     </div>

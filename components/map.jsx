@@ -303,10 +303,19 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       wrapper.on('load', async ({ target: map }) => {
 
         // hide labels since map notes will be created
-        const userCreated = map.querySourceFeatures('source', {
+        const rawUserCreated = map.querySourceFeatures('source', {
           sourceLayer: "location",
           filter: ['==', ['get', 'userCreated'], true]
         })
+        // Remove duplicates by id from the userCreated array
+        const userCreated = [];
+        const seenIds = new Set();
+        rawUserCreated.forEach(item => {
+          if (!seenIds.has(item.id)) {
+            userCreated.push(item);
+            seenIds.add(item.id);
+          }
+        });
         // TODO: I changed it so you need to instead hook into the standard
         // "text-opacity" instead of using a feature state thing. This will break
         // this current feature but allow for better user customization
@@ -349,6 +358,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
               }
             };
           })
+          console.log("generate", userMadeLocationsWithPixels, userCreated)
 
           window.parent.postMessage({
             type: 'featureData',
@@ -359,6 +369,8 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
             type: 'webpImage',
             webpImage: map.getCanvas().toDataURL(),
             distance: km * DISTANCE_CONVERTER,
+            mapName: name,
+            isGalaxy: IS_GALAXY,
             unit: UNIT,
           }, '*')
         })
@@ -428,6 +440,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
   useEffect(() => {
     // minimap fit to bounds of feature from query params
+    console.log("map WRAPPER", wrapper)
     if (!wrapper || !params.get("type") || !params.get("name")) return
     const feature = data.features.find(f => {
       if (f.geometry.type !== params.get("type")) return
