@@ -9,3 +9,4 @@ junk.*
 /public/svg/lucide
 .DS_Store
 generated/
+backup.sql

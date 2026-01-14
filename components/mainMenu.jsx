@@ -75,7 +75,10 @@ export default function Home({ revalidate, cloudMaps, user, systems }) {
     const hash = window.location.hash
     if (hash) {
       setHashParts(hash.substring(1).split("_"))
-      if (hash === "#settings") {
+      if (hash === "#settingsFoundry") {
+        setSettingsDialog(true)
+        setTimeout(() => document.querySelector(".foundry-btn")?.click(), 250)
+      } else if (hash === "#settings") {
         setSettingsDialog(true)
       } else {
         setDialog(true)
@@ -124,14 +127,14 @@ export default function Home({ revalidate, cloudMaps, user, systems }) {
             <div className="space-y-2 mt-2">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="scifi" className="w-full"><Chain /> Foundry</Button>
+                  <Button variant="scifi" className="w-full foundry-btn"><Chain /> Foundry</Button>
                 </PopoverTrigger>
                 <PopoverContent className={`flex flex-col ${user ? "w-[400px]" : ""}`}>
                   {user
                     ? <>
                       <p className='mb-3 text-gray-200'>Link to your FoundryVTT by pasting this secret into the module settings</p>
                       <hr className='border my-2 border-gray-500' />
-                      <p className='text-sm text-gray-400'>Warning: this exposes your account to some risk. All connected players and enabled modules in Foundry can read this value once entered. Local maps are always safe, this risk only applies to Cloud maps.</p>
+                      <p className='text-sm text-gray-400'>Warning: this exposes your account to some risk. All connected players and enabled modules in Foundry can read this value once entered.</p>
                       <FoundryLink secret={user?.secret} />
                     </>
                     : <h3 className='text-gray-300 text-center text-xl'><Link href={`/login?back=/%23settings`} className='text-blue-300'><LogIn className='inline relative top-[-2px]' size={16} /> Login</Link> to link to Foundry</h3>
@@ -193,7 +196,7 @@ export default function Home({ revalidate, cloudMaps, user, systems }) {
 
 export function MainMenu({ cloudMaps, user, revalidate, hash, systems }) {
   // don't allow it to try and say settings are a system
-  if (hash) if (hash[0] === "settings") hash = []
+  if (hash) if (hash[0]?.includes("settings")) hash = []
   const [selectedSystem, setSelectedSystem] = useState(typeof hash === "object" ? hash[0] : null)
   const [selectedMap, setSelectedMap] = useState()
   const [localMaps, setLocalMaps] = useState()

@@ -29,7 +29,7 @@ function getRandomNeonColor() {
   return neonColors[Math.floor(Math.random() * neonColors.length)];
 }
 
-export default function Controls({ name, params, setSize, TYPES, STYLES, GEO_EDIT }) {
+export default function Controls({ name, params, setSize, TYPES, GEO_EDIT }) {
   const [saveTrigger, setSaveTrigger] = useState()
   // const { setTutorial, tutorial } = useStore()
   const [mapId, setMapId] = useState()

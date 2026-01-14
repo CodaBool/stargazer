@@ -125,8 +125,7 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
         'properties': {
           'id': String(new Date().getTime())
         }
-      };
-
+      }
       geojson.features.push(point);
     }
 
@@ -410,6 +409,7 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
     window.addEventListener("keydown", handleKeyDown)
 
     return () => {
+      if (params.get("locked")) return
       mapboxChildrenParent.removeChild(crosshairX)
       mapboxChildrenParent.removeChild(crosshairY)
       mapboxChildrenParent.removeChild(text)

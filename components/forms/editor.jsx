@@ -404,17 +404,21 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
       }
 
       <IconSelector mapName={mapName.includes("lancer") ? "lancer" : mapName} onSelect={selectIcon} show={(!isAddingRow && !editorTable && !feature.properties.icon)} />
-      {params.get("secret") && <Link editProp={editProp} handleSave={handleSave} />}
+      {params.get("secret") && <Link editProp={editProp} handleSave={handleSave} feature={feature} />}
     </div >
   )
 }
 
-export const Link = ({ editProp, handleSave }) => {
+export const Link = ({ editProp, handleSave, feature }) => {
   const [documentId, setDocumentId] = useState()
   const [open, setOpen] = useState()
   const [hasQuests, setHasQuests] = useState()
 
   const handleSubmit = (tab, doc) => {
+    if (feature.geometry.type !== "Point") {
+      toast.warning("Only Point locations can have links. Stay tuned for a future update to add more geometry link support.")
+      return
+    }
     window.parent.postMessage({ type: 'listen', tab, doc }, '*')
   }
 

@@ -42,11 +42,10 @@ export default async function mapLobby({ params }) {
     console.error(`404 map "${map}"`)
     return
   }
-  const [noIdData, type] = combineAndDownload("geojson", topojson, {})
+  const [noPriority, type] = combineAndDownload("geojson", topojson, {})
   const { IMPORTANT, UNIMPORTANT } = getConsts(map)
 
-  let fid = 0
-  const data = JSON.parse(noIdData)
+  const data = JSON.parse(noPriority)
   data.features.forEach(f => {
     if (IMPORTANT.includes(f.properties.type)) {
       if (f.geometry.type === "Point") {
@@ -67,8 +66,6 @@ export default async function mapLobby({ params }) {
     } else {
       f.properties.priority = 5
     }
-
-    f.id = fid++
   })
 
 
@@ -79,7 +76,7 @@ export default async function mapLobby({ params }) {
     }
   })
 
-  return <Cartographer data={data} name={map} fid={fid} />
+  return <Cartographer data={data} name={map} />
 }
 
 export function generateStaticParams() {

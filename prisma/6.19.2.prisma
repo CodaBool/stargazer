@@ -1,11 +1,16 @@
+// there are issues with prisma v7
+// I keep the v6 version here to do workarounds when necessary
+// npx prisma@6.19.2 COMMAND --schema=./prisma/6.19.2.prisma
 generator client {
-  provider = "prisma-client"
-  output   = "./generated"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DIRECT_URL")
+  directUrl = env("DIRECT_URL")
 }
+
 
 model Comment {
   id         Int      @id @default(autoincrement())

@@ -143,6 +143,8 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     if (modeRef.current === "measure" || (modeRef.current === "crosshair" && mobile) || locked) return
     const clicked = e?.features[0] || manual
 
+    console.log("clicked", clicked)
+
     // skip search & pan if generated location
     if (clicked?.properties?.fake) {
       let myGroup
@@ -440,7 +442,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
   useEffect(() => {
     // minimap fit to bounds of feature from query params
-    console.log("map WRAPPER", wrapper)
     if (!wrapper || !params.get("type") || !params.get("name")) return
     const feature = data.features.find(f => {
       if (f.geometry.type !== params.get("type")) return

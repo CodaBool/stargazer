@@ -96,15 +96,13 @@ export default async function mapLobby({ params }) {
 
   const { IMPORTANT } = getConsts(map)
 
-  let fid = 0
   geojson.features.forEach(f => {
     if (IMPORTANT.includes(f.properties.type)) {
       f.properties.priority = 1
     } else {
       f.properties.priority = 9
     }
-    f.id = fid++
   })
 
-  return <Cartographer data={geojson} remoteConfig={obj.config || {}} name={map} fid={fid} uuid={id} />
+  return <Cartographer data={geojson} remoteConfig={obj.config || {}} name={map} uuid={id} />
 }

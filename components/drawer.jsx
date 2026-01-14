@@ -40,8 +40,8 @@ export default function DrawerComponent({
   VIEW,
 }) {
   const { map } = useMap();
-  const GROUP_NAME = IS_GALAXY ? "Celestial Bodies" : "Nearby Locations";
-  const squareSize = Math.min(IS_GALAXY ? 250 : 120, Math.min(width, height) * 0.3);
+  const GROUP_NAME = IS_GALAXY ? "Celestial Bodies" : "Nearby Locations"
+  const squareSize = height * (IS_GALAXY ? 0.2 : 0.08)
 
   const [display, setDisplay] = useState(() => fillMissingData(d)?.properties);
 
@@ -242,7 +242,7 @@ export default function DrawerComponent({
                   </Badge>
                 )}
                 {display?.source?.properties?.link && (
-                  <Button variant="outline" size="icon" onClick={foundryClick}>
+                  <Button variant="outline" size="icon" type="button" onClick={foundryClick}>
                     {(display?.source?.properties?.link.length === 29 && display?.source?.properties?.link.includes("JournalEntry.")) && (
                       <Book />
                     )}

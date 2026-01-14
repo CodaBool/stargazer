@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import MapComponent from './map'
-import { combineLayers, getConsts, getMaps, isMobile, accelerationCheck, localSet } from '@/lib/utils'
+import { combineLayers, getConsts, getMaps, isMobile, accelerationCheck, localSet, USER_LOCATION_ID_START } from '@/lib/utils'
 import Map from '@vis.gl/react-maplibre'
 import Controls from './controls.jsx'
 import Editor from './editor'
@@ -9,7 +9,7 @@ import { useSearchParams } from 'next/navigation'
 import RBush from 'rbush'
 const GEO_EDIT = (false && process.env.NEXT_PUBLIC_URL === "http://192.168.0.16:3000") // local debugging
 
-export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
+export default function Cartographer({ name, data, uuid, remoteConfig }) {
   const CONFIG = getConsts(name)
   const [crashed, setCrashed] = useState() // crash reloading
   const [size, setSize] = useState()
@@ -26,8 +26,8 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
   const showEditor = params.get("editor") !== "0" && !mobile && !uuid && !locked && !params.get("preview")
 
   useEffect(() => {
-    if (name === "warhammer" && window.alert("The Warhammer 40k map is still in an unfinished state. Follow on itch.io or GitHub for updates."))
-      accelerationCheck()
+    if (name === "warhammer") window.alert("The Warhammer 40k map is still in an unfinished state. Follow on itch.io or GitHub for updates.")
+    accelerationCheck()
   }, [])
   useEffect(() => {
     // set size
@@ -36,6 +36,7 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
     } else {
       setSize({ width: window.innerWidth, height: window.innerHeight })
     }
+
     const handleResize = () => setSize({ width: window.innerWidth, height: window.innerHeight })
     window.addEventListener('resize', handleResize);
 
@@ -107,10 +108,12 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
         return
       }
       // console.log("read local map", map)
+      let id = USER_LOCATION_ID_START
       map.geojson.features.forEach(f => {
         f.properties.userCreated = true
-        f.id = fid++
+        f.id = id++
       })
+      console.log("remote map combined with local")
 
       // TODO: likely a race condition
       const combined = combineLayers([map.geojson, data])
@@ -152,8 +155,6 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
     )
   }
 
-  // console.log("root", config.TYPES)
-
   return (
     <>
       <Map
@@ -179,7 +180,7 @@ export default function Cartographer({ name, data, uuid, fid, remoteConfig }) {
       // projection={config.IS_GALAXY === false ? "mercator" : "globe"}
       >
         <MapComponent locationGroups={groups} width={size.width} height={size.height} name={name} data={combined || data} mobile={mobile} params={params} locked={locked} setCrashed={setCrashed} {...config} GEO_EDIT={GEO_EDIT} />
-        {showControls && <Controls name={name} params={params} setSize={setSize} TYPES={config.TYPES} STYLES={config.STYLES} GEO_EDIT={GEO_EDIT} />}
+        {showControls && <Controls name={name} params={params} setSize={setSize} TYPES={config.TYPES} GEO_EDIT={GEO_EDIT} />}
       </Map>
       {showEditor && <Editor mapName={name} params={params} TYPES={config.TYPES} data={data} GEO_EDIT={GEO_EDIT} />}
       <div style={{ width: size.width, height: size.height, background: `radial-gradient(${config.BG})`, zIndex: -1, top: 0, position: "absolute" }}></div>
