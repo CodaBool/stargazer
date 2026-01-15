@@ -92,13 +92,13 @@ export default function Hamburger({ name, params, map, mobile }) {
             }
 
             {name === "lancer" &&
-              <Link href="/lancer_starwall">
+              <Link href="/lancerStarwall">
                 <DropdownMenuItem className="cursor-pointer">
                   <User className="ml-[.6em]" /> <span className="ml-[5px]">Variant</span>
                 </DropdownMenuItem>
               </Link>
             }
-            {name === "lancer_starwall" &&
+            {name === "lancerStarwall" &&
               <Link href="/lancer">
                 <DropdownMenuItem className="cursor-pointer">
                   <User className="ml-[.6em]" /> <span className="ml-[5px]">Core</span>

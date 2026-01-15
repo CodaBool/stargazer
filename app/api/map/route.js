@@ -2,6 +2,7 @@ import db from "@/lib/db"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from '../auth/[...nextauth]/route'
 import { S3Client, PutObjectCommand, DeleteObjectsCommand, GetObjectCommand } from "@aws-sdk/client-s3"
+import { USER_LOCATION_ID_START } from "@/lib/utils"
 const s3 = new S3Client({
   region: "auto",
   endpoint: `https://${process.env.CF_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -69,21 +70,43 @@ export async function PUT(req) {
     }
 
     if (!user) throw "there is an issue with your account or session"
+    if (body.replace) {
+      // find id by name since the user has accepted the risk
+      const mapToReplace = await db.map.findMany({
+        where: {
+          userId: String(user.id),
+          name: String(body.name),
+          map: String(body.map)
+        },
+      })
+      if (mapToReplace.length > 1) throw "too many maps to replace"
+      body.id = mapToReplace[0].id
+    }
     const map = await db.map.findUnique({
       where: {
-        id: body.id,
-        userId: user.id,
+        id: String(body.id),
+        userId: String(user.id),
       },
     })
     if (!map) throw "map not found"
     if (map.userId !== user.id) throw "unauthorized"
 
-    const updates = { ...map }
     // let geojsonChange = false
 
-    if (body.geojson) {
+    const response = await s3.send(new GetObjectCommand({
+      Bucket: "maps",
+      Key: map.id,
+      ResponseContentType: "application/json",
+    }))
+    const r2ObjRaw = await response.Body?.transformToString();
+    if (!r2ObjRaw) throw 'file not found'
+    const r2Obj = JSON.parse(r2ObjRaw)
 
+    let prevMaxId = getStartingMaxId(r2Obj.geojson, r2Obj.maxId)
+    const updates = { ...map }
+    if (body.geojson) {
       if (!validGeojson(body.geojson)) throw "invalid geojson"
+      const maxId = ensureUserFeatureIds(body.geojson, prevMaxId)
       const { locations, territories, guides } = getFeatureData(body.geojson)
       updates.locations = locations
       updates.territories = territories
@@ -94,26 +117,22 @@ export async function PUT(req) {
       // // WARN: it might be possible that stale geojson is bundled with legit PUT data
       // if (!geojsonChange) throw "this map is already in sync"
       // updates.hash = newHash
+      r2Obj.geojson = body.geojson
+      r2Obj.maxId = maxId
     }
+    if (body.config) {
+      r2Obj.config = {
+        ...r2Obj.config,
+        ...body.config,
+      }
+    }
+
     if (body.name) {
       updates.name = body.name
     }
     if (typeof body.published !== 'undefined') {
       updates.published = body.published
     }
-
-    // get current Object
-    const command = new GetObjectCommand({
-      Bucket: "maps",
-      Key: map.id,
-      ResponseContentType: "application/json",
-    })
-    const response = await s3.send(command)
-
-    // Read stream to buffer
-    const r2ObjRaw = await response.Body?.transformToString();
-    if (!r2ObjRaw) throw 'file not found'
-    const r2Obj = JSON.parse(r2ObjRaw)
 
     // update postgres
     const newMap = {
@@ -129,15 +148,6 @@ export async function PUT(req) {
       data: newMap,
     })
 
-    if (body.geojson) {
-      r2Obj.geojson = body.geojson
-    }
-    if (body.config) {
-      r2Obj.config = {
-        ...r2Obj.config,
-        ...body.config,
-      }
-    }
 
     const putCommand = new PutObjectCommand({
       Body: JSON.stringify(r2Obj),
@@ -223,6 +233,8 @@ export async function POST(req) {
       throw "only 10 cloud maps are allowed"
     }
 
+    let maxIdStart = getStartingMaxId(body.geojson, null)
+    const maxId = ensureUserFeatureIds(body.geojson, maxIdStart)
     const { locations, territories, guides } = getFeatureData(body.geojson)
 
     // const hash = crypto.createHash('sha256').update(JSON.stringify(body.geojson)).digest('hex')
@@ -246,6 +258,7 @@ export async function POST(req) {
       Body: JSON.stringify({
         geojson: body.geojson,
         config: body.config || {},
+        maxId,
       }),
       Bucket: "maps",
       Key: map.id,
@@ -303,4 +316,55 @@ function validGeojson(geojson) {
     if (!feature.geometry.coordinates || !Array.isArray(feature.geometry.coordinates)) return false;
   }
   return true;
+}
+
+
+const INT4_MAX = 2147483647
+function getStartingMaxId(geojson, storedMaxId) {
+  if (Number.isInteger(storedMaxId) && storedMaxId >= USER_LOCATION_ID_START && storedMaxId <= INT4_MAX) {
+    return storedMaxId;
+  }
+
+  // Legacy / first-time case: compute from existing feature ids once
+  let maxId = USER_LOCATION_ID_START;
+
+  if (geojson && geojson.type === "FeatureCollection" && Array.isArray(geojson.features)) {
+    for (const f of geojson.features) {
+      if (!f) continue;
+      const id = f.id;
+      if (Number.isInteger(id) && id >= USER_LOCATION_ID_START && id <= INT4_MAX && id > maxId) {
+        maxId = id;
+      }
+    }
+  }
+
+  return maxId;
+}
+function ensureUserFeatureIds(geojson, prevMaxId) {
+  if (!geojson || geojson.type !== "FeatureCollection" || !Array.isArray(geojson.features)) {
+    return prevMaxId;
+  }
+
+  let maxId = prevMaxId;
+
+  for (const f of geojson.features) {
+    if (!f) continue;
+
+    // If id is missing or outside the user range, treat as "needs a fresh id"
+    if (!Number.isInteger(f.id) || f.id < USER_LOCATION_ID_START || f.id > INT4_MAX) {
+      // handle overflow: wrap back into range if we ever hit the ceiling
+      if (!Number.isInteger(maxId) || maxId < USER_LOCATION_ID_START || maxId >= INT4_MAX) {
+        maxId = USER_LOCATION_ID_START
+      }
+
+      maxId += 1;
+      f.id = maxId;
+    }
+
+    const props = f.properties || (f.properties = {});
+    props.userCreated = true;
+  }
+  console.log("verified geojson", geojson.features.map(f => ({name: f.properties.name, id: f.id})), "max", maxId)
+
+  return maxId;
 }

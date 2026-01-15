@@ -14,7 +14,7 @@ export default async function mapLobby({ params }) {
   }
 
   // 404
-  if (map !== "warhammer" && map !== "fallout" && map !== "lancer" && map !== "lancer_starwall" && map !== "starwars" && map !== "alien" && map !== "cyberpunk") {
+  if (map !== "warhammer" && map !== "fallout" && map !== "lancer" && map !== "lancerStarwall" && map !== "starwars" && map !== "alien" && map !== "cyberpunk") {
     // console.log(`404 map "${map}"`)
     return (
       <div className="flex items-center justify-center min-h-[80vh] starfield flex-col text-2xl select-text">
@@ -28,7 +28,7 @@ export default async function mapLobby({ params }) {
   // see bottom comment
   path.resolve(`app/[map]/topojson/fallout.json`)
   path.resolve(`app/[map]/topojson/lancer.json`)
-  path.resolve(`app/[map]/topojson/lancer_starwall.json`)
+  path.resolve(`app/[map]/topojson/lancerStarwall.json`)
   path.resolve(`app/[map]/topojson/starwars.json`)
   path.resolve(`app/[map]/topojson/warhammer.json`)
   path.resolve(`app/[map]/topojson/alien.json`)

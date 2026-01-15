@@ -8,7 +8,6 @@ import 'react-quill-new/dist/quill.bubble.css'
 import { combineAndDownload, combineLayers, getConsts, getMaps, hexToRgb, localGet, localSet } from "@/lib/utils"
 import SharedSettings from "./sharedSettings"
 
-let preAlertData
 export default function MapSettings({ map, id }) {
   // https://github.com/zenoamaro/react-quill/issues/921
   const DEFAULTS = getConsts(map)

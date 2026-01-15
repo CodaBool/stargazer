@@ -761,12 +761,13 @@ function deleteMapRemote(id, revalidate) {
 }
 
 function replaceRemoteMap(localMap, revalidate) {
+  console.log("sending", localMap)
   fetch('/api/map', {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ geojson: localMap.geojson, id: localMap.id }),
+    body: JSON.stringify({ geojson: localMap.geojson, id: localMap.id, map: localMap.map, name: localMap.name, replace: true }),
   })
     .then(response => response.json())
     .then(data => {

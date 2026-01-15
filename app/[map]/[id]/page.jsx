@@ -75,6 +75,7 @@ export default async function mapLobby({ params }) {
     feature.properties.userCreated = true;
     return feature;
   })
+  console.log("user locations", obj.geojson.features.map(f => ({ id: f.id, name: f.properties.name })))
 
   const dataDir = path.join(process.cwd(), "app", "[map]", "topojson");
   const filePath = path.join(dataDir, `${map}.json`)
@@ -90,8 +91,8 @@ export default async function mapLobby({ params }) {
   } else {
     const content = await fs.promises.readFile(filePath, 'utf8')
     const topojson = JSON.parse(content)
-    const [noIdData, type] = combineAndDownload("geojson", topojson, obj.geojson)
-    geojson = JSON.parse(noIdData)
+    const [combined, type] = combineAndDownload("geojson", topojson, obj.geojson)
+    geojson = JSON.parse(combined)
   }
 
   const { IMPORTANT } = getConsts(map)

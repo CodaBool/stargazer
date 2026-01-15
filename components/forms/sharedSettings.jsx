@@ -899,9 +899,9 @@ export default function SharedSettings({
                       <div className="py-2">
                         <Collapsible>
                           <CollapsibleTrigger className="text-blue-200 cursor-pointer">
-                            <span class="relative size-3 inline mr-2">
-                              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-200 opacity-75"></span>
-                              <span class="relative inline-flex size-3 rounded-full bg-sky-300"></span>
+                            <span className="relative size-3 inline mr-2">
+                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-200 opacity-75"></span>
+                              <span className="relative inline-flex size-3 rounded-full bg-sky-300"></span>
                             </span>
                             Need help, click here?
                           </CollapsibleTrigger>
@@ -1001,6 +1001,11 @@ export default function SharedSettings({
                   This change is difficult to undo. Creating a backup before continuing is recommended.
                   Review the following carefully before proceeding:
                   <hr className="my-4" />
+                  Currently Stargazer <b>FULLY REPLACES</b> your current user data on this map with the submitted features.
+                  Be sure you are ready to lose all existing data on this map!
+                  <hr className="my-4" />
+                  These are the features that will be added to <b>replace your existing data</b>:
+                  <br/><br/>
                   <ul>
                     <li>Points: {alert?.points}</li>
                     <li>Polygons: {alert?.polygons}</li>
@@ -1012,7 +1017,7 @@ export default function SharedSettings({
             <AlertDialogFooter>
               <AlertDialogCancel className="cursor-pointer" onClick={() => setSubmitting(false)}>Cancel</AlertDialogCancel>
               <AlertDialogAction className="cursor-pointer" onClick={() => submit(form.getValues(), null, true)}>
-                I've backed up and want to add {alert?.total} Features to {data.name}
+                I've backed up and want to overwrite with {alert?.total} Features to {data.name}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

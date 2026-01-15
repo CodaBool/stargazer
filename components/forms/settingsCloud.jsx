@@ -14,7 +14,7 @@ export default function MapSettings({ map, id, data, config }) {
   // https://github.com/zenoamaro/react-quill/issues/921
   const DEFAULTS = getConsts(map)
   const [submitting, setSubmitting] = useState()
-  // const [data, setData] = useState()
+  const [preAlert, setPreAlert] = useState()
   const [alert, setAlert] = useState()
   const router = useRouter()
   const form = useForm()
@@ -42,7 +42,7 @@ export default function MapSettings({ map, id, data, config }) {
         newObj.geojson = geojson
       } else {
         // show a dialog letting the user know how many features they would add
-        setAlert(preAlertData)
+        setAlert(preAlert)
         return
       }
     } else {
@@ -143,6 +143,7 @@ export default function MapSettings({ map, id, data, config }) {
     submit={submit}
     submitting={submitting}
     setSubmitting={setSubmitting}
+    setPreAlert={setPreAlert}
     alert={alert}
     setAlert={setAlert}
     map={map}
