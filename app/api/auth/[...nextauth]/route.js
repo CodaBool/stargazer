@@ -38,6 +38,16 @@ export const authOptions = {
     strategy: "jwt",
     maxAge: 31556952, // in seconds (31,556,952 = 1 year)
   },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) token.id = user.id
+      return token
+    },
+    async session({ session, token }) {
+      if (session.user && token.id) (session.user).id = token.id
+      return session
+    },
+  },
   pages: {
     signIn: "/login",
   },

@@ -54,7 +54,7 @@ model Map {
   territories Int      @default(0)
   guides      Int      @default(0)
   map         String
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {

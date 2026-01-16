@@ -5,13 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Settings, ArrowLeft, Heart, Map, Terminal, Plus, WifiOff, Cloud, ArrowRightFromLine, LogIn, Download, Link as Chain, Eye, Trash2, CloudUpload, Replace, X, CloudDownload, BookOpenCheck, Copy, Check, CloudOff, RefreshCcw, EyeOff, MapPin, Route, Landmark, Hexagon, Spline, Gavel, User, Bug, DollarSign, MousePointerClick } from 'lucide-react'
 import { topology } from "topojson-server"
 import { toKML } from "@placemarkio/tokml"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Toggle } from "@/components/ui/toggle"
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -64,7 +58,7 @@ import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import PlanetBackground from '@/components/ui/PlanetBackground'
 
-export default function Home({ revalidate, cloudMaps, user, systems }) {
+export default function Home({ revalidate, cloudMaps, session, systems }) {
   const [hashParts, setHashParts] = useState()
   const [dialog, setDialog] = useState()
   const [settingsDialog, setSettingsDialog] = useState()
@@ -129,14 +123,9 @@ export default function Home({ revalidate, cloudMaps, user, systems }) {
                 <PopoverTrigger asChild>
                   <Button variant="scifi" className="w-full foundry-btn"><Chain /> Foundry</Button>
                 </PopoverTrigger>
-                <PopoverContent className={`flex flex-col ${user ? "w-[400px]" : ""}`}>
-                  {user
-                    ? <>
-                      <p className='mb-3 text-gray-200'>Link to your FoundryVTT by pasting this secret into the module settings</p>
-                      <hr className='border my-2 border-gray-500' />
-                      <p className='text-sm text-gray-400'>Warning: this exposes your account to some risk. All connected players and enabled modules in Foundry can read this value once entered.</p>
-                      <FoundryLink secret={user?.secret} />
-                    </>
+                <PopoverContent className={`flex flex-col ${session ? "w-[400px]" : ""}`}>
+                  {session
+                    ? <FoundryLinkContainer />
                     : <h3 className='text-gray-300 text-center text-xl'><Link href={`/login?back=/%23settings`} className='text-blue-300'><LogIn className='inline relative top-[-2px]' size={16} /> Login</Link> to link to Foundry</h3>
                   }
                 </PopoverContent>
@@ -154,7 +143,7 @@ export default function Home({ revalidate, cloudMaps, user, systems }) {
                   </Link>
                 </>
               }
-              <Link href={user ? "/profile" : `/login?back=/%23settings&callback=/profile`}>
+              <Link href={session ? "/profile" : `/login?back=/%23settings&callback=/profile`}>
                 <Button variant="scifi" className="w-full mt-2"><User className="w-4 h-4" /> Account</Button>
               </Link>
             </div>
@@ -186,7 +175,7 @@ export default function Home({ revalidate, cloudMaps, user, systems }) {
           <DialogContent className="md:max-w-[610px] md:min-w-[620px] md:max-h-[430px] md:min-h-[430px]" scifi={true}>
             <DialogDescription />
             <DialogTitle />
-            <MainMenu cloudMaps={cloudMaps} revalidate={revalidate} user={user} hash={hashParts || []} systems={systems} />
+            <MainMenu cloudMaps={cloudMaps} revalidate={revalidate} session={session} hash={hashParts || []} systems={systems} />
           </DialogContent>
         </Dialog>
       </div>
@@ -194,10 +183,11 @@ export default function Home({ revalidate, cloudMaps, user, systems }) {
   )
 }
 
-export function MainMenu({ cloudMaps, user, revalidate, hash, systems }) {
+export function MainMenu({ cloudMaps, session, revalidate, hash, systems }) {
   // don't allow it to try and say settings are a system
   if (hash) if (hash[0]?.includes("settings")) hash = []
   const [selectedSystem, setSelectedSystem] = useState(typeof hash === "object" ? hash[0] : null)
+  const [variantDialog, setVariantDialog] = useState()
   const [selectedMap, setSelectedMap] = useState()
   const [localMaps, setLocalMaps] = useState()
   const [tab, setTab] = useState(typeof hash === "object" ? (hash[1] || "local") : null)
@@ -227,6 +217,7 @@ export function MainMenu({ cloudMaps, user, revalidate, hash, systems }) {
   }, [cloudMaps, selectedMap])
 
   useEffect(() => {
+    if (selectedSystem && variantDialog) setVariantDialog(null)
     if (selectedSystem && tab && selectedMap) {
       router.replace(`#${selectedSystem}_${tab}_${selectedMap.hash ? selectedMap.id : selectedMap.id}`)
     } else if (selectedSystem && tab) {
@@ -236,7 +227,21 @@ export function MainMenu({ cloudMaps, user, revalidate, hash, systems }) {
     } else {
       router.replace("")
     }
-  }, [selectedSystem, selectedMap, tab])
+  }, [selectedSystem, selectedMap, tab, variantDialog])
+
+  function variant(system) {
+    if (system.includes("lancer")) {
+      setVariantDialog({
+        title: "Lancer",
+        maps: [
+          { id: "lancer", label: "Janederscore (recommended)" },
+          { id: "lancerStarwall", label: "Starwall" },
+        ],
+      })
+      return
+    }
+    setSelectedSystem(system)
+  }
 
   return (
     <div className="" style={{ fontFamily: '"Press Start 2P", monospace' }}>
@@ -307,7 +312,7 @@ export function MainMenu({ cloudMaps, user, revalidate, hash, systems }) {
 
       {/* Buttons for selected map */}
       {selectedSystem && selectedMap && (
-        <DetailedView data={selectedMap} revalidate={revalidate} user={user} setSelectedMap={setSelectedMap} setLocalMaps={setLocalMaps} localMaps={localMaps} cloudMaps={cloudMaps} />
+        <DetailedView data={selectedMap} revalidate={revalidate} session={session} setSelectedMap={setSelectedMap} setLocalMaps={setLocalMaps} localMaps={localMaps} cloudMaps={cloudMaps} />
       )}
 
       {/* Local and Cloud tabs */}
@@ -340,10 +345,10 @@ export function MainMenu({ cloudMaps, user, revalidate, hash, systems }) {
 
           </TabsContent>
           <TabsContent value="cloud" scifi={true}>
-            {!user &&
+            {!session &&
               <h3 className='text-gray-300'>Provide an <Link href={`/api/auth/signin?callbackUrl=${window?.location.toString() || ""}`} className='text-blue-300'>email address</Link> to publish a map <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
             }
-            {(Object.values(cloudMaps || {}).filter(m => m.map === selectedSystem).length === 0) && user &&
+            {(Object.values(cloudMaps || {}).filter(m => m.map === selectedSystem).length === 0) && session &&
               <p>No cloud {selectedSystem} maps found</p>
             }
             {cloudMaps &&
@@ -382,7 +387,7 @@ export function MainMenu({ cloudMaps, user, revalidate, hash, systems }) {
                   </CardContent>
                 </Card >
                 :
-                <Card className="w-[250px] h-[250px] lg:w-[269px] lg:h-[269px] cursor-pointer rounded-xl" onClick={() => setSelectedSystem(system)}>
+                <Card className="w-[250px] h-[250px] lg:w-[269px] lg:h-[269px] cursor-pointer rounded-xl" onClick={() => variant(system)}>
                   <CardContent className="p-2 w-full h-full">
                     <StarsBackgroundSimple>
                       <Image
@@ -401,11 +406,39 @@ export function MainMenu({ cloudMaps, user, revalidate, hash, systems }) {
           ))}
         </div>
       )}
+
+
+      {/* variant picker dialog */}
+      <Dialog open={variantDialog} onOpenChange={setVariantDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Choose a variant for {variantDialog?.title}
+            </DialogTitle>
+            <DialogDescription>
+              This map has multiple implementations
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-2">
+            {variantDialog?.maps?.map(map => (
+              <Button
+                key={map.id}
+                variant="outline"
+                className="justify-start"
+                onClick={() => setSelectedSystem(map.id)}
+              >
+                {map.label}
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
 
-function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLocalMaps, localMaps }) {
+function DetailedView({ data, revalidate, session, cloudMaps, setSelectedMap, setLocalMaps, localMaps }) {
   const [alert, setAlert] = useState()
   const isRemote = typeof data.published === "boolean"
 
@@ -606,22 +639,22 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
             </DialogTrigger>
             <DialogContent className="max-h-[40em] overflow-auto">
               <DialogHeader>
-                <DialogTitle>{user ? "Upload to Cloud" : "Login"}</DialogTitle>
+                <DialogTitle>{session ? "Upload to Cloud" : "Login"}</DialogTitle>
                 <DialogDescription className="my-3 text-base">
-                  {user
+                  {session
                     ? `Upload ${data.name} into the cloud.`
                     : "Please login to upload your map."
                   }
                 </DialogDescription>
               </DialogHeader>
-              {user &&
+              {session &&
                 <DialogClose asChild>
                   <Button size="lg" className="cursor-pointer rounded" onClick={() => uploadMap(data, revalidate)}>
                     <CloudUpload className="mr-2" /> Upload as a new Map
                   </Button>
                 </DialogClose>
               }
-              {!user &&
+              {!session &&
                 <DialogClose asChild>
                   <Link href={`/api/auth/signin?callbackUrl=${window?.location.toString() || ""}`} className='text-blue-300'>
                     <Button size="lg" className="rounded w-full" >
@@ -691,7 +724,6 @@ function DetailedView({ data, revalidate, user, cloudMaps, setSelectedMap, setLo
 
   )
 }
-
 
 
 async function download(type, data) {
@@ -853,35 +885,81 @@ function putMap(body, revalidate, setSelectedMap) {
     })
 }
 
+export function FoundryLinkContainer() {
+  const [secret, setSecret] = useState()
+  const [error, setError] = useState()
 
-function FoundryLink({ secret }) {
+  useEffect(() => {
+    fetch('/api/profile')
+    .then(res => res.json())
+    .then(({user}) => {
+      if (user) {
+        setSecret(user.secret)
+      } else {
+        setError("Could not load secret")
+      }
+    }).catch(err => {
+      console.log("error", err)
+      toast.warning('Account could not be fetched at this time CODE: 522')
+      setError("Could not load secret")
+    })
+  }, [])
+
+  return (
+    <>
+      {secret === undefined && error === undefined && (
+        <div className="flex justify-center items-center h-[246px] coolguy">
+          <div className="animate-spin w-8 h-8 border-4 border-current border-t-transparent text-[#0ff] rounded-full" />
+        </div>
+      )}
+      {error && (
+        <p>{error}</p>
+      )}
+      {secret && (
+        <FoundryLink secret={secret} />
+      )}
+    </>
+  )
+}
+
+
+function FoundryLink({secret}) {
   const [submitting, setSubmitting] = useState()
   const [showSecret, setShowSecret] = useState()
   const [secretValue, setSecretValue] = useState(secret)
 
   async function refreshSecret() {
     if (!window.confirm('This overwrites your current secret! All Foundry instances must have this new secret entered in the Stargazer module settings page.')) return
+
     setSubmitting(true)
-    const res = await fetch('/api/profile', {
-      method: 'PUT',
-      body: JSON.stringify({
-        refreshSecret: true,
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        body: JSON.stringify({ refreshSecret: true }),
       })
-    })
-    const response = await res.json()
-    setSubmitting(false)
-    if (response.secret) {
-      toast.success("Successfully refreshed secret")
-      setSecretValue(response.secret)
-      setShowSecret(true)
-    } else {
-      console.error(response.error)
-      toast.warning("Could not refresh secret at this time")
+      const response = await res.json()
+
+      if (response.secret) {
+        toast.success('Successfully refreshed secret')
+        setSecretValue(response.secret)
+        setShowSecret(true)
+      } else {
+        console.error(response.error)
+        toast.warning('Could not refresh secret at this time')
+      }
+    } catch (err) {
+      console.error(err)
+      toast.error('Unexpected error refreshing secret')
+    } finally {
+      setSubmitting(false)
     }
   }
 
   return (
     <>
+      <p className='mb-3 text-gray-200'>Link to your FoundryVTT by pasting this secret into the module settings</p>
+      <hr className='border my-2 border-gray-500' />
+      <p className='text-sm text-gray-400'>Warning: this exposes your account to some risk. All connected players and enabled modules in Foundry can read this value once entered.</p>
       <div className="flex items-center">
         <Input value={secretValue} readOnly className="my-4 mx-0 flex-grow" type={showSecret ? 'text' : 'password'} />
         <Button size="sm" className="cursor-pointer rounded ml-2" variant="outline" onClick={() => setShowSecret(!showSecret)}>

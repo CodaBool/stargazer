@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { useRouter } from 'next/navigation'
+import { signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
@@ -30,6 +31,8 @@ export default function CreateLocation({ user }) {
   const [submitting, setSubmitting] = useState()
   const router = useRouter()
   const form = useForm()
+
+  // console.log("user", user)
 
   async function submit(body) {
     if (!body.name?.trim()) {
@@ -54,6 +57,30 @@ export default function CreateLocation({ user }) {
     } else {
       console.error(response.error)
       toast.warning("Could not update profile at this time")
+    }
+  }
+
+  async function deleteAccount() {
+    const confirmed = window.confirm(
+      'This will permanently delete account and all identifiable data. Your community contributions are NOT removed but instead anonymized (attributed to "anonymous"). This is done to preserve discussions.'
+    )
+    if (!confirmed) return
+
+    try {
+      const res = await fetch('/api/profile', { method: 'DELETE' })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        console.error("Delete account error:", data.error || res.statusText)
+        toast.error("Could not delete account at this time")
+        return
+      }
+      toast.success("Account deleted")
+      setTimeout(() => {
+        signOut({ callbackUrl: "/" })
+      }, 1_500)
+    } catch (err) {
+      console.error(err)
+      toast.error("Unexpected error deleting account")
     }
   }
 
@@ -120,12 +147,31 @@ export default function CreateLocation({ user }) {
               )}
             />
           </CardContent>
-          <CardFooter>
-            <Button disabled={submitting} type="submit" variant="outline" className="w-full">
+          <CardFooter className="flex flex-col gap-4 w-full">
+            <Button disabled={submitting} type="submit" variant="" className="w-full">
               {submitting
                 ? <LoaderCircle className="animate-spin" />
                 : "Save Changes"
               }
+            </Button>
+
+            <hr className="w-full opacity-60 my-6" />
+
+            <Button
+              variant="destructive"
+              className="w-full"
+              type="button"
+              onClick={deleteAccount}
+            >
+              Delete Account
+            </Button>
+            <Button
+              variant="destructive"
+              className="w-full"
+              type="button"
+              onClick={() => signOut({ callbackUrl: "/" })}
+            >
+              Sign out
             </Button>
           </CardFooter>
         </Card>

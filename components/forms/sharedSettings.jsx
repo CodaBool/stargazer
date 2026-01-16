@@ -947,7 +947,7 @@ export default function SharedSettings({
                 </FormItem>
               )}
             />
-            <FormField
+            {!realGalaxy && <FormField
               control={form.control}
               name="STYLE"
               render={({ field }) => (
@@ -975,13 +975,14 @@ export default function SharedSettings({
                     />
                   </FormControl>
                   <FormDescription>
-                    Define a style for non-galaxy maps. Must be a valid Maplibre style (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-style-spec/">spec</a>). I recommend using <a target="_blank" className="text-blue-300" href="https://maplibre.org/maputnik">Maputnik</a> for creating and editing the style.
+                    A complex configuration for the real world visual appearance of the map. Must be a valid Maplibre style (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-style-spec/">spec</a>). I recommend using <a target="_blank" className="text-blue-300" href="https://maplibre.org/maputnik">Maputnik</a> for creating and editing the style. You may find it easiest to download <a target="_blank" className="text-blue-300" href="https://github.com/CodaBool/stargazer/blob/main/lib/style.json">my style</a> to start from as a template.
                   </FormDescription>
                   {form.formState.errors.invalidStyle && <p className="text-sm text-red-500">Invalid format</p>}
                   <FormMessage />
                 </FormItem>
               )}
             />
+            }
           </CardContent>
           <CardFooter>
             <Button disabled={submitting} type="submit" variant="outline" className="w-full cursor-pointer">

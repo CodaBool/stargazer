@@ -193,9 +193,7 @@ export async function DELETE(req) {
     const deleteCommand = new DeleteObjectsCommand({
       Bucket: "maps",
       Delete: {
-        Objects: [
-          { Key: id }
-        ]
+        Objects: [{ Key: id }]
       }
     })
     const response = await s3.send(deleteCommand)
