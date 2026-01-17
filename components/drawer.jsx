@@ -153,7 +153,7 @@ export default function DrawerComponent({
       open={!!drawerContent}
       onOpenChange={() => setDrawerContent(null)}
       modal={false}
-      snapPoints={[mobile ? 0.45 : IS_GALAXY ? 0.4 : 0.28, 0.92]}
+      snapPoints={[mobile ? 0.45 : IS_GALAXY ? (height < 700 ? 0.65 : 0.4) : 0.28, 0.92]}
     >
       <DrawerContent>
         <DrawerTitle />

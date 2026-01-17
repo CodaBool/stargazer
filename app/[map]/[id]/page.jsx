@@ -75,7 +75,7 @@ export default async function mapLobby({ params }) {
     feature.properties.userCreated = true;
     return feature;
   })
-  console.log("user locations", obj.geojson.features.map(f => ({ id: f.id, name: f.properties.name })))
+  // console.log("user locations", obj.geojson.features.map(f => ({ id: f.id, name: f.properties.name })))
 
   const dataDir = path.join(process.cwd(), "app", "[map]", "topojson");
   const filePath = path.join(dataDir, `${map}.json`)

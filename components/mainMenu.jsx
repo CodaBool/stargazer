@@ -84,6 +84,8 @@ export default function Home({ revalidate, cloudMaps, session, systems }) {
     const errorMsg = queryParams.get("error")
     if (errorMsg) {
       toast.warning(errorMsg)
+    } else if (session?.user?.name) {
+      toast.success(`Authenticated successfully`)
     }
     setTimeout(() => animateText('quoteDisplay', getDailyMenuQuote(), 100, 1_000), 3_000)
   }, [])
