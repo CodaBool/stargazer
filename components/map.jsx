@@ -1,12 +1,8 @@
 'use client'
-import maplibregl, {
-  MapMouseEvent,
-  LngLat,
-  LngLatBounds,
-} from 'maplibre-gl'
+import maplibregl from 'maplibre-gl'
 import { useMap, Layer, Source, Popup } from '@vis.gl/react-maplibre'
 import { GeoGrid } from 'geogrid-maplibre-gl'
-import { useEffect, useRef, useState, Fragment } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPopupHTML, localSet, getMaps, useMode, getPaint, gridAlgorithm, useGrid, gridHelpers, boundsToCoord } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import SearchBar from './searchbar'
@@ -16,7 +12,7 @@ import Toolbox from './toolbox'
 import Starfield from './starfield'
 import Tutorial from './tutorial'
 import { useDraw } from "./controls";
-import { Calibrate, Link } from './foundry'
+import { Calibrate, Link, Quest } from './foundry'
 import Drawer from './drawer'
 import Debug from './ui/debug'
 
@@ -117,7 +113,7 @@ const removePopup = () => {
   if (popup._container) popup.remove()
 }
 
-export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, isRemote, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET, VIEW, GRID_DENSITY, MIN_ZOOM, MAX_ZOOM, TRAVEL_RATE, TRAVEL_RATE_UNIT, TRAVEL_TIME_UNIT, SHIP_CLASS, TIME_DILATION, BG_IMAGE }) {
+export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, uuid, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET, VIEW, GRID_DENSITY, MIN_ZOOM, MAX_ZOOM, TRAVEL_RATE, TRAVEL_RATE_UNIT, TRAVEL_TIME_UNIT, SHIP_CLASS, TIME_DILATION, BG_IMAGE }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
   const { mode } = useMode()
@@ -143,7 +139,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     if (modeRef.current === "measure" || (modeRef.current === "crosshair" && mobile) || locked) return
     const clicked = e?.features[0] || manual
 
-    console.log("clicked", clicked)
+    // console.log("clicked", clicked)
 
     // skip search & pan if generated location
     if (clicked?.properties?.fake) {
@@ -185,11 +181,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
         ...item.feature
       }))
 
-
-    // console.log("newGroup", myGroup, "full nearby results", clicked)
-
     pan(clicked, myGroup)
-
     if (popup._container) popup.remove()
   }
 
@@ -442,8 +434,8 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
   useEffect(() => {
     // minimap fit to bounds of feature from query params
-    if (!wrapper || !params.get("type") || !params.get("name")) return
-    const feature = data.features.find(f => {
+    if ((!wrapper || !params.get("type") || !params.get("name")) && !params.get("goto")) return
+    let feature = data.features.find(f => {
       if (f.geometry.type !== params.get("type")) return
       if (f.properties.name !== params.get("name")) return
       let coord = f.geometry.coordinates.join(",")
@@ -454,6 +446,9 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       if (coord !== `${params.get("lng")},${params.get("lat")}`) return
       return true
     })
+    if (params.get("goto")) {
+      feature = data.features.find(f => f.id === Number(params.get("goto")))
+    }
     if (!feature) return
     if (feature.geometry.type !== "Point") {
       const bounds = turf.bbox(feature)
@@ -471,11 +466,13 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
         duration: 800
       });
     }
-    wrapper.setFeatureState(
-      { source: 'source', id: feature.id },
-      { hover: true }
-    );
-  }, [wrapper, params.get("name"), params.get("lat"), params.get("lng"), data, params.get("type")])
+    setTimeout(() => {
+      wrapper.setFeatureState(
+        { source: 'source', id: feature.id },
+        { hover: true }
+      );
+    }, 10)
+  }, [wrapper, params.get("name"), params.get("lat"), params.get("lng"), data, params.get("type"), params.get("goto")])
 
   // add all custom icons
   if (wrapper) {
@@ -487,8 +484,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
           img.width = 19
           img.height = 19
           if (f.properties.icon.includes("/api/img/")) {
-            // img.width = 24
-            // img.height = 24
             img.width = 16
             img.height = 16
           }
@@ -502,18 +497,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       }
     })
   }
-
-  /*
-  TODO:
-  ## Map fine tuning
-  - sw location need to be separated into CANON / LEGENDS
-  - do a webgl check https://maplibre.org/maplibre-gl-js/docs/examples/check-for-support/
-  */
-
-  // TODO: get full coverage for these
-  // placement point (Polygon, Point, Point text)
-  // placement line
-  // prev = https://github.com/CodaBool/stargazer-proxy/blob/main/components/map.jsx
 
   return (
     <>
@@ -625,10 +608,11 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       {/* FOUNDRY */}
       {params.get("secret") && <Link width={width} height={height} mobile={mobile} name={name} params={params} />}
       {params.get("calibrate") && <Calibrate width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}
+      {params.get("quest") && <Quest name={name} uuid={uuid} />}
       <Debug />
       {!locked && <Tutorial name={name} IS_GALAXY={IS_GALAXY} />}
       {!locked && <Drawer {...drawerContent} passedLocationClick={locationClick} params={params} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} VIEW={VIEW} GENERATE_LOCATIONS={GENERATE_LOCATIONS} GRID_DENSITY={GRID_DENSITY || 1} COORD_OFFSET={COORD_OFFSET} SEARCH_SIZE={SEARCH_SIZE} mobile={mobile} width={width} height={height} />}
-      <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} isRemote={isRemote} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} COORD_OFFSET={COORD_OFFSET} GRID_DENSITY={GRID_DENSITY} TRAVEL_RATE={Number(TRAVEL_RATE)} TRAVEL_RATE_UNIT={TRAVEL_RATE_UNIT} TRAVEL_TIME_UNIT={TRAVEL_TIME_UNIT} SHIP_CLASS={SHIP_CLASS} TIME_DILATION={TIME_DILATION} />
+      <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} isRemote={!!uuid} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} COORD_OFFSET={COORD_OFFSET} GRID_DENSITY={GRID_DENSITY} TRAVEL_RATE={Number(TRAVEL_RATE)} TRAVEL_RATE_UNIT={TRAVEL_RATE_UNIT} TRAVEL_TIME_UNIT={TRAVEL_TIME_UNIT} SHIP_CLASS={SHIP_CLASS} TIME_DILATION={TIME_DILATION} />
       {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} mobile={mobile} />}
     </>
   )

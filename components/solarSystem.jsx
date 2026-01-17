@@ -13,6 +13,7 @@ export default function SolarSystemDiagram({
   group,
   width,
   height,
+  params,
   map,
   name,
   passedLocationClick,
@@ -61,6 +62,10 @@ export default function SolarSystemDiagram({
                     alt={properties.name}
                     onClick={() => {
                       if (source) {
+                        if (params.get("quest")) {
+                          document.querySelector("#quest-textbox").textContent = properties.name
+                          window.questLink = {id: source.id, properties, type: source.geometry.type}
+                        }
                         passedLocationClick(null, source, properties.fake ? { group, d } : {});
                         return;
                       }

@@ -369,6 +369,7 @@ export default function DrawerComponent({
                 height={height}
                 width={width}
                 isGalaxy={IS_GALAXY}
+                params={params}
                 map={map}
                 selectedId={selectedId}
                 name={name}
@@ -379,6 +380,7 @@ export default function DrawerComponent({
               <LocationSystem
                 group={local}
                 map={map}
+                params={params}
                 selectedId={selectedId}
                 name={name}
                 passedLocationClick={passedLocationClick}

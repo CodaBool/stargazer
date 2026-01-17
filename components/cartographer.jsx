@@ -178,7 +178,7 @@ export default function Cartographer({ name, data, uuid, remoteConfig }) {
       // projection="globe"
       // projection={config.IS_GALAXY === false ? "mercator" : "globe"}
       >
-        <MapComponent locationGroups={groups} width={size.width} height={size.height} name={name} data={combined || data} mobile={mobile} params={params} locked={locked} setCrashed={setCrashed} {...config} GEO_EDIT={GEO_EDIT} isRemote={!!uuid} />
+        <MapComponent locationGroups={groups} width={size.width} height={size.height} name={name} data={combined || data} mobile={mobile} params={params} locked={locked} setCrashed={setCrashed} {...config} GEO_EDIT={GEO_EDIT} uuid={uuid} />
         {showControls && <Controls name={name} params={params} setSize={setSize} TYPES={config.TYPES} GEO_EDIT={GEO_EDIT} />}
       </Map>
       {showEditor && <Editor mapName={name} params={params} TYPES={config.TYPES} data={data} GEO_EDIT={GEO_EDIT} />}

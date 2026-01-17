@@ -215,3 +215,71 @@ export function Link({ mobile, name, params }) {
 
   return null
 }
+
+export function Quest({ name, uuid }) {
+  const { map } = useMap()
+
+  useEffect(() => {
+    if (!map) return
+
+    text = document.createElement('div')
+    text.className = 'textbox'
+    text.id = 'quest-textbox'
+    text.style.position = 'absolute'
+    text.style.left = '50%';
+    text.style.lineHeight = '1.4'
+    text.style.zIndex = 2;
+    text.style.transform = 'translateX(-50%)';
+    text.style.top = '90px'
+    text.style.color = 'white'
+    text.style.opacity = 0.8
+    text.style.fontSize = '2.2em'
+    text.style.pointerEvents = 'none'
+    text.style.textAlign = 'center'
+    text.style.textShadow = `0 0 3px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.9)`;
+    text.style.background = 'rgba(0, 0, 0, 0.9)'; // semi-transparent black
+    text.style.padding = '0.2em 0.5em'; // space around text
+    text.style.borderRadius = '10px'; // optional rounded corners
+    text.textContent = `click a location`;
+    document.querySelector('div[mapboxgl-children=""]').appendChild(text)
+
+
+    const button = document.createElement('button')
+    button.textContent = 'Submit'
+    button.className = 'absolute top-6 left-1/2 transform -translate-x-1/2 w-30 bg-[#302831] text-white py-2 px-4 rounded cursor-pointer'
+    button.style.zIndex = 100
+    button.addEventListener('click', () => {
+
+      // map get location
+      window.parent.postMessage({
+        type: 'questLocationSet',
+        location: window.questLink,
+        map: name,
+        uuid,
+      }, '*')
+    })
+    document.body.appendChild(button)
+
+    function clicked(e) {
+      if (!e.features[0]) return
+      window.questLink = {id: e.features[0].id, properties: e.features[0].properties, type: e.features[0].geometry.type}
+      // console.log("feature", id, e.features[0].properties.name, e.features[0].geometry.type, e.features[0])
+      text.textContent = `${e.features[0].properties.name}`;
+    }
+
+    map.on("click", "location", clicked)
+    // map.on("click", "polygon-background", clicked)
+    map.on("click", "polygon-foreground", clicked)
+    map.on("click", "polygon-user", clicked)
+
+    return () => {
+      map.off("click", "location", clicked)
+      // map.off("click", "polygon-background", clicked)
+      map.off("click", "polygon-foreground", clicked)
+      map.off("click", "polygon-user", clicked)
+    }
+
+  }, [map])
+
+  return null
+}
