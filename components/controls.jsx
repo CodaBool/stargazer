@@ -67,7 +67,7 @@ export default function Controls({ name, params, setSize, TYPES, GEO_EDIT }) {
       }
       if ((f.geometry.type === "Point" || f.geometry.type.includes("Poly")) && !f.properties.fill) {
         if (f.geometry.type.includes("Poly")) {
-          f.properties.fill = `rgba(${hexToRgb(getRandomNeonColor())}, 0.1)`
+          f.properties.fill = `${getRandomNeonColor()}1A` // 10% opacity
         } else {
           f.properties.fill = getRandomNeonColor()
         }
@@ -77,7 +77,7 @@ export default function Controls({ name, params, setSize, TYPES, GEO_EDIT }) {
         if (f.properties.fill?.length > 7) {
           f.properties.stroke = f.properties.fill.replace(/, \d+\.\d+\)$/, ', .5)');
         } else {
-          f.properties.stroke = `rgba(${hexToRgb(getRandomNeonColor())}, 0.5)`
+          f.properties.stroke = `${getRandomNeonColor()}80` // 50% opacity
         }
         draw.add(f)
       }

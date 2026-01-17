@@ -144,14 +144,19 @@ export default function SharedSettings({
               rules={{
                 validate: v => {
                   const parts = v.split(",")
-                  return parts.length === 2 && parts.every(part => part.trim().length > 0 && !isNaN(part.trim())) || "This must be two numbers separated by a comma";
+                  if (parts.length !== 2) return "This must be two numbers separated by a comma 1"
+                  if (!parts.every(part => part.trim().length > 0 && !isNaN(part.trim()))) return "This must be two numbers separated by a comma 2"
+                  const lat = parseFloat(parts[0].trim());
+                  const lng = parseFloat(parts[1].trim());
+                  if (lat < -90 || lat > 90) return "The latitude must be between -90 and 90 degrees";
+                  if (lng < -180 || lng > 180) return "The longitude must be between -180 and 180 degrees";
                 }
               }}
 
               defaultValue={typeof data.config?.VIEW?.latitude !== "undefined" ? [data.config?.VIEW?.latitude, data.config?.VIEW?.longitude].toString() : [VIEW.latitude, VIEW.longitude].toString()}
               render={({ field }) => (
                 <FormItem className="py-4">
-                  <FormLabel>Starting Coordinates</FormLabel>
+                  <FormLabel>Starting Coordinates [lat, lng]</FormLabel>
                   <FormControl>
                     <div className="flex">
                       <Input placeholder={[VIEW.latitude, VIEW.longitude].toString()} {...field} />
@@ -161,7 +166,7 @@ export default function SharedSettings({
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Controls the initial x/Lat and y/Lng coordinate location when first viewing the map. Use a comma to separate the x/Lat and y/Lng values. (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#center">source</a>)
+                    Controls the initial Lat (vertical) and Lng (horizontal) coordinate location when first viewing the map. Use a comma to separate the Number values. (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#center">source</a>)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -183,7 +188,7 @@ export default function SharedSettings({
                   <FormControl>
                     <div className="flex">
                       <Input
-                        placeholder=""
+                        placeholder="https://i.imgur.com/background.png"
                         {...field}
                         onChange={(e) => {
                           field.onChange(e)
@@ -796,99 +801,105 @@ export default function SharedSettings({
                 <FormItem className="py-4">
                   <FormLabel>Upload Map Data</FormLabel>
                   <FormControl>
-                    <Input
-                      type="file"
-                      accept=".geojson,.topojson,.json"
-                      onChange={async (e) => {
-                        const file = e.target.files[0]
-                        if (file) {
-                          const content = await file.text();
-                          try {
-                            let fileData = JSON.parse(content)
+                    <div className="flex">
+                      <Input
+                        type="file"
+                        accept=".geojson,.topojson,.json"
+                        onChange={async (e) => {
+                          const file = e.target.files[0]
+                          if (file) {
+                            const content = await file.text();
+                            try {
+                              let fileData = JSON.parse(content)
 
-                            console.log("fileData", fileData)
-                            if (fileData.type === "FeatureCollection") { // geojson
-                              if (fileData.features?.length === 0 || !fileData.features) {
-                                throw new Error("GeoJSON file has no feature data")
+                              // console.log("fileData", fileData)
+                              if (fileData.type === "FeatureCollection") { // geojson
+                                if (fileData.features?.length === 0 || !fileData.features) {
+                                  throw new Error("GeoJSON file has no feature data")
+                                }
+                              } else if (fileData.type === "Topology") { // topojson
+                                const [convertedGeojson, type] = combineAndDownload("geojson", fileData, {})
+                                fileData = JSON.parse(convertedGeojson)
+                                if (fileData.features.length === 0) {
+                                  throw new Error("TopoJSON either has no data or it's layers are named incorrectly. Use 'territory' for polygons, 'location' for points, and 'guide' for lines")
+                                }
+                              } else {
+                                throw new Error("Invalid GeoJSON or TopoJSON file")
                               }
-                            } else if (fileData.type === "Topology") { // topojson
-                              const [convertedGeojson, type] = combineAndDownload("geojson", fileData, {})
-                              fileData = JSON.parse(convertedGeojson)
-                              if (fileData.features.length === 0) {
-                                throw new Error("TopoJSON either has no data or it's layers are named incorrectly. Use 'territory' for polygons, 'location' for points, and 'guide' for lines")
+                              // console.log("loaded a file with", fileData.features.length, "features")
+                              setPreAlert({
+                                points: fileData.features.filter(f => f.geometry.type === "Point").length,
+                                polygons: fileData.features.filter(f => f.geometry.type.includes("Poly")).length,
+                                lines: fileData.features.filter(f => f.geometry.type.includes("LineString")).length,
+                                total: fileData.features.length,
+                              })
+
+                              // fill required data
+                              let altered = 0
+                              fileData.features.forEach(f => {
+
+                                // TYPES: {
+                                //   "polygon": ["sector", "cluster", "nebulae"],
+                                //   "point": ["station", "jovian", "moon", "terrestrial", "desert planet", "ocean planet", "barren planet", "ice planet", "asteroid", "lava planet", "ringed planet", "gate", "red dwarf", "orange star", "yellow star", "white dwarf", "red giant", "red supergiant", "blue giant", "blue supergiant", "red star", "blue star", "black hole", "wormhole", "exoplanet", "neutron star", "comet"],
+                                //   "linestring": ["guide", "hyperspace"],
+                                // },
+
+                                const availableTypes = TYPES[f.geometry.type.toLowerCase().trim()]
+
+                                if (!f.properties.name || !f.properties.type) {
+                                  const proceed = window.confirm(
+                                    `This data is missing a required 'name' or 'type' property\n\n` +
+                                    `${JSON.stringify(f.properties, null, 2)}\n\n` +
+                                    `Auto-fill missing required property values?\n\n` +
+                                    `• name (if missing) → random name\n` +
+                                    `• type (if missing) → "${availableTypes[0] || "placeholder"}"`
+                                  )
+                                  if (!proceed) {
+                                    throw new Error("Missing required property")
+                                  }
+                                  if (!f.properties.name) {
+                                    f.properties.name = randomName('', ' ')
+                                    altered++
+                                  }
+                                  if (!f.properties.type) {
+                                    f.properties.type = availableTypes[0] || "placeholder"
+                                    altered++
+                                  }
+                                }
+
+
+
+                                if (f.geometry.type === "Point" && !f.properties.fill) {
+                                  f.properties.fill = getRandomNeonColor()
+                                } else if (f.geometry.type.includes("Poly") && !f.properties.fill) {
+                                  f.properties.fill = `${getRandomNeonColor()}1A` // 10% opacity
+                                }
+                                if ((f.geometry.type.includes("LineString") || f.geometry.type.includes("Poly")) && !f.properties.stroke) {
+                                  f.properties.stroke = `${getRandomNeonColor()}80` // 50% opacity
+                                }
+                                // f.properties.userCreated = true
+                              })
+
+                              if (altered) toast.success(`Added ${altered} required value${altered > 1 ? 's' : ''} to your uploaded map`);
+                              const combinedGeojson = combineLayers([fileData, data.geojson])
+                              form.setValue('file', combinedGeojson)
+                              form.clearErrors('invalid')
+                            } catch (error) {
+                              console.log(error)
+                              if (error.name === "SyntaxError") {
+                                toast.warning(`Invalid JSON`)
+                              } else {
+                                toast.warning(`${error.message}`);
                               }
-                            } else {
-                              throw new Error("Invalid GeoJSON or TopoJSON file")
+                              form.setError('invalid')
                             }
-                            // console.log("loaded a file with", fileData.features.length, "features")
-                            setPreAlert({
-                              points: fileData.features.filter(f => f.geometry.type === "Point").length,
-                              polygons: fileData.features.filter(f => f.geometry.type.includes("Poly")).length,
-                              lines: fileData.features.filter(f => f.geometry.type.includes("LineString")).length,
-                              total: fileData.features.length,
-                            })
-
-                            // fill required data
-                            let altered = 0
-                            fileData.features.forEach(f => {
-
-                              // TYPES: {
-                              //   "polygon": ["sector", "cluster", "nebulae"],
-                              //   "point": ["station", "jovian", "moon", "terrestrial", "desert planet", "ocean planet", "barren planet", "ice planet", "asteroid", "lava planet", "ringed planet", "gate", "red dwarf", "orange star", "yellow star", "white dwarf", "red giant", "red supergiant", "blue giant", "blue supergiant", "red star", "blue star", "black hole", "wormhole", "exoplanet", "neutron star", "comet"],
-                              //   "linestring": ["guide", "hyperspace"],
-                              // },
-
-                              const availableTypes = TYPES[f.geometry.type.toLowerCase().trim()]
-
-                              if (!f.properties.name || !f.properties.type) {
-                                const proceed = window.confirm(
-                                  `This data is missing a required 'name' or 'type' property\n\n` +
-                                  `${JSON.stringify(f.properties, null, 2)}\n\n` +
-                                  `Auto-fill missing required property values?\n\n` +
-                                  `• name (if missing) → random name\n` +
-                                  `• type (if missing) → "${availableTypes[0] || "placeholder"}"`
-                                )
-                                if (!proceed) {
-                                  throw new Error("Missing required property")
-                                }
-                                if (!f.properties.name) {
-                                  f.properties.name = randomName('', ' ')
-                                  altered++
-                                }
-                                if (!f.properties.type) {
-                                  f.properties.type = availableTypes[0] || "placeholder"
-                                  altered++
-                                }
-                              }
-
-
-                              // if (f.geometry.type === "Point" && !f.properties.fill) {
-                              //   f.properties.fill = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`
-                              // } else if (f.geometry.type.includes("Poly") && !f.properties.fill) {
-                              //   f.properties.fill = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.4)`
-                              // }
-                              // if ((f.geometry.type.includes("LineString") || f.geometry.type.includes("Poly")) && !f.properties.stroke) {
-                              //   f.properties.stroke = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`
-                              // }
-                            })
-
-                            if (altered) toast.success(`Added ${altered} required value${altered > 1 ? 's' : ''} to your uploaded map`);
-
-                            const combinedGeojson = combineLayers([fileData, data.geojson])
-                            form.setValue('file', combinedGeojson)
-                            form.clearErrors('invalid')
-                          } catch (error) {
-                            console.log(error)
-                            if (error.name === "SyntaxError") {
-                              toast.warning(`Invalid JSON`)
-                            } else {
-                              toast.warning(`${error.message}`);
-                            }
-                            form.setError('invalid')
                           }
-                        }
-                      }}
-                    />
+                        }}
+                      />
+                      <Button variant="outline" type="button" onClick={() => { form.resetField('file'); window.alert("file removed, UI may not reflect this change")}} className="ml-3">
+                        Remove
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormDescription>
                     Upload a GeoJSON or TopoJSON file to fill the map with data. If uploading a topojson the layers must be named as follows: "location" for points, "territory" for polygons, "guide" for lines
@@ -903,7 +914,7 @@ export default function SharedSettings({
                               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-200 opacity-75"></span>
                               <span className="relative inline-flex size-3 rounded-full bg-sky-300"></span>
                             </span>
-                            Need help, click here?
+                            Need help? click here
                           </CollapsibleTrigger>
                           <CollapsibleContent className="mt-2 text-gray-400 select-text">
                             <p>Troubleshooting steps:</p>
@@ -915,7 +926,8 @@ export default function SharedSettings({
                                 <li><strong>location:</strong> for points</li>
                                 <li><strong>territory:</strong> for polygons</li>
                                 <li><strong>guide:</strong> for lines</li>
-                              </ul>
+                            </ul>
+                            <br/>
                               <li>There are two websites which make creating map data easy: <a href="https://geojson.io" target="_blank" className="text-blue-300">geojson.io</a> and <a href="https://mapshaper.org" target="_blank" className="text-blue-300">mapshaper.org</a>. Let's do a full exhaustive workflow example using mapshaper:</li>
                               <ul className="list-decimal list-inside ml-4">
                                 <li>Download a full copy of {map}'s map data: you can do that from the <a href="/" target="_blank" className="text-blue-300">menu</a> by selecting the relevant system and clicking the <strong><Download className="inline" size={18} /> download</strong> button.</li>
@@ -924,16 +936,18 @@ export default function SharedSettings({
                                 <li>In the popover, click on the top most eye symbol. This reveals all layers.</li>
                                 <li>Create a new layer by clicking on "Add empty layer". Or if you already have some data, use "Add files"</li>
                                 <li>Use mapshaper tools to add features and edit their properties. Remember, <b>name</b> and <b>type</b> are required on all features.</li>
+                                <li>Make sure each geometry type is on its own layer. See above naming conventions. Points, Polygons, Lines all each get their own layer.</li>
                                 <li>Once done, delete the original layers which were uploaded. They were there just to be used as a reference. We don't actually want that in the data we will be uploading.</li>
                                 <li>Now follow the above rule for layer naming convention. Meaning <b>location</b> for points, <b>territory</b> for polygons, and <b>guide</b> for lines.</li>
                                 <li>Use the <b>Export</b> button and export as topojson</li>
                                 <li>Upload your topojson to {TITLE}</li>
-                              </ul>
+                            </ul>
+                            <br/>
                               <li>Additional tips:</li>
 
                               <ul className="list-disc list-inside ml-4">
                                 <li>in rare cases mapshaper will simplify your data. Use this option on export to disable that: <b>no-quantization precision=0.001</b></li>
-                                <li>Want to trace over an image? Well it's complicated but here is the best process I've found. Make a <a href="https://figma.com" target="_blank" className="text-blue-300">figma.com</a> project. Add an image and create polygons on top...just the polygons. What about points and line? Well here is where things get time consuming. If you want accurate points you'll need to create a box which you'll later use as reference for your points. Then export the fame as an SVG file. Convert the <a href="https://codabool.github.io/svg-plotter" target="_blank" className="text-blue-300">SVG to GeoJSON</a> (change the center to 0,0). Finally use mapshaper to cleanup your data, translating any boxes into points. This is a long process...</li>
+                                <li>Want to trace over an image? Use the background image field above and then download the added features from the main menu. </li>
                                 <li><b>npx mapshaper</b> CLI can be used to combine layers into one (but it's very picky on the properties on each feature)</li>
                                 <li><a href="https://findthatpostcode.uk/tools/merge-geojson" target="_blank" className="text-blue-300">combine two geojson files into one</a> (this tool is not picky)</li>
                                 <li>My maps are small and centered on coordinates 0,0 to minimize mercator projection distortion</li>
@@ -955,24 +969,29 @@ export default function SharedSettings({
                   <FormLabel>Maplibre Style</FormLabel>
                   {config?.STYLE && <p className="text-orange-100">A style already exists for this map!</p>}
                   <FormControl>
-                    <Input
-                      type="file"
-                      accept=".json"
-                      onChange={async (e) => {
-                        const file = e.target.files[0]
-                        if (file) {
-                          const content = await file.text();
-                          try {
-                            let fileData = JSON.parse(content)
-                            form.setValue('STYLE', fileData)
-                            form.clearErrors('invalidStyle')
-                          } catch (error) {
-                            console.error(error)
-                            form.setError("invalidStyle")
+                    <div className="flex">
+                      <Input
+                        type="file"
+                        accept=".json"
+                        onChange={async (e) => {
+                          const file = e.target.files[0]
+                          if (file) {
+                            const content = await file.text();
+                            try {
+                              let fileData = JSON.parse(content)
+                              form.setValue('STYLE', fileData)
+                              form.clearErrors('invalidStyle')
+                            } catch (error) {
+                              console.error(error)
+                              form.setError("invalidStyle")
+                            }
                           }
-                        }
-                      }}
-                    />
+                        }}
+                      />
+                      <Button variant="outline" type="button" onClick={() => { form.resetField('STYLE'); window.alert("Maplibre Style file removed, UI may not reflect this change")}} className="ml-3">
+                        Remove
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormDescription>
                     A complex configuration for the real world visual appearance of the map. Must be a valid Maplibre style (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-style-spec/">spec</a>). I recommend using <a target="_blank" className="text-blue-300" href="https://maplibre.org/maputnik">Maputnik</a> for creating and editing the style. You may find it easiest to download <a target="_blank" className="text-blue-300" href="https://github.com/CodaBool/stargazer/blob/main/lib/style.json">my style</a> to start from as a template.
@@ -999,13 +1018,9 @@ export default function SharedSettings({
               <AlertDialogTitle>Adding {alert?.total} features!</AlertDialogTitle>
               <AlertDialogDescription asChild>
                 <div>
-                  This change is difficult to undo. Creating a backup before continuing is recommended.
-                  Review the following carefully before proceeding:
+                  This change is difficult to undo. Creating a backup from the main menu first is recommended.
                   <hr className="my-4" />
-                  Currently Stargazer <b>FULLY REPLACES</b> your current user data on this map with the submitted features.
-                  Be sure you are ready to lose all existing data on this map!
-                  <hr className="my-4" />
-                  These are the features that will be added to <b>replace your existing data</b>:
+                  These are the features that will be added:
                   <br/><br/>
                   <ul>
                     <li>Points: {alert?.points}</li>
@@ -1018,7 +1033,7 @@ export default function SharedSettings({
             <AlertDialogFooter>
               <AlertDialogCancel className="cursor-pointer" onClick={() => setSubmitting(false)}>Cancel</AlertDialogCancel>
               <AlertDialogAction className="cursor-pointer" onClick={() => submit(form.getValues(), null, true)}>
-                I've backed up and want to overwrite with {alert?.total} Features to {data.name}
+                I've backed up {data.name} and want to the above {alert?.total} Features
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -1027,9 +1042,6 @@ export default function SharedSettings({
     </Form >
   )
 }
-
-
-// Put these helpers somewhere in your component file (or a utils file).
 
 /** Load an image and return its natural dimensions. */
 function probeImageDimensions(url, timeoutMs = 10000) {
@@ -1157,4 +1169,19 @@ function makeBgImageOnChangeHandler({ form, getCurrentBounds, maxDen = 30, debou
       }
     }, debounceMs);
   };
+}
+
+const neonColors = [
+  "#FF00FF", // Neon Magenta
+  "#00FFFF", // Neon Cyan
+  "#FFFF00", // Neon Yellow
+  "#FF1493", // Deep Pink
+  "#00FF00", // Lime
+  "#00FF7F", // Spring Green
+  "#FF4500", // Orange Red
+  "#7FFF00", // Chartreuse
+];
+
+function getRandomNeonColor() {
+  return neonColors[Math.floor(Math.random() * neonColors.length)];
 }

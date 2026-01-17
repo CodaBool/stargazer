@@ -37,7 +37,6 @@ export default function MapSettings({ map, id, data, config }) {
 
     if (body.file) {
       if (approved) {
-        // console.log("submit with file", body)
         const geojson = body.file
         newObj.geojson = geojson
       } else {
@@ -61,9 +60,8 @@ export default function MapSettings({ map, id, data, config }) {
       delete body.HIGHLIGHT_COLOR
     }
     if (body.CENTER) {
-      // TODO: make sure this is the right order
-      body.VIEW.longitude = Number(body.CENTER.split(",")[0])
-      body.VIEW.latitude = Number(body.CENTER.split(",")[1])
+      body.VIEW.longitude = Number(body.CENTER.split(",")[1])
+      body.VIEW.latitude = Number(body.CENTER.split(",")[0])
       delete body.CENTER
     }
     if (body.ZOOM) {
@@ -91,7 +89,7 @@ export default function MapSettings({ map, id, data, config }) {
 
     delete body.file
     delete body.name
-    console.log("submission", {
+    console.log("cloud submit", {
       ...newObj,
       config: {
         ...body,

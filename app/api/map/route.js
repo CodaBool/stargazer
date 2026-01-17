@@ -2,7 +2,7 @@ import db from "@/lib/db"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from '../auth/[...nextauth]/route'
 import { S3Client, PutObjectCommand, DeleteObjectsCommand, GetObjectCommand } from "@aws-sdk/client-s3"
-import { USER_LOCATION_ID_START } from "@/lib/utils"
+import { combineLayers, USER_LOCATION_ID_START } from "@/lib/utils"
 const s3 = new S3Client({
   region: "auto",
   endpoint: `https://${process.env.CF_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -39,7 +39,6 @@ export async function GET(req) {
 
     if (!data) throw 'file not found'
     const parsed = JSON.parse(data)
-    console.log("GET", parsed)
 
     return Response.json({ name: map.name, ...parsed })
   } catch (error) {
@@ -117,7 +116,8 @@ export async function PUT(req) {
       // // WARN: it might be possible that stale geojson is bundled with legit PUT data
       // if (!geojsonChange) throw "this map is already in sync"
       // updates.hash = newHash
-      r2Obj.geojson = body.geojson
+
+      r2Obj.geojson = combineLayers([r2Obj.geojson, body.geojson])
       r2Obj.maxId = maxId
     }
     if (body.config) {
@@ -316,7 +316,7 @@ function validGeojson(geojson) {
   return true;
 }
 
-
+// cut int4 in half an use that as the starting point for user ids
 const INT4_MAX = 2147483647
 function getStartingMaxId(geojson, storedMaxId) {
   if (Number.isInteger(storedMaxId) && storedMaxId >= USER_LOCATION_ID_START && storedMaxId <= INT4_MAX) {
@@ -362,7 +362,7 @@ function ensureUserFeatureIds(geojson, prevMaxId) {
     const props = f.properties || (f.properties = {});
     props.userCreated = true;
   }
-  console.log("verified geojson", geojson.features.map(f => ({name: f.properties.name, id: f.id})), "max", maxId)
+  // console.log("verified geojson", geojson.features.map(f => ({name: f.properties.name, id: f.id})), "max", maxId)
 
   return maxId;
 }

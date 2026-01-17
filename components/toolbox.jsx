@@ -14,7 +14,7 @@ const linestring = {
 }
 let text, tutorial, crosshairX, crosshairY
 
-export default function Toolbox({ map, width, params, height, mobile, name, IS_GALAXY, DISTANCE_CONVERTER, UNIT, COORD_OFFSET, GRID_DENSITY, TRAVEL_RATE_UNIT, TRAVEL_TIME_UNIT, TIME_DILATION, TRAVEL_RATE, SHIP_CLASS
+export default function Toolbox({ map, width, params, height, mobile, name, isRemote, IS_GALAXY, DISTANCE_CONVERTER, UNIT, COORD_OFFSET, GRID_DENSITY, TRAVEL_RATE_UNIT, TRAVEL_TIME_UNIT, TIME_DILATION, TRAVEL_RATE, SHIP_CLASS
  }) {
   const { mode, setMode } = useMode()
   const router = useRouter()
@@ -371,7 +371,8 @@ export default function Toolbox({ map, width, params, height, mobile, name, IS_G
         setMode(mode === "crosshair" ? null : "crosshair")
       } else if (event.code === "KeyZ") {
         setMode(mode === "measure" ? null : "measure")
-      } else if (event.code === "KeyP" || event.code === "KeyB") {
+        // if you allow remote maps to be edited live, then remove !isRemote 
+      } else if ((event.code === "KeyP" || event.code === "KeyB") && !isRemote) {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get("preview")) {
           router.push(`/${name}?id=${urlParams.get("id")}`)

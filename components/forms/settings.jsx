@@ -28,7 +28,6 @@ export default function MapSettings({ map, id }) {
     body.TYPES = JSON.parse(body.TYPES)
     body.LAYOUT_OVERRIDE = JSON.parse(body.LAYOUT_OVERRIDE)
     setSubmitting(true)
-    console.log(body)
 
     if (typeof body.STYLE === "undefined") {
       delete body.STYLE
@@ -68,6 +67,14 @@ export default function MapSettings({ map, id }) {
       body.VIEW.zoom = Number(body.ZOOM)
       delete body.ZOOM
     }
+    if (body.MAX_BOUNDS) {
+      const bounds = body.MAX_BOUNDS.split(",").map(Number)
+      body.VIEW.maxBounds = [
+        [bounds[0], bounds[1]],
+        [bounds[2], bounds[3]]
+      ]
+      delete body.MAX_BOUNDS
+    }
     if (body.MAX_ZOOM) {
       body.MAX_ZOOM = Number(body.MAX_ZOOM)
     }
@@ -94,7 +101,7 @@ export default function MapSettings({ map, id }) {
     delete body.name
     const maps = await getMaps()
     const currentConfig = maps[`${map}-${id}`]?.config
-    console.log("submit", {
+    console.log("local submit", {
       ...newObj,
       config: {
         ...currentConfig,
