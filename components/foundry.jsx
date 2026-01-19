@@ -230,7 +230,7 @@ export function Quest({ name, uuid }) {
     text.style.lineHeight = '1.4'
     text.style.zIndex = 2;
     text.style.transform = 'translateX(-50%)';
-    text.style.top = '90px'
+    text.style.top = '130px'
     text.style.color = 'white'
     text.style.opacity = 0.8
     text.style.fontSize = '2.2em'
@@ -246,11 +246,9 @@ export function Quest({ name, uuid }) {
 
     const button = document.createElement('button')
     button.textContent = 'Submit'
-    button.className = 'absolute top-6 left-1/2 transform -translate-x-1/2 w-30 bg-[#302831] text-white py-2 px-4 rounded cursor-pointer'
-    button.style.zIndex = 100
+    button.className = 'absolute top-20 left-1/2 z-[3] transform -translate-x-1/2 w-30 bg-[#302831] text-white py-2 px-4 rounded cursor-pointer'
     button.addEventListener('click', () => {
-
-      // map get location
+      if (typeof window.questLink === 'undefined') return
       window.parent.postMessage({
         type: 'questLocationSet',
         location: window.questLink,

@@ -38,7 +38,7 @@ export async function POST(req) {
         added++
         console.log("adding missing map", map.id)
       } else {
-        console.log("hash check", localMaps[map.id].hash, "vs", map.hash)
+        // console.log("hash check", localMaps[map.id].hash, "vs", map.hash)
         if (localMaps[map.id].hash !== map.hash) {
           hashChanged.push(map.name)
           updatedLocalMaps[map.id].name = map.name;

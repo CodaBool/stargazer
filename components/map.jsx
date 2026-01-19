@@ -205,6 +205,24 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   async function pan(d, myGroup, fit) {
     if (locked && !fit) return
     let lat, lng, bounds, coordinates = d.geometry.coordinates
+
+    let group = myGroup
+    if (!myGroup) {
+      // rbush uses a square but that's fine
+      const rawNearby = locationGroups.search({
+        minX: lng - SEARCH_SIZE,
+        minY: lat - SEARCH_SIZE,
+        maxX: lng + SEARCH_SIZE,
+        maxY: lat + SEARCH_SIZE
+      })
+
+      group = rawNearby
+        .filter(item => item.feature.id !== d.id)
+        .map(item => ({
+          groupCenter: [lng, lat],
+          ...item.feature
+        }))
+    }
     let zoom = wrapper.getZoom()
     // duplicate of what's in drawer.jsx recenter
     if (d.geometry.type === "Point") {
@@ -239,7 +257,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       zoomFactor = Math.max(zoomFactor, 4)
       const latDiff = (wrapper.getBounds().getNorth() - wrapper.getBounds().getSouth()) / zoomFactor
       lat = coordinates[1] - latDiff / 2
-      console.log('DEBUG: adding', latDiff / 2, " latitude compensation to zoom level")
+      // console.log('DEBUG: adding', latDiff / 2, " latitude compensation to zoom level")
     }
 
     if (bounds) {
@@ -271,7 +289,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
     if (d.geometry.type === "Point") {
       // console.log("setting", myGroup, "d", d)
-      setDrawerContent({ coordinates, selectedId: d.id, myGroup, d })
+      setDrawerContent({ coordinates, selectedId: d.id, myGroup: group, d })
     }
   }
 
@@ -604,15 +622,15 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
         <ZoomIn size={34} onClick={() => wrapper.zoomIn()} className='m-2 hover:stroke-blue-200' />
         <ZoomOut size={34} onClick={() => wrapper.zoomOut()} className='m-2 mt-4 hover:stroke-blue-200' />
       </div>}
-      {params.get("search") !== "0" && <SearchBar map={wrapper} name={name} data={data} pan={pan} mobile={mobile} groups={locationGroups} UNIT={UNIT} STYLES={STYLES} SEARCH_SIZE={SEARCH_SIZE} />}
+      {params.get("search") !== "0" && <SearchBar map={wrapper} name={name} data={data} pan={pan} mobile={mobile} UNIT={UNIT} STYLES={STYLES} SEARCH_SIZE={SEARCH_SIZE} />}
       {/* FOUNDRY */}
       {params.get("secret") && <Link width={width} height={height} mobile={mobile} name={name} params={params} />}
       {params.get("calibrate") && <Calibrate width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}
       {params.get("quest") && <Quest name={name} uuid={uuid} />}
       <Debug />
-      {!locked && <Tutorial name={name} IS_GALAXY={IS_GALAXY} />}
+      {(!locked && params.get("tutorial") !== "0") && <Tutorial name={name} IS_GALAXY={IS_GALAXY} />}
       {!locked && <Drawer {...drawerContent} passedLocationClick={locationClick} params={params} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} VIEW={VIEW} GENERATE_LOCATIONS={GENERATE_LOCATIONS} GRID_DENSITY={GRID_DENSITY || 1} COORD_OFFSET={COORD_OFFSET} SEARCH_SIZE={SEARCH_SIZE} mobile={mobile} width={width} height={height} />}
-      <Toolbox params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} isRemote={!!uuid} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} COORD_OFFSET={COORD_OFFSET} GRID_DENSITY={GRID_DENSITY} TRAVEL_RATE={Number(TRAVEL_RATE)} TRAVEL_RATE_UNIT={TRAVEL_RATE_UNIT} TRAVEL_TIME_UNIT={TRAVEL_TIME_UNIT} SHIP_CLASS={SHIP_CLASS} TIME_DILATION={TIME_DILATION} />
+      {params.get("toolbox") !== "0" && <Toolbox data={data} params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} pan={pan} isRemote={!!uuid} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} COORD_OFFSET={COORD_OFFSET} GRID_DENSITY={GRID_DENSITY} TRAVEL_RATE={Number(TRAVEL_RATE)} TRAVEL_RATE_UNIT={TRAVEL_RATE_UNIT} TRAVEL_TIME_UNIT={TRAVEL_TIME_UNIT} SHIP_CLASS={SHIP_CLASS} TIME_DILATION={TIME_DILATION} />}
       {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} mobile={mobile} />}
     </>
   )

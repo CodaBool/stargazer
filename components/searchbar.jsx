@@ -11,7 +11,7 @@ import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOu
 import { darkenColor, useStore } from "@/lib/utils.js"
 import { useEffect, useRef, useState } from "react"
 
-export default function SearchBar({ map, data, mobile, name, pan, groups, UNIT, STYLES, SEARCH_SIZE }) {
+export default function SearchBar({ map, data, mobile, name, pan, UNIT, STYLES, SEARCH_SIZE }) {
   const [active, setActive] = useState()
   const [previousFeatureId, setPreviousFeatureId] = useState(null)
   const { editorTable } = useStore()
@@ -60,28 +60,8 @@ export default function SearchBar({ map, data, mobile, name, pan, groups, UNIT, 
       { hover: true }
     )
 
-    // Update the previousFeatureId state
     setPreviousFeatureId(d.id)
-
-    // duplcate of what's in locationClick in map.jsx
-    const [lng, lat] = d.geometry.coordinates
-
-    // rbush uses a square but that's fine
-    const rawNearby = groups.search({
-      minX: lng - SEARCH_SIZE,
-      minY: lat - SEARCH_SIZE,
-      maxX: lng + SEARCH_SIZE,
-      maxY: lat + SEARCH_SIZE
-    })
-
-    const myGroup = rawNearby
-      .filter(item => item.feature.id !== d.id)
-      .map(item => ({
-        groupCenter: [lng, lat],
-        ...item.feature
-      }))
-
-    pan(d, myGroup, true)
+    pan(d, null, true)
   }
 
   useEffect(() => {

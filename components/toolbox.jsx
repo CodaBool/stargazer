@@ -14,7 +14,7 @@ const linestring = {
 }
 let text, tutorial, crosshairX, crosshairY
 
-export default function Toolbox({ map, width, params, height, mobile, name, isRemote, IS_GALAXY, DISTANCE_CONVERTER, UNIT, COORD_OFFSET, GRID_DENSITY, TRAVEL_RATE_UNIT, TRAVEL_TIME_UNIT, TIME_DILATION, TRAVEL_RATE, SHIP_CLASS
+export default function Toolbox({ map, pan, width, params, height, mobile, name, isRemote, data, IS_GALAXY, DISTANCE_CONVERTER, UNIT, COORD_OFFSET, GRID_DENSITY, TRAVEL_RATE_UNIT, TRAVEL_TIME_UNIT, TIME_DILATION, TRAVEL_RATE, SHIP_CLASS
  }) {
   const { mode, setMode } = useMode()
   const router = useRouter()
@@ -51,13 +51,17 @@ export default function Toolbox({ map, width, params, height, mobile, name, isRe
       let textContent = `${distance.toFixed(1)} ${UNIT} | ${time.toFixed(1)} ${timeUnit} (${TRAVEL_RATE} ${TRAVEL_RATE_UNIT}) ${extraText}`;
       if (TIME_DILATION) {
         // assumes travel rate is 0-1 number in speed of light units
-        time = (distance / Math.sinh(Math.atanh(TRAVEL_RATE))).toFixed(2)
+        time = (distance / Math.sinh(Math.atanh(TRAVEL_RATE)))
         let timeUnit = "years"
         if (time < 1) {
-          time = (time * 12).toFixed(1);
-          timeUnit = "months";
+          time = (time * 12)
+          timeUnit = "months"
+          if (time < 1) {
+            time = (time * 30.416666667)
+            timeUnit = "days"
+          }
         }
-        textContent = `${distance.toFixed(1)} ${UNIT} | ${time} ${timeUnit} (${TRAVEL_RATE} ${TRAVEL_RATE_UNIT}) | ${(distance / TRAVEL_RATE).toFixed(1)} observer years`
+        textContent = `${distance.toFixed(1)} ${UNIT} | ${time.toFixed(1)} ${timeUnit} (${TRAVEL_RATE} ${TRAVEL_RATE_UNIT}) | ${(distance / TRAVEL_RATE).toFixed(1)} observer years`
       }
       text.textContent = textContent
 
@@ -204,13 +208,10 @@ export default function Toolbox({ map, width, params, height, mobile, name, isRe
 
     // vertical line
     crosshairY = document.createElement('div')
-    crosshairY.className = 'crosshair crosshair-y'
-    crosshairY.style.position = 'absolute'
+    crosshairY.className = 'crosshair crosshair-y absolute z-10 invisible'
     crosshairY.style.top = '50%'
     crosshairY.style.left = '50%'
     crosshairY.style.width = '1px'
-    crosshairY.style.zIndex = 2;
-    crosshairY.style.visibility = 'hidden'
     crosshairY.style.border = '1px dashed rgba(255, 255, 255, 0.5)'
     crosshairY.style.height = `${Math.min(Math.max(crosshairLength, 50), height - 50)}px`
     crosshairY.style.transform = 'translateY(-50%)'
@@ -218,43 +219,22 @@ export default function Toolbox({ map, width, params, height, mobile, name, isRe
 
     // output text
     text = document.createElement('div')
-    text.className = 'textbox'
-    text.style.position = 'absolute'
-    text.style.left = '50%';
-    text.style.lineHeight = '1.4'
-    text.style.zIndex = 2;
-    text.style.transform = 'translateX(-50%)';
+    text.className = 'textbox absolute left-1/2 -translate-x-1/2 z-10 text-center text-white pointer-events-none invisible opacity-80 leading-[1.4] rounded-[10px] bg-black/90 px-[0.5em] py-[0.2em]'
     text.style.top = mobile ? '70px' : '90px'
-    text.style.color = 'white'
-    text.style.opacity = 0.8
     text.style.fontSize = mobile ? '1.5em' : '2.2em'
-    text.style.pointerEvents = 'none'
-    text.style.visibility = 'hidden'
-    text.style.textAlign = 'center'
     text.style.textShadow = `
       0 0 3px rgba(0,0,0,1),
       0 0 6px rgba(0,0,0,0.9)
     `;
-    text.style.background = 'rgba(0, 0, 0, 0.9)'; // semi-transparent black
-    text.style.padding = '0.2em 0.5em'; // space around text
-    text.style.borderRadius = '10px';   // optional rounded corners
     mapboxChildrenParent.appendChild(text)
 
     // tutorial text
     tutorial = document.createElement('div')
-    tutorial.className = 'textbox'
-    tutorial.style.position = 'absolute'
-    tutorial.style.left = '50%';
+    tutorial.className = 'textbox absolute left-1/2 z-10 text-white opacity-70 pointer-events-none invisible text-center'
     tutorial.style.lineHeight = '1.4'
-    tutorial.style.zIndex = 2;
     tutorial.style.transform = 'translateX(-50%)';
     tutorial.style.top = '180px'
-    tutorial.style.color = 'white'
-    tutorial.style.opacity = 0.7
     tutorial.style.fontSize = mobile ? '1.2em' : '1.8em'
-    tutorial.style.pointerEvents = 'none'
-    tutorial.style.visibility = 'hidden'
-    tutorial.style.textAlign = 'center'
     mapboxChildrenParent.appendChild(tutorial)
 
     map.on('click', handleClick)
@@ -334,6 +314,19 @@ export default function Toolbox({ map, width, params, height, mobile, name, isRe
       })
     }
 
+    if (params.get("goto")) {
+      const f = data.features.find(f => f.id === Number(params.get("goto")))
+      if (f && !document.querySelector(".toolbox-goto-btn")) {
+        const button = document.createElement('button')
+        button.textContent = `Recenter on ${f.properties.name}`
+        button.className = 'absolute bottom-6 left-1/2 -translate-x-1/2 bg-[#30283173] p-3 rounded-xl cursor-pointer z-50 whitespace-nowrap toolbox-goto-btn'
+        button.addEventListener('click', () => {
+          pan(f, null, true)
+        })
+        document.body.appendChild(button)
+      }
+    }
+
     // duplicate of handleMove function
     if (mode === "crosshair") {
       const { lng, lat } = map.getCenter()
@@ -348,11 +341,10 @@ export default function Toolbox({ map, width, params, height, mobile, name, isRe
       }
       text.style.visibility = 'visible'
     } else if (mode === "measure") {
-
       getMaps().then(maps => {
         const urlParams = new URLSearchParams(window.location.search)
         const map = maps[name + "-" + urlParams.get("id")]
-        if (!map?.config.TRAVEL_RATE) {
+        if (!map?.config.TRAVEL_RATE && !params.get("goto")) {
           toast.info(`You can configure your speed within settings. Using default ${TRAVEL_RATE} ${TRAVEL_RATE_UNIT}`)
         }
         text.textContent = `${mobile ? 'Tap two points' : 'Click'} to begin measuring`
@@ -371,7 +363,7 @@ export default function Toolbox({ map, width, params, height, mobile, name, isRe
         setMode(mode === "crosshair" ? null : "crosshair")
       } else if (event.code === "KeyZ") {
         setMode(mode === "measure" ? null : "measure")
-        // if you allow remote maps to be edited live, then remove !isRemote 
+        // if you allow remote maps to be edited live, then remove !isRemote
       } else if ((event.code === "KeyP" || event.code === "KeyB") && !isRemote) {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get("preview")) {

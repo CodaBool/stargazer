@@ -32,22 +32,22 @@ export default function SolarSystemDiagram({ group, selectedId, map, name, passe
   }
 
 
-  function panTo(feat) {
-    if (feat.geometry.type !== "Point") return
-    const coordinates = feat.geometry.coordinates
+  // function panTo(feat) {
+  //   if (feat.geometry.type !== "Point") return
+  //   const coordinates = feat.geometry.coordinates
 
-    // try to compensate for sheet height
-    let lng = coordinates[0]
-    let lat = coordinates[1]
-    const arbitraryNumber = 9.7
-    // const arbitraryNumber = locations?.length > 5 ? 9.5 : 10
-    let zoomFactor = Math.pow(2, arbitraryNumber - map.getZoom())
-    zoomFactor = Math.max(zoomFactor, 4)
-    const latDiff = (map.getBounds().getNorth() - map.getBounds().getSouth()) / zoomFactor
-    lat = coordinates[1] - latDiff / 2
+  //   // try to compensate for sheet height
+  //   let lng = coordinates[0]
+  //   let lat = coordinates[1]
+  //   const arbitraryNumber = 9.7
+  //   // const arbitraryNumber = locations?.length > 5 ? 9.5 : 10
+  //   let zoomFactor = Math.pow(2, arbitraryNumber - map.getZoom())
+  //   zoomFactor = Math.max(zoomFactor, 4)
+  //   const latDiff = (map.getBounds().getNorth() - map.getBounds().getSouth()) / zoomFactor
+  //   lat = coordinates[1] - latDiff / 2
 
-    map.flyTo({ center: [lng, lat], duration: 800 })
-  }
+  //   map.flyTo({ center: [lng, lat], duration: 800 })
+  // }
 
   return (
     <>

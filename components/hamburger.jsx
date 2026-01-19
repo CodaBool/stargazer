@@ -59,7 +59,7 @@ export default function Hamburger({ name, params, map, mobile }) {
         <DropdownMenuItem className="cursor-pointer" onClick={() => setMode(mode === "crosshair" ? null : "crosshair")}>
           <Crosshair /> Coordinate <input type="checkbox" checked={mode === "crosshair"} readOnly />
         </DropdownMenuItem>
-        {params.get("iframe") !== "1" && (
+        {(params.get("iframe") !== "1" && !params.get("cheeseburger")) && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuLabel>Links</DropdownMenuLabel>

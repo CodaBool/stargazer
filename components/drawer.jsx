@@ -41,7 +41,7 @@ export default function DrawerComponent({
 }) {
   const { map } = useMap();
   const GROUP_NAME = IS_GALAXY ? "Celestial Bodies" : "Nearby Locations"
-  const squareSize = height * (IS_GALAXY ? 0.2 : 0.08)
+  const squareSize = Math.max(60, height * (IS_GALAXY ? 0.2 : 0.08))
 
   const [display, setDisplay] = useState(() => fillMissingData(d)?.properties);
 
@@ -153,7 +153,7 @@ export default function DrawerComponent({
       open={!!drawerContent}
       onOpenChange={() => setDrawerContent(null)}
       modal={false}
-      snapPoints={[mobile ? 0.45 : IS_GALAXY ? (height < 700 ? 0.65 : 0.4) : 0.28, 0.92]}
+      snapPoints={[mobile ? 0.45 : IS_GALAXY ? (height < 700 ? 0.6 : 0.4) : 0.28, 0.92]}
     >
       <DrawerContent>
         <DrawerTitle />
@@ -194,6 +194,7 @@ export default function DrawerComponent({
                   width: squareSize / 1.5 + "px",
                   height: squareSize / 1.5 + "px",
                   position: "absolute",
+                  paddingBottom: IS_GALAXY ? "" : '5px',
                   top: 0,
                   filter: display?.source?.properties?.tint
                     ? `drop-shadow(0 0 6px ${display.source.properties.tint})`
