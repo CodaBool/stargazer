@@ -1,11 +1,55 @@
 import { useControl, useMap } from '@vis.gl/react-maplibre'
-import MapboxDraw from "@hyvilo/maplibre-gl-draw"
+import MapboxDraw from "@mapbox/mapbox-gl-draw"
 import { useEffect, useState } from 'react'
 import randomName from '@scaleway/random-name'
 import { useRouter } from 'next/navigation'
 import { hexToRgb, getMaps, localSet, useStore, isMobile } from '@/lib/utils'
 import { create } from 'zustand'
 import { toast } from 'sonner'
+// import {CircleMode} from "@/components/circleMode.js"
+// import {DirectModeOverride} from "@/components/circleModeOver.js"
+// working but too simplistic
+// import DrawCircle from 'mapbox-gl-draw-circle-mode';
+// import RadiusMode from './radiusMode';
+
+// needs patching very bad
+// import {
+//     CircleMode,
+//     DragCircleMode,
+//     DirectMode,
+//     SimpleSelectMode
+// } from 'mapbox-gl-draw-circle';
+
+// needs patching bad
+// import {
+//     CircleMode,
+//     DragCircleMode,
+//     DirectMode,
+//     SimpleSelectMode
+// } from 'mapbox-gl-draw-rounded-circle';
+
+import {
+    CircleMode,
+    DragCircleMode,
+    DirectMode,
+    SimpleSelectMode
+} from 'maplibre-gl-draw-circle';
+
+// this package allows for curves, but I got serialize errors
+// https://github.com/Jeff-Numix/mapbox-gl-draw-bezier-curve-mode
+// const baseIds = new Set(drawStyles.map(layer => layer.id));
+// const pluginExtras = customStyles.filter(layer => !baseIds.has(layer.id));
+// const combinedDrawStyles = [...drawStyles, ...pluginExtras]
+// mapbox-gl-draw-bezier-curve-mode
+
+// MapLibre compatibility: mapbox-gl-draw → maplibre classes
+MapboxDraw.constants.classes.CANVAS        = 'maplibregl-canvas';
+MapboxDraw.constants.classes.CONTROL_BASE  = 'maplibregl-ctrl';
+MapboxDraw.constants.classes.CONTROL_PREFIX = 'maplibregl-ctrl-';
+MapboxDraw.constants.classes.CONTROL_GROUP = 'maplibregl-ctrl-group';
+MapboxDraw.constants.classes.ATTRIBUTION = 'maplibregl-ctrl-attrib'
+// MapboxDraw.modes.draw_circle = DrawCircle
+
 
 export const useDraw = create(set => ({
   draw: null,
@@ -228,7 +272,23 @@ export default function Controls({ name, params, setSize, TYPES, GEO_EDIT }) {
       controls: {
         combine_features: false,
         uncombine_features: false,
-      }
+      },
+      modes: {
+
+        ...MapboxDraw.modes,
+        // draw_radius: RadiusMode,
+
+        // ...MapboxDraw.modes,
+        // draw_circle: DrawCircle,
+        draw_circle  : CircleMode,
+        drag_circle  : DragCircleMode,
+        direct_select: DirectMode,
+        simple_select: SimpleSelectMode
+        // drag_circle  : DragCircleMode,
+        // direct_select: DirectMode,
+        // simple_select: SimpleSelectMode,
+      },
+      styles: drawStyles,
     }),
     // add
     ({ map }) => {
@@ -248,5 +308,260 @@ export default function Controls({ name, params, setSize, TYPES, GEO_EDIT }) {
     }
   )
   useEffect(() => setDraw(d), [])
-  return null
+
+  return (
+    <div className="maplibregl-ctrl-top-right pointer-events-none">
+      <div className="maplibregl-ctrl-group maplibregl-ctrl pointer-events-auto top-[113px] relative">
+        <button
+          type="button"
+          title="Circle tool"
+          onClick={() => draw.changeMode('draw_circle')}
+          className="mapbox-gl-draw_ctrl-draw-btn"
+          style={{
+            backgroundImage: `url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='10' cy='10' r='6' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E")`,
+          }}
+        />
+      </div>
+    </div>
+  )
 }
+
+
+// drawStyles.ts
+export const drawStyles = [
+  // --- POLYGONS ---
+
+  // Polygon fill - inactive
+  {
+    id: "gl-draw-polygon-fill-inactive",
+    type: "fill",
+    filter: [
+      "all",
+      ["==", "active", "false"],
+      ["==", "$type", "Polygon"],
+      ["!=", "mode", "static"],
+      ["!=", "meta", "radius"],        // exclude radius circle here
+    ],
+    paint: {
+      "fill-color": "#3bb2d0",
+      "fill-outline-color": "#3bb2d0",
+      "fill-opacity": 0.1,
+    },
+  },
+
+  // Polygon fill - active
+  {
+    id: "gl-draw-polygon-fill-active",
+    type: "fill",
+    filter: [
+      "all",
+      ["==", "active", "true"],
+      ["==", "$type", "Polygon"],
+      ["!=", "meta", "radius"],
+    ],
+    paint: {
+      "fill-color": "#fbb03b",
+      "fill-outline-color": "#fbb03b",
+      "fill-opacity": 0.1,
+    },
+  },
+
+  // Polygon stroke - inactive
+  {
+    id: "gl-draw-polygon-stroke-inactive",
+    type: "line",
+    filter: [
+      "all",
+      ["==", "active", "false"],
+      ["==", "$type", "Polygon"],
+      ["!=", "mode", "static"],
+      ["!=", "meta", "radius"],
+    ],
+    layout: {
+      "line-cap": "round",
+      "line-join": "round",
+    },
+    paint: {
+      "line-color": "#3bb2d0",
+      "line-width": 2,
+    },
+  },
+
+  // Polygon stroke - active (dashed)
+  {
+    id: "gl-draw-polygon-stroke-active",
+    type: "line",
+    filter: [
+      "all",
+      ["==", "active", "true"],
+      ["==", "$type", "Polygon"],
+      ["!=", "meta", "radius"],
+    ],
+    layout: {
+      "line-cap": "round",
+      "line-join": "round",
+    },
+    paint: {
+      "line-color": "#fbb03b",
+      "line-dasharray": [0.2, 2],
+      "line-width": 2,
+    },
+  },
+
+  // --- LINES (as you had) ---
+
+  {
+    id: "gl-draw-line-inactive",
+    type: "line",
+    filter: [
+      "all",
+      ["==", "active", "false"],
+      ["==", "$type", "LineString"],
+      ["!=", "mode", "static"],
+    ],
+    layout: {
+      "line-cap": "round",
+      "line-join": "round",
+    },
+    paint: {
+      "line-color": "#3bb2d0",
+      "line-width": 2,
+    },
+  },
+  {
+    id: "gl-draw-line-active",
+    type: "line",
+    filter: ["all", ["==", "$type", "LineString"], ["==", "active", "true"]],
+    layout: {
+      "line-cap": "round",
+      "line-join": "round",
+    },
+    paint: {
+      "line-color": "#fbb03b",
+      "line-dasharray": [0.2, 2],
+      "line-width": 2,
+    },
+  },
+
+  // --- POINT FEATURES (already added) ---
+
+  {
+    id: "gl-draw-point-point-inactive",
+    type: "circle",
+    filter: [
+      "all",
+      ["==", "active", "false"],
+      ["==", "$type", "Point"],
+      ["==", "meta", "feature"],
+      ["!=", "mode", "static"],
+    ],
+    paint: {
+      "circle-radius": 5,
+      "circle-color": "#3bb2d0",
+      "circle-stroke-width": 1,
+      "circle-stroke-color": "#ffffff",
+    },
+  },
+  {
+    id: "gl-draw-point-point-active",
+    type: "circle",
+    filter: [
+      "all",
+      ["==", "active", "true"],
+      ["==", "$type", "Point"],
+      ["==", "meta", "feature"],
+    ],
+    paint: {
+      "circle-radius": 6,
+      "circle-color": "#fbb03b",
+      "circle-stroke-width": 2,
+      "circle-stroke-color": "#ffffff",
+    },
+  },
+
+  // --- RADIUS CIRCLE (from RadiusMode) ---
+
+  {
+    id: "gl-draw-radius-fill",
+    type: "fill",
+    filter: [
+      "all",
+      ["==", "meta", "radius"],
+      ["==", "$type", "Polygon"],
+    ],
+    paint: {
+      "fill-color": "#fbb03b",
+      "fill-opacity": 0.1,
+      "fill-outline-color": "#fbb03b",
+    },
+  },
+  {
+    id: "gl-draw-radius-outline",
+    type: "line",
+    filter: [
+      "all",
+      ["==", "meta", "radius"],
+      ["==", "$type", "Polygon"],
+    ],
+    layout: {
+      "line-cap": "round",   // <—
+      "line-join": "round",  // <—
+    },
+    paint: {
+      "line-color": "#fbb03b",
+      "line-width": 2,
+      "line-dasharray": [0.2, 2],
+      // optional soft edge:
+      "line-blur": 0.5,
+    },
+  },
+
+  // --- RADIUS CURRENT POSITION DOT (optional) ---
+
+  {
+    id: "gl-draw-radius-current-position",
+    type: "circle",
+    filter: [
+      "all",
+      ["==", "meta", "currentPosition"],
+      ["==", "$type", "Point"],
+    ],
+    paint: {
+      "circle-radius": 4,
+      "circle-color": "#fbb03b",
+      "circle-stroke-width": 1,
+      "circle-stroke-color": "#ffffff",
+    },
+  },
+
+  // --- VERTICES (as you had) ---
+
+  {
+    id: "gl-draw-polygon-and-line-vertex-halo-active",
+    type: "circle",
+    filter: [
+      "all",
+      ["==", "meta", "vertex"],
+      ["==", "$type", "Point"],
+      ["!=", "mode", "static"],
+    ],
+    paint: {
+      "circle-radius": 5,
+      "circle-color": "#ffffff",
+    },
+  },
+  {
+    id: "gl-draw-polygon-and-line-vertex-active",
+    type: "circle",
+    filter: [
+      "all",
+      ["==", "meta", "vertex"],
+      ["==", "$type", "Point"],
+      ["!=", "mode", "static"],
+    ],
+    paint: {
+      "circle-radius": 3,
+      "circle-color": "#fbb03b",
+    },
+  },
+];

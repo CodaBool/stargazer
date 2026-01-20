@@ -235,7 +235,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
 
           {!editorTable && (
             Object.entries(feature.properties).map((arr, i) => {
-              if (typeof arr[1] === "undefined" || arr[1] === null) return null
+              if (typeof arr[1] === "undefined" || arr[1] === null || typeof arr[1] === "object") return null
               const isColor = arr[1]?.toString().startsWith("rgba") || (arr[1]?.toString().startsWith("#") && arr[1]?.length === 7)
               return (
                 <TableRow key={i}>
@@ -258,7 +258,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
                         :
                         <div
                           className="swatch w-5 h-5 border border-white"
-                          style={{ backgroundColor: popup.properties.fill }}
+                          style={{ backgroundColor: popup.properties.fill || "" }}
                         />
                       }
                     </TableCell>

@@ -41,7 +41,7 @@ export const viewport = {
 
 import './global.css'
 import "maplibre-gl/dist/maplibre-gl.css"
-import '@hyvilo/maplibre-gl-draw/dist/maplibre-gl-draw.css'
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
 import { Press_Start_2P } from 'next/font/google'
 import Provider from '@/components/provider'
 
