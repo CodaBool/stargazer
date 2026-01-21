@@ -175,11 +175,13 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     })
 
     const myGroup = rawNearby
-      .filter(item => item.feature.id !== clicked.id)
+      .filter(item => item.id !== clicked.id)
       .map(item => ({
         groupCenter: [lng, lat],
-        ...item.feature
+        me: item.feature,
+        ...item.feature,
       }))
+
 
     pan(clicked, myGroup)
     if (popup._container) popup.remove()
@@ -217,11 +219,13 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       })
 
       group = rawNearby
-        .filter(item => item.feature.id !== d.id)
+        .filter(item => item.id !== d.id)
         .map(item => ({
           groupCenter: [lng, lat],
-          ...item.feature
+          me: item.feature,
+          ...item.feature,
         }))
+
     }
     let zoom = wrapper.getZoom()
     // duplicate of what's in drawer.jsx recenter
@@ -389,21 +393,19 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       });
     }
 
-    if (name === "starwars" || name === "alien" || name === "fallout") {
+    if (name === "starwars" || name === "alien") {
       const { formatLabels } = gridHelpers(name, GRID_DENSITY || 1)
       new GeoGrid({
         map: wrapper.getMap(),
-        // beforeLayerId: 'line',
         gridDensity: () => GRID_DENSITY || 1,
         formatLabels,
         gridStyle: {
-          color: `rgba(255, 255, 255, ${name === "fallout" ? 0.02 : 0.03})`,
+          color: `rgba(255, 255, 255, 0.03)`,
           width: 2,
         },
         labelStyle: {
           color: 'white',
           fontSize: 24,
-          // textShadow: '0 0 10px rgba(0, 0, 0)',
         },
       })
     }
@@ -520,7 +522,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     <>
       {IS_GALAXY && <Starfield width={width} height={height} BOUNDS={VIEW.maxBounds} />}
       {BG_IMAGE && <Source id="custom-image" type="image" url={BG_IMAGE} coordinates={boundsToCoord(VIEW.bgImage || VIEW.maxBounds)}>
-        <Layer type="raster" id="custom-image-layer" />
+        <Layer type="raster" id="custom-image-layer" paint={{"raster-opacity": VIEW.bgImageOpacity}} />
       </Source>}
       <Source id="source" type="geojson" data={data}>
         <Layer

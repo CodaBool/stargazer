@@ -17,6 +17,7 @@ import ThreejsPlanet, { availableThreejsModels } from "./threejsPlanet";
 import { claimThreeCanvas } from "./threeHostRegistry.js";
 import { Button } from "./ui/button.jsx";
 import { toast } from 'sonner'
+import Link from "next/link.js";
 
 export default function DrawerComponent({
   drawerContent,
@@ -124,10 +125,10 @@ export default function DrawerComponent({
 
   function foundryClick() {
     if (!params.get("iframe")) {
-      toast.success(`Foundry only feature [${display?.source?.properties?.link}]`)
+      toast.success(`Foundry only feature [${display.link}]`)
       return
     }
-    window.parent.postMessage({type: "link", link: display?.source?.properties?.link}, "*")
+    window.parent.postMessage({type: "link", link: display.link}, "*")
   }
 
   let coordinatesPretty = `${coordinates[1].toFixed(2)}, ${coordinates[0].toFixed(2)}`;
@@ -140,12 +141,12 @@ export default function DrawerComponent({
   }
 
   const cloudPercent = typeof display.cloudPercent === "number" ? display.cloudPercent : 0;
-  const iconType = display?.source?.properties?.type || display.type;
-  const iconName = display?.source?.properties?.name || display.name || "Unknown";
+  const iconType = display.type
+  const iconName = display.name || "Unknown";
 
   const starNum =
-    typeof display?.source?.properties?.starType === "string"
-      ? display.source.properties.starType.split(",").filter(Boolean).length
+    typeof display.starType === "string"
+      ? display.starType.split(",").filter(Boolean).length
       : 0;
 
   return (
@@ -196,8 +197,8 @@ export default function DrawerComponent({
                   position: "absolute",
                   paddingBottom: IS_GALAXY ? "" : '5px',
                   top: 0,
-                  filter: display?.source?.properties?.tint
-                    ? `drop-shadow(0 0 6px ${display.source.properties.tint})`
+                  filter: display.tint
+                    ? `drop-shadow(0 0 6px ${display.tint})`
                     : undefined,
                 }}
               />
@@ -224,39 +225,39 @@ export default function DrawerComponent({
                 {starNum === 2 && <Badge className="text-sm">binary</Badge>}
                 {starNum === 3 && <Badge className="text-sm">trinary</Badge>}
 
-                {typeof display?.source?.properties?.faction === "string" &&
-                  display.source.properties.faction.split(",").map((f) => (
+                {typeof display.faction === "string" &&
+                  display.faction.split(",").map((f) => (
                     <Badge className="text-sm text-center mx-auto lg:mx-0" key={f.trim()}>
                       {f.trim()}
                     </Badge>
                   ))}
 
-                {display?.source?.properties?.destroyed && (
+                {display.destroyed && (
                   <Badge variant="secondary" className="text-base">
                     Destroyed
                   </Badge>
                 )}
 
-                {display?.source?.properties?.unofficial && (
+                {display.unofficial && (
                   <Badge variant="destructive" className="text-base">
                     Unofficial
                   </Badge>
                 )}
-                {display?.source?.properties?.link && (
+                {display.link && (
                   <Button variant="outline" size="icon" type="button" onClick={foundryClick}>
-                    {(display?.source?.properties?.link.length === 29 && display?.source?.properties?.link.includes("JournalEntry.")) && (
+                    {(display.link.length === 29 && display.link.includes("JournalEntry.")) && (
                       <Book />
                     )}
-                    {(display?.source?.properties?.link.length === 63 && display?.source?.properties?.link.includes(".JournalEntryPage.")) && (
+                    {(display.link.length === 63 && display.link.includes(".JournalEntryPage.")) && (
                       <StickyNote />
                     )}
-                    {display?.source?.properties?.link.includes("Macro.") && (
+                    {display.link.includes("Macro.") && (
                       <Code />
                     )}
-                    {display?.source?.properties?.link.includes("forien-quest-log.") && (
+                    {display.link.includes("forien-quest-log.") && (
                       <MessageCircleWarning />
                     )}
-                    {display?.source?.properties?.link.includes("Scene.") && (
+                    {display.link.includes("Scene.") && (
                       <Drama />
                     )}
                   </Button>
@@ -265,11 +266,22 @@ export default function DrawerComponent({
             </div>
 
             {/* right */}
-            {/* {(display?.source?._geometry?.type === "Point" && IS_GALAXY) &&
+            {(display?.me?._geometry?.type === "Point" && IS_GALAXY) &&
               <div className="w-full p-0 lg:p-4 pb-5">
                 <div className="w-full h-full flex flex-col-reverse">
                   <div>
-                    {typeof display.cloudPercent === "number" && (
+                    {typeof display.source === "string" && display.source.includes("https://") && (
+                      <Link href={display.source} target="_blank" className="">Source
+                        <ExternalLink className="cursor-pointer opacity-60 inline ms-2 top-[-2px] relative" size={mobile ? 14 : 19}/>
+                      </Link>
+                    )}
+                    {typeof display.source === "string" && !display.source.includes("https://") && (
+                      <span>{display.source}</span>
+                    )}
+
+
+
+                    {/* {typeof display.cloudPercent === "number" && (
                       <p>{(cloudPercent * 100).toFixed(0)}% cloud coverage</p>
                     )}
 
@@ -325,11 +337,11 @@ export default function DrawerComponent({
                       <p>{display.modifier}</p>
                     )}
 
-                    {display.isMoon && <p>Moon</p>}
+                    {display.isMoon && <p>Moon</p>}*/}
                   </div>
                 </div>
               </div>
-            }*/}
+            }
           </div>
 
           {/* BOTTOM – Name/Type */}
@@ -337,7 +349,7 @@ export default function DrawerComponent({
             className="absolute left-1/2 flex transform -translate-x-1/2 items-center bg-[rgba(0, 0, 0, 0.75)]"
             style={{ top: `${Number(squareSize) - 5}px` }}
           >
-            {!display.fake && !display.userCreated ? (
+            {!display.fake && !display.userCreated && genLink(d,name,"wiki") ? (
               <ExternalLink
                 className="cursor-pointer me-1 opacity-60"
                 size={mobile ? 14 : 19}
@@ -345,14 +357,14 @@ export default function DrawerComponent({
               />
             ) : null}
 
-            {display?.source?.properties?.name || display.name}
+            {display.name}
 
             <span className="text-gray-400 ms-1">
               {" "}
               -{" "}
               {display.type === "star"
-                ? display?.source?.properties?.starType || display.variant || "star"
-                : String(display?.source?.properties?.type || display.type || "").replace(/_/g, " ")}
+                ? display.starType || display.variant || "star"
+                : String(display.type || "").replace(/_/g, " ")}
             </span>
           </div>
         </div>
@@ -390,9 +402,8 @@ export default function DrawerComponent({
           </>
         )}
 
-        {display?.description ||
-        display?.source?.properties?.description ||
-        display?.source?.properties?.locations ? (
+        {display.description ||
+        display.locations ? (
           <>
             <hr className="my-2" />
             <div className="max-w-3xl mx-auto px-4 overflow-auto mb-28">
@@ -402,18 +413,18 @@ export default function DrawerComponent({
                 </DrawerTitle>
               </DrawerHeader>
 
-              {display?.source?.properties?.locations ? (
+              {display.locations ? (
                 <>
                   <p className="text-base lg:text-lg leading-relaxed break-words">
                     <b>Locations:</b>{" "}
-                    <span className="text-md">{display.source.properties.locations}</span>
+                    <span className="text-md">{display.locations}</span>
                   </p>
                   <hr className="my-2" />
                 </>
               ) : null}
 
               <p className="text-base lg:text-lg leading-relaxed break-words select-text">
-                {display?.description || display?.source?.properties?.description}
+                {display.description}
               </p>
             </div>
           </>

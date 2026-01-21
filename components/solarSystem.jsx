@@ -25,13 +25,13 @@ export default function SolarSystemDiagram({
   const closeDialog = (setter) => setter(null);
 
   function handleMouseOver(feature) {
-    if (feature.properties.fake || !map || (!feature.source?.id && !feature.id)) return;
-    map.setFeatureState({ source: "source", id: feature.source?.id || feature.id }, { hover: true });
+    if (feature.properties.fake || !map || (!feature.me?.id && !feature.id)) return;
+    map.setFeatureState({ source: "source", id: feature.me?.id || feature.id }, { hover: true });
   }
 
   function handleMouseOut(feature) {
-    if (feature.properties.fake || !map || (!feature.source?.id && !feature.id)) return;
-    map.setFeatureState({ source: "source", id: feature.source?.id || feature.id }, { hover: false });
+    if (feature.properties.fake || !map || (!feature.me?.id && !feature.id)) return;
+    map.setFeatureState({ source: "source", id: feature.me?.id || feature.id }, { hover: false });
   }
 
   function getFilter(body) {
@@ -39,34 +39,38 @@ export default function SolarSystemDiagram({
   }
 
   const bodies = group.filter((body) => {
+    console.log("bodies", body)
     if (d.id) {
-      if (body.source?.id === d.id) return false;
+      if (body.me?.id === d.id) return false;
     } else if (d.properties.id) {
       if (body.properties.id === d.properties.id) return false;
     }
     return true;
-  });
+  })
+
+  console.log("activeBody:", activeBody)
 
   return (
     <>
       <div className="w-full overflow-x-auto overflow-y-visible py-2">
         <div className="flex items-baseline h-full space-x-6 px-4 justify-evenly">
           {bodies.map((body, index) => {
-            const { properties, source } = body;
+            const { properties, me } = body;
+            console.log("me", me)
             const moons = Array.isArray(properties.moons) ? properties.moons : [];
             return (
               <div key={index} className="flex flex-col items-center relative min-w-[50px]">
                 <div className="flex flex-wrap items-center">
                   <img
-                    src={getIcon(source, properties.type, name)}
+                    src={getIcon(me, properties.type, name)}
                     alt={properties.name}
                     onClick={() => {
-                      if (source) {
+                      if (me) {
                         if (params.get("quest")) {
                           document.querySelector("#quest-textbox").textContent = properties.name
-                          window.questLink = {id: source.id, properties, type: source.geometry.type}
+                          window.questLink = {id: me.id, properties, type: me.geometry.type}
                         }
-                        passedLocationClick(null, source, properties.fake ? { group, d } : {});
+                        passedLocationClick(null, me, properties.fake ? { group, d } : {});
                         return;
                       }
                       setActiveBody(body);
@@ -110,11 +114,9 @@ export default function SolarSystemDiagram({
                   {!properties.fake && properties.name}
                 </div>
 
-                {body?.source && (
+                {body.faction && (
                   <div className="text-xs lg:text-sm text-center text-white opacity-80">
-                    {body.source.properties?.faction && (
-                      <Badge className="mx-auto">{body.source.properties.faction}</Badge>
-                    )}
+                    <Badge className="mx-auto">{body.faction}</Badge>
                   </div>
                 )}
               </div>
@@ -141,7 +143,7 @@ export default function SolarSystemDiagram({
             <div className="flex flex-wrap justify-evenly content-start overflow-auto">
               {moonBodies.map((moon, i) => (
                 <img
-                  src={getIcon(moon?.source, moon.type, name)}
+                  src={getIcon(moon.me, moon.type, name)}
                   alt={"moon " + i}
                   key={i}
                   onClick={() => setActiveBody({ properties: moon })}
@@ -212,31 +214,29 @@ export default function SolarSystemDiagram({
                   />
 
                   {/* Left side info + link */}
-                  {activeBody.source && !activeBody.source?.properties?.userCreated ? (
+                  {activeBody.me && !activeBody.userCreated ? (
                     <div className="absolute top-[85px] left-[40px] flex flex-col items-center">
-                      <Link
-                        href={genLink(activeBody.source, name, "href")}
-                        className="mb-2"
-                        target={name === "lancer" ? "_self" : "_blank"}
-                      >
-                        {name === "lancer" && (
-                          <Button className="cursor-pointer rounded" variant="outline">
-                            Contribute
-                          </Button>
-                        )}
-                        {name === "fallout" && <Button className="cursor-pointer">Wiki</Button>}
-                        {name === "starwars" && <Button className="cursor-pointer">Wiki</Button>}
-                      </Link>
+
+
+                      {genLink(d, name, "has wiki") &&
+                        <Link
+                          href={genLink(d, name, "href")}
+                          target="_blank"
+                          className="mb-2"
+                        >
+                          <Button className="cursor-pointer">Wiki</Button>
+                        </Link>
+                      }
 
                       <div className="pointer-events-none">
-                        {activeBody.source.properties?.unofficial && (
+                        {activeBody.unofficial && (
                           <Badge variant="destructive">unofficial</Badge>
                         )}
-                        {activeBody.source.properties?.faction && (
-                          <Badge>{activeBody.source.properties.faction}</Badge>
+                        {activeBody.faction && (
+                          <Badge>{activeBody.faction}</Badge>
                         )}
-                        {activeBody.source.properties?.destroyed && <Badge>destroyed</Badge>}
-                        {activeBody.source.properties?.capital && (
+                        {activeBody.destroyed && <Badge>destroyed</Badge>}
+                        {activeBody.capital && (
                           <Badge variant="destructive">capital</Badge>
                         )}
 
