@@ -519,7 +519,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   return (
     <>
       {IS_GALAXY && <Starfield width={width} height={height} BOUNDS={VIEW.maxBounds} />}
-      {BG_IMAGE && <Source id="custom-image" type="image" url={BG_IMAGE} coordinates={boundsToCoord(VIEW.maxBounds)}>
+      {BG_IMAGE && <Source id="custom-image" type="image" url={BG_IMAGE} coordinates={boundsToCoord(VIEW.bgImage || VIEW.maxBounds)}>
         <Layer type="raster" id="custom-image-layer" />
       </Source>}
       <Source id="source" type="geojson" data={data}>
