@@ -150,7 +150,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       //   myGroup = drawerContent.myGroup
       //   // myGroup = [drawerContent.d, ...drawerContent.myGroup]
       // }
-      console.log(`clicked on ${clicked?.properties?.fake ? "fake" : "real"}, lets spill the beans`, myGroup, "d was", drawerContent.d)
+      // console.log(`clicked on ${clicked?.properties?.fake ? "fake" : "real"}, lets spill the beans`, myGroup, "d was", drawerContent.d)
       setDrawerContent({ coordinates: clicked.geometry.coordinates, selectedId: clicked.id || clicked.properties.id, myGroup, d: clicked })
 
       if (popup?._container) popup.remove()
@@ -206,22 +206,22 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   // fit will be true if a search
   async function pan(d, myGroup, fit) {
     if (locked && !fit) return
-    let lat, lng, bounds, coordinates = d.geometry.coordinates
+    let lng, lat, bounds, coordinates = d.geometry.coordinates
 
     let group = myGroup
-    if (!myGroup) {
+    if (!myGroup && d.geometry.type === "Point") {
       // rbush uses a square but that's fine
       const rawNearby = locationGroups.search({
-        minX: lng - SEARCH_SIZE,
-        minY: lat - SEARCH_SIZE,
-        maxX: lng + SEARCH_SIZE,
-        maxY: lat + SEARCH_SIZE
+        minX: coordinates[0] - SEARCH_SIZE,
+        minY: coordinates[1] - SEARCH_SIZE,
+        maxX: coordinates[0] + SEARCH_SIZE,
+        maxY: coordinates[1] + SEARCH_SIZE
       })
 
       group = rawNearby
         .filter(item => item.id !== d.id)
         .map(item => ({
-          groupCenter: [lng, lat],
+          groupCenter: coordinates,
           me: item.feature,
           ...item.feature,
         }))

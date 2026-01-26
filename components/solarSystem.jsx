@@ -39,8 +39,8 @@ export default function SolarSystemDiagram({
   }
 
   const bodies = group.filter((body) => {
-    console.log("bodies", body)
     if (d.id) {
+      // console.log("bodies", body)
       if (body.me?.id === d.id) return false;
     } else if (d.properties.id) {
       if (body.properties.id === d.properties.id) return false;
@@ -48,7 +48,7 @@ export default function SolarSystemDiagram({
     return true;
   })
 
-  console.log("activeBody:", activeBody)
+  // console.log("activeBody:", activeBody)
 
   return (
     <>
@@ -56,7 +56,6 @@ export default function SolarSystemDiagram({
         <div className="flex items-baseline h-full space-x-6 px-4 justify-evenly">
           {bodies.map((body, index) => {
             const { properties, me } = body;
-            console.log("me", me)
             const moons = Array.isArray(properties.moons) ? properties.moons : [];
             return (
               <div key={index} className="flex flex-col items-center relative min-w-[50px]">

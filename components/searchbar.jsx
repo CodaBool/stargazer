@@ -116,7 +116,7 @@ export default function SearchBar({ map, data, mobile, name, pan, UNIT, STYLES, 
   // }, [])
 
   return (
-    <div className="flex mt-5 w-full justify-center absolute z-10 pointer-events-none" >
+    <div className="flex mt-5 w-full justify-center absolute z-100 pointer-events-none" >
       <Command className="rounded-lg border shadow-md w-[75%] searchbar pointer-events-auto" style={{ borderColor: darkenColor(STYLES.MAIN_COLOR, 13), backgroundColor: darkenColor(STYLES.MAIN_COLOR, 19) }}>
         <CommandInput
           placeholder={mobile ? "Search for a location" : "press Space to search"}

@@ -219,9 +219,9 @@ export default function Toolbox({ map, pan, width, params, height, mobile, name,
 
     // output text
     text = document.createElement('div')
-    text.className = 'textbox absolute left-1/2 -translate-x-1/2 z-10 text-center text-white pointer-events-none invisible opacity-80 leading-[1.4] rounded-[10px] bg-black/90 px-[0.5em] py-[0.2em]'
+    text.className = 'textbox absolute left-1/2 -translate-x-1/2 z-10 text-center text-white pointer-events-none invisible opacity-80 leading-[1.4] rounded-[10px] bg-black/90 px-[0.5em] py-[0.2em] whitespace-nowrap'
     text.style.top = mobile ? '70px' : '90px'
-    text.style.fontSize = mobile ? '1.5em' : '2.2em'
+    text.style.fontSize = mobile ? '1.2em' : '2.2em'
     text.style.textShadow = `
       0 0 3px rgba(0,0,0,1),
       0 0 6px rgba(0,0,0,0.9)

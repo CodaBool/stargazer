@@ -42,20 +42,23 @@ export default function DrawerComponent({
 }) {
   const { map } = useMap();
   const GROUP_NAME = IS_GALAXY ? "Celestial Bodies" : "Nearby Locations"
-  const squareSize = Math.max(60, height * (IS_GALAXY ? 0.2 : 0.08))
 
   const [display, setDisplay] = useState(() => fillMissingData(d)?.properties);
+  const [size, setSize] = useState();
+  const [snaps, setSnaps] = useState()
 
   useEffect(() => {
-    setDisplay(fillMissingData(d)?.properties);
-  }, [d]);
+    const dis = fillMissingData(d)?.properties
+    setDisplay(dis)
+    const usingThreejs = IS_GALAXY && availableThreejsModels.includes(dis?.type)
+    setSize(Math.max(60, height * (usingThreejs ? 0.2 : 0.08)))
+    setSnaps([mobile ? 0.45 : availableThreejsModels.includes(dis?.type) ? (height < 700 ? 0.6 : 0.4) : 0.28, 0.92])
+  }, [d, height])
 
   useEffect(() => {
-    // When drawer opens, prefer drawer ownership (but do not steal from modal)
-    if (drawerContent) claimThreeCanvas("drawer");
-  }, [drawerContent]);
+    if (drawerContent) claimThreeCanvas("drawer")
 
-  useEffect(() => {
+
     const el = document.querySelector(".editor-table");
     if (el) el.style.bottom = drawerContent ? "40%" : "20px";
 
@@ -154,21 +157,22 @@ export default function DrawerComponent({
       open={!!drawerContent}
       onOpenChange={() => setDrawerContent(null)}
       modal={false}
-      snapPoints={[mobile ? 0.45 : IS_GALAXY ? (height < 700 ? 0.6 : 0.4) : 0.28, 0.92]}
+      snapPoints={snaps}
+      activeSnapPoint={snaps[0]}
     >
       <DrawerContent>
         <DrawerTitle />
         <div className="w-full flex flex-col items-center justify-center text-xs lg:text-base">
           {/* Canvas */}
           <div className="flex items-center justify-center z-[-1]">
-            {drawerContent && IS_GALAXY && availableThreejsModels.includes(display.type) ? (
+            {availableThreejsModels.includes(display.type) ? (
               <Suspense fallback={<div />}>
                 <ThreejsPlanet
                   hostKey="drawer"
-                  height={squareSize}
-                  width={squareSize}
+                  height={size}
+                  width={size}
                   disableListeners={true}
-                  type={display.ringed ? "ringed_planet" : display.type}
+                  type={display.type}
                   pixels={Number(display.pixels) || 800}
                   baseColors={display.baseColors}
                   featureColors={display.featureColors}
@@ -192,10 +196,10 @@ export default function DrawerComponent({
                 alt={iconName}
                 className="mt-[1.7em]"
                 style={{
-                  width: squareSize / 1.5 + "px",
-                  height: squareSize / 1.5 + "px",
+                  width: size / 1.5 + "px",
+                  height: size / 1.5 + "px",
                   position: "absolute",
-                  paddingBottom: IS_GALAXY ? "" : '5px',
+                  paddingBottom: '5px',
                   top: 0,
                   filter: display.tint
                     ? `drop-shadow(0 0 6px ${display.tint})`
@@ -215,11 +219,11 @@ export default function DrawerComponent({
             {coordinatesPretty}
           </div>
 
-          <div className="w-full flex flex-nowrap" style={{ height: `${squareSize}px` }}>
+          <div className="w-full flex flex-nowrap check-me-please" style={{ height: `${size}px` }}>
             {/* left */}
             <div
               className="w-full text-right p-0 lg:p-4 pb-5 flex flex-col-reverse"
-              style={{ marginRight: `${Number(squareSize) + 10}px` }}
+              style={{ marginRight: `${Number(size) + 10}px` }}
             >
               <div>
                 {starNum === 2 && <Badge className="text-sm">binary</Badge>}
@@ -347,7 +351,7 @@ export default function DrawerComponent({
           {/* BOTTOM – Name/Type */}
           <div
             className="absolute left-1/2 flex transform -translate-x-1/2 items-center bg-[rgba(0, 0, 0, 0.75)]"
-            style={{ top: `${Number(squareSize) - 5}px` }}
+            style={{ top: `${Number(size) - 5}px` }}
           >
             {!display.fake && !display.userCreated && genLink(d,name,"wiki") ? (
               <ExternalLink
