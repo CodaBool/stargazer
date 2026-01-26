@@ -8,6 +8,7 @@ import {
   PerspectiveCamera,
   AmbientLight,
   DirectionalLight,
+  Vector4,
 } from "three";
 import { createStars } from "./planets/layers/stars";
 import { acquireRenderer, releaseRenderer } from "./renderer.js";
@@ -30,6 +31,7 @@ import { createNoAtmospherePlanet } from "./planets/noAtmosphere.js";
 import { createStarPlanet } from "./planets/starPlanet.js";
 import { createStation } from "./planets/stations.js";
 import { createGate } from "./planets/gate.js";
+import { createCityPlanet } from "./planets/city.js";
 
 function disposeMaterial(mat) {
   for (const key in mat) {
@@ -84,6 +86,8 @@ export const availableThreejsModels = [
   "terrestrial",
   "ocean_planet",
   "ocean",
+  "ecumenopolis",
+  "city_planet",
 ];
 
 function generatePlanetByType(params) {
@@ -97,6 +101,7 @@ function generatePlanetByType(params) {
     case "station":
       return createStation(params);
     case "ice_planet":
+    case "eyeball_planet":
     case "ice":
       return createIcePlanet(params);
     case "gas":
@@ -137,6 +142,9 @@ function generatePlanetByType(params) {
     case "ocean_planet":
     case "ocean":
       return createEarthPlanet(params);
+    case "ecumenopolis":
+    case "city_planet":
+      return createCityPlanet(params)
   }
 }
 
@@ -371,7 +379,6 @@ function ThreejsPlanet({
 
       animate();
     };
-
     // initial claim behavior
     claimThreeCanvas(hostKey, { force: hostKey === "modal" });
 

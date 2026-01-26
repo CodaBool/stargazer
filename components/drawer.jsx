@@ -52,6 +52,8 @@ export default function DrawerComponent({
     setDisplay(dis)
     const usingThreejs = IS_GALAXY && availableThreejsModels.includes(dis?.type)
     setSize(Math.max(60, height * (usingThreejs ? 0.2 : 0.08)))
+    // setSize(1200)
+    // setSnaps([1])
     setSnaps([mobile ? 0.45 : availableThreejsModels.includes(dis?.type) ? (height < 700 ? 0.6 : 0.4) : 0.28, 0.92])
   }, [d, height])
 
