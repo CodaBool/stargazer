@@ -33,29 +33,39 @@ import { CircleHelp, Image, Pencil, Plus, Save, Trash2, Link as Chain, Notebook,
 import { AVAILABLE_PROPERTIES, SVG_BASE, useStore, getIconHTML } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import IconSelector from "../iconSelector"
+import style from "@/app/contribute/[map]/md.module.css"
+import 'react-quill-new/dist/quill.bubble.css'
+import sanitize from "sanitize-html"
+import { useMemo } from "react"
+import dynamic from "next/dynamic"
 
 export default function EditorForm({ feature, draw, setPopup, mapName, popup, params, TYPES }) {
   const { editorTable, setEditorTable } = useStore()
+  const Quill = useMemo(() => dynamic(() => import("react-quill-new"), { ssr: false }), [])
+  const [deleteDialog, setDeleteDialog] = useState()
   const [isAddingRow, setIsAddingRow] = useState(false)
   const [errorStroke, setErrorStroke] = useState()
   const [errorFill, setErrorFill] = useState()
   const [iconHTML, setIconHTML] = useState(null);
-
+  const availableTypes = TYPES[feature.geometry.type.toLowerCase().trim()]
   const [newRow, setNewRow] = useState({
     key: "",
     value: "",
   })
 
-  const availableTypes = TYPES[feature.geometry.type.toLowerCase().trim()]
 
   function handleInputChange(e) {
     setNewRow((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
+  function handleNotesBtn(e) {
+    setIsAddingRow(true)
+    setNewRow({ key: "notes", value: "" })
+  }
 
-  function deleteRow(index) {
-    if (!draw) return
+  function deleteRow() {
+    if (!draw || !deleteDialog?.i) return
     const newProperties = { ...feature.properties }
-    const keyToDelete = Object.keys(newProperties)[index]
+    const keyToDelete = Object.keys(newProperties)[deleteDialog.i]
     delete newProperties[keyToDelete]
     const latestFeature = draw.get(feature.id)
     const newFeature = { ...latestFeature, properties: newProperties }
@@ -64,6 +74,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
     if (document.querySelector(".unsaved-text")) {
       document.querySelector(".unsaved-text").style.visibility = 'visible'
     }
+    setDeleteDialog(null)
   }
 
   function handleSave() {
@@ -74,7 +85,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
       }
       const latestFeature = draw.get(feature.id)
       const keyExists = Object.keys(feature.properties).includes(newRow.key);
-      if (keyExists) {
+      if (keyExists && newRow.key !== "notes") {
         toast.warning(`"${newRow.key}" Key already exists`)
         return
       }
@@ -94,9 +105,6 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
     }
   }
 
-  function handleEdit() {
-    setEditorTable(feature.properties)
-  }
 
   function editProp(newVal, key) {
     const newProperties = { ...feature.properties }
@@ -159,12 +167,9 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
       editProp(objToRgba(newVal), type)
     }
   }
-  useEffect(() => {
-    setEditorTable(null)
-  }, [])
 
   return (
-    <div className="space-y-4 font-mono select-text editor-table">
+    <div className="space-y-4 font-mono select-text editor-table" style={{minWidth: "400px"}}>
       {popup.geometry.type === 'Point' && iconHTML && (
         <div dangerouslySetInnerHTML={{ __html: iconHTML }} className="w-5 h-5 popup-preview overflow-hidden"></div>
       )}
@@ -194,10 +199,11 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
           {editorTable && (
             Object.entries(feature.properties).map((arr, i) => {
               if (typeof arr[1] === "undefined" || arr[1] === null) return null
+              const isNotes = arr[0] === "notes" ? { padding: "2.6em", paddingTop: "0", bool: true } : {bool: false}
               return (
-                <TableRow key={i}>
+                <TableRow key={i} style={{ height: isNotes.bool ? '120px' : 'auto' }}>
                   <TableCell className="font-medium">{arr[0]}</TableCell>
-                  <TableCell>
+                  <TableCell  style={isNotes}>
                     {arr[0] === "type" && <Select onValueChange={e => editProp(e, arr[0])} defaultValue={editorTable[arr[0]]}>
                       <SelectTrigger className="w-full cursor-pointer">
                         <SelectValue placeholder="Type" />
@@ -218,7 +224,10 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
                       className="w-5 h-5 object-contain cursor-pointer"
                       onClick={() => document.querySelector(".icon-dialog-open").click()}
                     />}
-                    {arr[0] !== "type" && arr[0] !== "stroke" && arr[0] !== "fill" && arr[0] !== "icon" &&
+                    {isNotes.bool && (
+                      <Quill theme="bubble" value={editorTable[arr[0]]} onChange={e => editProp(e, arr[0])} className="border border-gray-800" />
+                    )}
+                    {arr[0] !== "type" && arr[0] !== "stroke" && arr[0] !== "fill" && arr[0] !== "icon" && arr[0] !== "notes" &&
                       <Input value={editorTable[arr[0]]} onChange={e => editProp(e.target.value, arr[0])} className="h-8"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
@@ -237,6 +246,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
             Object.entries(feature.properties).map((arr, i) => {
               if (typeof arr[1] === "undefined" || arr[1] === null || typeof arr[1] === "object") return null
               const isColor = arr[1]?.toString().startsWith("rgba") || (arr[1]?.toString().startsWith("#") && arr[1]?.length === 7)
+              const isNote = arr[0] === "notes"
               return (
                 <TableRow key={i}>
                   <TableCell className="font-medium">{arr[0]}</TableCell>
@@ -266,30 +276,45 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
                   {arr[0] === "type" &&
                     <TableCell>{arr[1].replaceAll("_", " ")}</TableCell>
                   }
-                  {(!isColor && !arr[1]?.toString().startsWith("http") && arr[0] !== "type") &&
-                    // <TableCell>{arr[1]}</TableCell>
+                  {(!isColor && !arr[1]?.toString().startsWith("http") && arr[0] !== "type" && !isNote) &&
                     <TableCell>{arr[1]?.length > 40 ? `${arr[1]?.substring(0, 40)}...` : arr[1]}</TableCell>
                   }
+                  {isNote && (
+                    <TableCell>
+                      <div
+                        className={style.markdown}
+                        dangerouslySetInnerHTML={{
+                          __html: sanitizeContent(arr[1], sanitize),
+                        }}
+                      ></div>
+                    </TableCell>
+                  )}
                   <TableCell>
-                    <Dialog className="">
-                      <DialogTrigger>
-                        {arr[0] !== "type" && arr[0] !== "name" && (
-                          <Trash2 className="cursor-pointer stroke-gray-400" size={14} />
-                        )}
-                      </DialogTrigger>
+                    {arr[0] !== "type" && arr[0] !== "name" && (
+                      <Trash2 className="cursor-pointer stroke-gray-400" size={14} onClick={() => setDeleteDialog({key: arr[0], value: arr[1], i}) }/>
+                    )}
+                    <Dialog open={!!deleteDialog} onOpenChange={o => !o && setDeleteDialog(null)}>
                       <DialogContent className="max-h-[600px]">
                         <DialogHeader>
-                          <DialogTitle>Confirm <b>delete</b> row <b>{arr[0]}</b>?</DialogTitle>
+                          <DialogTitle>Confirm <b>delete</b> row <b>{deleteDialog?.key}</b>?</DialogTitle>
                           <table className="w-full text-left my-4 select-text">
                             <tbody>
                               <tr>
-                                <td className="border p-2">{arr[0]}</td>
-                                <td className="border p-2 max-w-[400px] overflow-auto">{arr[1]}</td>
+                                <td className="border p-2">{deleteDialog?.key}</td>
+                                {deleteDialog?.key === "notes"
+                                  ? <td className="border p-2 max-w-[400px] overflow-auto"><div
+                                    className={style.markdown}
+                                    dangerouslySetInnerHTML={{
+                                      __html: sanitizeContent(deleteDialog?.value, sanitize),
+                                    }}
+                                  ></div></td>
+                                  : <td className="border p-2 max-w-[400px] overflow-auto">{deleteDialog?.value}</td>
+                                }
                               </tr>
                             </tbody>
                           </table>
                           <div className="flex justify-between">
-                            <Button variant="destructive" onClick={() => deleteRow(i)} className="cursor-pointer rounded">
+                            <Button variant="destructive" onClick={() => deleteRow()} className="cursor-pointer rounded">
                               Delete
                             </Button>
                             <DialogClose asChild>
@@ -307,7 +332,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
             })
           )}
 
-          {isAddingRow && (
+          {isAddingRow && newRow.key !== "notes" && (
             <TableRow>
               <TableCell>
                 <Input
@@ -339,58 +364,71 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
               </TableCell>
             </TableRow>
           )}
+          {isAddingRow && newRow.key === "notes" && (
+            <TableRow style={{ height: '120px' }}>
+              <TableCell colSpan={2} style={{padding: "2.6em", paddingTop: "0", paddingLeft: "5em"}}>
+                <Quill theme="bubble" value={newRow?.value} onChange={val => setNewRow({ key: "notes", value: val })} className="border border-gray-800" />
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
       <div className="text-center m-1">
         {errorStroke && <p className="text-red-500">Missing 'stroke' color</p>}
         {errorFill && <p className="text-red-500">Missing 'fill' color</p>}
       </div>
-      <Dialog>
-        <DialogTrigger asChild >
-          <Button size="sm" className="cursor-pointer w-full h-[30px] mb-2" variant="secondary">
-            <CircleHelp className="cursor-pointer stroke-gray-400 inline" size={14} /> Special Keys
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-[1000px]">
-          <DialogHeader>
-            <DialogTitle>Special Properties</DialogTitle>
-            <DialogDescription>
-              The keys below have special impact on the map
-            </DialogDescription>
-          </DialogHeader>
-
-          <Table>
-            <TableHeader>
-              <TableRow className="text-center">
-                <TableHead className="">Key</TableHead>
-                <TableHead className="text-center">Effect</TableHead>
-                <TableHead className="text-center">Type</TableHead>
-                <TableHead className="text-center">Required</TableHead>
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
-              {Object.entries(AVAILABLE_PROPERTIES).map((obj, i) => (
-                <TableRow key={i}>
-                  <TableCell className="">{obj[0]}</TableCell>
-                  <TableCell>
-                    <div dangerouslySetInnerHTML={{ __html: obj[1].split("|")[0] }} />
-                  </TableCell>
-                  <TableCell className="text-center">{obj[1].split("|type=")[1]}</TableCell>
-                  {obj[1].includes("|required") && <TableCell title="this field is required" className="cursor-help text-center">🚩</TableCell>}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </DialogContent>
-      </Dialog>
       {(!isAddingRow && !editorTable) ?
         <>
-          <Button size="sm" onClick={() => setIsAddingRow(true)} className="cursor-pointer w-full h-[30px] mb-2" variant="secondary">
+          <Dialog>
+            <DialogTrigger asChild >
+              <Button size="sm" className="cursor-pointer w-full h-[30px] mb-2" variant="secondary">
+                <CircleHelp className="cursor-pointer stroke-gray-400 inline" size={14} /> Special Keys
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-[1000px]">
+              <DialogHeader>
+                <DialogTitle>Special Properties</DialogTitle>
+                <DialogDescription>
+                  The keys below have special impact on the map
+                </DialogDescription>
+              </DialogHeader>
+
+              <Table>
+                <TableHeader>
+                  <TableRow className="text-center">
+                    <TableHead className="">Key</TableHead>
+                    <TableHead className="text-center">Effect</TableHead>
+                    <TableHead className="text-center">Type</TableHead>
+                    <TableHead className="text-center">Required</TableHead>
+                  </TableRow>
+                </TableHeader>
+
+                <TableBody>
+                  {Object.entries(AVAILABLE_PROPERTIES).map((obj, i) => (
+                    <TableRow key={i}>
+                      <TableCell className="">{obj[0]}</TableCell>
+                      <TableCell>
+                        <div dangerouslySetInnerHTML={{ __html: obj[1].split("|")[0] }} />
+                      </TableCell>
+                      <TableCell className="text-center">{obj[1].split("|type=")[1]}</TableCell>
+                      {obj[1].includes("|required") && <TableCell title="this field is required" className="cursor-help text-center">🚩</TableCell>}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </DialogContent>
+          </Dialog>
+          <Button size="sm" onClick={() => { setNewRow({ key: "", value: "" }); setIsAddingRow(true)}} className="cursor-pointer w-full h-[30px] mb-2" variant="secondary">
             <Plus className="mr-2 h-4 w-4" />
             Add Data
           </Button>
-          <Button size="sm" onClick={handleEdit} className="cursor-pointer w-full h-[30px] mb-2" variant="secondary">
+
+          {!feature.properties.notes &&
+            <Button size="sm" onClick={handleNotesBtn} className="cursor-pointer w-full h-[30px] mb-2" variant="secondary">
+              <Plus className="mr-2 h-4 w-4" />Notes
+            </Button>
+          }
+          <Button size="sm" onClick={() => setEditorTable(feature.properties)} className="cursor-pointer w-full h-[30px] mb-2" variant="secondary">
             <Pencil className="mr-2 h-4 w-4" />
             Edit Data
           </Button>
@@ -537,3 +575,43 @@ const objToRgba = (rgba) => {
   if (typeof rgba !== "object") return rgba
   return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`
 };
+
+// duplicate of what's in @/app/contribute/[map]/[id]/page.jsx
+export function sanitizeContent(html, sanitizeFunc) {
+  if (!html) return ""
+
+  return sanitizeFunc(html, {
+    // Start from defaults, then remove dangerous tags you forbade with DOMPurify
+    allowedTags: sanitizeFunc.defaults.allowedTags.filter(
+      (tag) => !["img", "svg", "math", "script", "table", "iframe"].includes(tag)
+    ),
+    // Allow normal attributes + link attributes
+    allowedAttributes: {
+      ...sanitizeFunc.defaults.allowedAttributes,
+      a: ["href", "name", "target", "rel"],
+    },
+    transformTags: {
+      a: (tagName, attribs) => {
+        const href = attribs.href || ""
+
+        // If not relative and not your trusted domain, wrap through /link
+        if (
+          href &&
+          !href.startsWith("/") &&
+          !href.startsWith("https://stargazer.vercel.app/")
+        ) {
+          const qs = new URLSearchParams({ url: href }).toString()
+          return {
+            tagName,
+            attribs: {
+              ...attribs,
+              href: `/link?${qs}`,
+            },
+          }
+        }
+
+        return { tagName, attribs }
+      },
+    },
+  })
+}

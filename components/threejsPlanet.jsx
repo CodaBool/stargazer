@@ -252,7 +252,7 @@ function ThreejsPlanet({
         cloudPercent: cloudPercent ? Number(cloudPercent) : undefined,
         hydroPercent: hydroPercent ? Number(hydroPercent) : undefined,
         lavaPercent: lavaPercent ? Number(lavaPercent) : undefined,
-        seed: seed ? seed : undefined,
+        seed: typeof seed === "string" ? seedFromString(seed) : typeof seed === "number" ? seed : undefined,
       });
 
       if (!planet) return false;
@@ -526,6 +526,20 @@ export function hexToVector4(rawHex) {
   const a = hasAlpha ? parseInt(hex.slice(6, 8), 16) / 255 : 1;
 
   return new Vector4(r, g, b, a);
+}
+
+// Deterministic string -> 32-bit unsigned int
+export function seedFromString(str) {
+  // xmur3-style hash
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  h >>>= 0; // unsigned 32-bit
+
+  // Map to float range [1, 99)
+  return 1 + (h / 0xffffffff) * 98;
 }
 
 export default memo(ThreejsPlanet);

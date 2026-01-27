@@ -1,4 +1,4 @@
-import { CircleHelp } from "lucide-react"
+import { CircleHelp, Heart, MoonStar, Sparkles, SquareArrowOutUpRight, Telescope } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -15,12 +15,10 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { useEffect, useState } from "react"
-import { isMobile, useStore, getMaps, TITLE } from "@/lib/utils"
-import { useMap } from "@vis.gl/react-maplibre"
+import { isMobile, useStore, getMaps, TITLE, REPO, USER } from "@/lib/utils"
 
 export default function Tutorial({ name }) {
-  const { tutorial, setTutorial } = useStore()
-  const { map } = useMap()
+  const { tutorial, setTutorial, setCredits, credits } = useStore()
   const [check, setCheck] = useState()
   // const [osKey, setOSKey] = useState("Alt")
   const [fullscreenVideo, setFullscreenVideo] = useState()
@@ -37,14 +35,7 @@ export default function Tutorial({ name }) {
         setTutorial("faq")
       }
     })
-    map.on('draw.modechange', (e) => {
-      console.log('Draw mode changed to:', e.mode)
-      // Run your JS here
-    })
   }, [])
-  // useEffect(() => {
-  //   console.log("tutorial", tutorial)
-  // }, [tutorial])
 
   return (
     <>
@@ -65,6 +56,22 @@ export default function Tutorial({ name }) {
           )}
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!credits} onOpenChange={o => !o && setCredits(null)}>
+        <DialogContent className="max-w-[410px]" style={{ color: 'white' }}>
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              <>
+                <Heart size={18} className="pe-[2px] animate-bounce inline mr-2" /> Credits
+              </>
+            </DialogTitle>
+            <DialogDescription className="py-6" asChild>
+              <Credits name={name} />
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={!!tutorial} onOpenChange={(open) => !open && setTutorial(null)} >
         <DialogContent className="max-h-[880px] overflow-auto">
           <DialogHeader>
@@ -234,5 +241,116 @@ export default function Tutorial({ name }) {
       </Dialog>
     </>
 
+  )
+}
+
+
+function Credits({ name }) {
+  return (
+    <>
+      <span className="text-xl"><Telescope className="inline pr-2 ml-[6.8em]" size={32} /> Major</span>
+      <span className="flex mb-12 mt-5">
+        <span className="flex-1">
+          <svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
+            <g transform="translate(-40, -90) scale(0.4)">
+              <path id="svg_3" d="m110.45,277.97498l9.54922,0l2.95078,-8.78524l2.95078,8.78524l9.54921,0l-7.72546,5.42952l2.95093,8.78524l-7.72547,-5.42966l-7.72547,5.42966l2.95093,-8.78524l-7.72547,-5.42952z" stroke="black" fill="#fff" />
+              <path id="svg_5" d="m218.45,252.97498l9.54922,0l2.95078,-8.78524l2.95078,8.78524l9.54922,0l-7.72547,5.42952l2.95094,8.78524l-7.72547,-5.42966l-7.72547,5.42966l2.95094,-8.78524l-7.72547,-5.42952z" stroke="black" fill="white" />
+              <path id="svg_6" d="m270.45001,295.97498l9.54922,0l2.95078,-8.78524l2.95078,8.78524l9.54922,0l-7.72547,5.42952l2.95094,8.78524l-7.72547,-5.42966l-7.72547,5.42966l2.95094,-8.78524l-7.72547,-5.42952z" stroke="black" fill="#fff" />
+              <path id="svg_7" d="m379.45,425.97501l9.54922,0l2.95078,-8.78524l2.95078,8.78524l9.54922,0l-7.72547,5.42952l2.95094,8.78524l-7.72547,-5.42966l-7.72547,5.42966l2.95094,-8.78524l-7.72547,-5.42952z" stroke="black" fill="#fff" />
+              <path id="svg_8" d="m529.45003,436.97504l9.54922,0l2.95078,-8.78524l2.95078,8.78524l9.54922,0l-7.72547,5.42952l2.95094,8.78524l-7.72547,-5.42966l-7.72547,5.42966l2.95094,-8.78524l-7.72547,-5.42952z" stroke="black" fill="#fff" />
+              <path id="svg_9" d="m547.45006,338.97501l9.54922,0l2.95078,-8.78524l2.95078,8.78524l9.54922,0l-7.72547,5.42952l2.95094,8.78524l-7.72547,-5.42966l-7.72547,5.42966l2.95094,-8.78524l-7.72547,-5.42952z" stroke="black" fill="#fff" />
+              <path id="svg_10" d="m362.45003,345.97501l9.54922,0l2.95078,-8.78524l2.95078,8.78524l9.54922,0l-7.72547,5.42952l2.95094,8.78524l-7.72547,-5.42966l-7.72547,5.42966l2.95094,-8.78524l-7.72547,-5.42952z" stroke="black" fill="#fff" />
+              <line id="svg_11" y2="257.00005" x2="232.0001" y1="282.00006" x1="123.00008" stroke="mediumpurple" fill="none" />
+              <line id="svg_12" y2="441.00008" x2="542.00014" y1="342.00007" x1="560.00015" stroke="mediumpurple" fill="none" />
+              <line id="svg_13" y2="442.00008" x2="543.00014" y1="428.00008" x1="391.00012" stroke="mediumpurple" fill="none" />
+              <line id="svg_14" y2="342.00007" x2="560.00015" y1="349.00007" x1="376.00012" stroke="mediumpurple" fill="none" />
+              <line id="svg_15" y2="300.00006" x2="285.0001" y1="256.00005" x1="230.0001" stroke="mediumpurple" fill="none" />
+              <line id="svg_16" y2="346.00007" x2="375.00012" y1="427.00008" x1="391.00012" stroke="mediumpurple" fill="none" />
+              <line id="svg_17" y2="349.00007" x2="374.00012" y1="298.00006" x1="284.0001" stroke="mediumpurple" fill="none" />
+            </g>
+          </svg>
+        </span>
+        <span className="flex-1 text-left">
+          {name.includes("lancer") &&
+            <>
+              <span><Sparkles className="inline pr-2" /><a href="https://janederscore.tumblr.com" target="_blank"> Janederscore <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
+              <span><Sparkles className="inline pr-2" /> Starwall</span><br />
+            </>}
+          {name === "fallout" &&
+            <>
+              <span className="text-xs md:text-md"><Sparkles className="inline pr-2" /> <a href="https://github.com/MeepChangeling" target="_blank"> MeepChangeling <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
+            </>
+          }
+          {name === "alien" &&
+            <>
+              <span className="text-xs md:text-md"><Sparkles className="inline pr-2" /> <a href="https://github.com/claydegruchy" target="_blank"> Clay DeGrunchy <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
+            </>
+          }
+          {name === "mothership" &&
+            <>
+              <span><Sparkles className="inline pr-2" /> morgan_x_4</span><br />
+
+            </>
+          }
+          {name === "warhammer" &&
+            <>
+              <span className="text-xs md:text-md"><Sparkles className="inline pr-2" /> <a href="https://jambonium.co.uk/horus-heresy-map-project" target="_blank"> Michelle Janion <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
+              <span className="text-[0.7em] md:text-md"><Sparkles className="inline pr-2" /> <a href="https://wyrmlog.wyrmworld.com" target="_blank"> Purple Wyrm (icons) <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
+            </>
+          }
+          {/* {name === "cyberpunk" &&
+            <>
+              <span className="text-xs md:text-md"><Sparkles className="inline pr-2" /> <a href="https://www.reddit.com/user/devianaut" target="_blank"> Devianaut <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
+            </>
+          }*/}
+          {name === "starwars" &&
+            <>
+              <span className="text-[0.7em] md:text-md"><Sparkles className="inline pr-2" /> <a href="https://github.com/jennygrahamjones" target="_blank"> Jenny Graham-Jones <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
+            </>
+          }
+        </span>
+      </span>
+      <span className="text-xl"><MoonStar className="inline pr-2 ml-[7em]" size={32} /> Minor</span>
+      <span className="flex">
+        <span className="flex-1">
+          <svg width="240" height="100" xmlns="http://www.w3.org/2000/svg">
+            <g transform="translate(-40, -10) scale(0.4)">
+              <path id="svg_3" d="m179.45002,183.97498l9.54922,0l2.95078,-8.78524l2.95078,8.78524l9.54921,0l-7.72546,5.42952l2.95093,8.78524l-7.72547,-5.42966l-7.72547,5.42966l2.95093,-8.78524l-7.72547,-5.42952z" stroke="#000" fill="#fff" />
+              <path id="svg_5" d="m226.45,220.97498l9.54922,0l2.95078,-8.78524l2.95078,8.78524l9.54922,0l-7.72547,5.42952l2.95094,8.78524l-7.72547,-5.42966l-7.72547,5.42966l2.95094,-8.78524l-7.72547,-5.42952z" stroke="#000" fill="#fff" />
+              <path id="svg_6" d="m239.45,116.97495l9.54922,0l2.95078,-8.78524l2.95078,8.78524l9.54922,0l-7.72547,5.42952l2.95094,8.78524l-7.72547,-5.42966l-7.72547,5.42966l2.95094,-8.78524l-7.72547,-5.42952z" stroke="#000" fill="#fff" />
+              <path id="svg_7" d="m476.45001,128.97495l9.54922,0l2.95078,-8.78524l2.95078,8.78524l9.54922,0l-7.72547,5.42952l2.95094,8.78524l-7.72547,-5.42966l-7.72547,5.42966l2.95094,-8.78524l-7.72547,-5.42952z" stroke="#000" fill="#fff" />
+              <path id="svg_8" d="m551.45003,151.97501l9.54922,0l2.95078,-8.78524l2.95078,8.78524l9.54922,0l-7.72547,5.42952l2.95094,8.78524l-7.72547,-5.42966l-7.72547,5.42966l2.95094,-8.78524l-7.72547,-5.42952z" stroke="#000" fill="#fff" />
+              <path id="svg_9" d="m383.45004,120.97498l9.54922,0l2.95078,-8.78524l2.95078,8.78524l9.54922,0l-7.72547,5.42952l2.95094,8.78524l-7.72547,-5.42966l-7.72547,5.42966l2.95094,-8.78524l-7.72547,-5.42952z" stroke="#000" fill="#fff" />
+              <path id="svg_10" d="m274.45002,165.97498l9.54922,0l2.95078,-8.78524l2.95078,8.78524l9.54922,0l-7.72547,5.42952l2.95094,8.78524l-7.72547,-5.42966l-7.72547,5.42966l2.95094,-8.78524l-7.72547,-5.42952z" stroke="#000" fill="#fff" />
+              <line id="svg_18" y2="226.00005" x2="240.0001" y1="186.00004" x1="191.00009" stroke="mediumpurple" fill="none" />
+              <line id="svg_19" y2="132.00004" x2="487.00014" y1="156.00004" x1="564.00015" stroke="mediumpurple" fill="none" />
+              <line id="svg_20" y2="170.00004" x2="287.0001" y1="124.00003" x1="395.00012" stroke="mediumpurple" fill="none" />
+              <line id="svg_21" y2="120.00003" x2="252.0001" y1="185.00004" x1="191.00009" stroke="mediumpurple" fill="none" />
+              <line id="svg_22" y2="124.00003" x2="394.00012" y1="131.00004" x1="488.00014" stroke="mediumpurple" fill="none" />
+              <line id="svg_23" y2="170.00004" x2="289.00011" y1="224.00005" x1="239.0001" stroke="mediumpurple" fill="none" />
+              <line id="svg_24" y2="171.00004" x2="289.00011" y1="121.00003" x1="252.0001" stroke="mediumpurple" fill="none" />
+            </g >
+          </svg>
+        </span>
+        <span className="flex-1">
+          {/* <span><Sparkle className="inline pr-2" /><a href="" target="_blank"> placeholder <SquareArrowOutUpRight className="inline" size={14} /></a></span><br /> */}
+          {/* <span><Sparkle className="inline pr-2" /> contribute to be added</span><br /> */}
+        </span>
+      </span>
+      {TITLE === "Stargazer" &&
+        <span className="text-center block text-[dimgray] mt-4">Created with <Heart size={14} className="inline" /> by <Link href={`/easteregg?redirect=${window?.location?.href || "/" + name}`} style={{ color: "#60677c" }}>{USER}</Link></span>
+      }
+
+      {name.includes("lancer") && <span className="text-center block text-[dimgray] mt-4">{TITLE} is not an official Lancer product<br />Lancer is copyright Massif Press</span>}
+      {name === "cyberpunk" && <span className="text-center block text-[dimgray] mt-4 text-xs">{TITLE} is not an official R. Talsorian Games Inc., CD Projekt Red S.A., or Cyberpunk product<br />This project is created for entertainment purposes only</span>}
+      {name === "mothership" && <span className="text-center block text-[dimgray] mt-4 text-xs">{TITLE} is not an official Mothership RPG or Tuesday Knight Games product<br />This project is created for entertainment purposes only.</span>}
+      {REPO &&
+        <span className="text-center">
+          <Link href={`/legal?redirect=${window?.location?.href || "/" + name}`} className="hover:underline text-sm inline text-[#8A8A8A]">
+            Full Disclaimer
+          </Link>
+        </span>
+      }
+    </>
   )
 }

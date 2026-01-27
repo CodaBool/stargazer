@@ -266,9 +266,9 @@ export default function SolarSystemDiagram({
                               : `${Math.floor(p.temperature)}°C`}
                           </Badge>
                         )}
-                        {typeof p.dominantChemical === "string" && p.dominantChemical && (
+                        {typeof p.composition === "string" && p.composition && (
                           <Badge variant="destructive">
-                            Dominant Chemical: {p.dominantChemical}
+                            Composition: {p.composition}
                           </Badge>
                         )}
                         {typeof p.daysInYear === "number" && (
@@ -321,8 +321,8 @@ export default function SolarSystemDiagram({
                             : `${Math.floor(p.temperature)}°C`}
                         </p>
                       )}
-                      {typeof p.dominantChemical === "string" && p.dominantChemical && (
-                        <p className="mt-2">Dominant Chemical: {p.dominantChemical}</p>
+                      {typeof p.composition === "string" && p.composition && (
+                        <p className="mt-2">Composition: {p.composition}</p>
                       )}
                       {typeof p.daysInYear === "number" && (
                         <p className="mt-2">{p.daysInYear} days in a year</p>

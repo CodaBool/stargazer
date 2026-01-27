@@ -3,7 +3,7 @@ import maplibregl from 'maplibre-gl'
 import { useMap, Layer, Source, Popup } from '@vis.gl/react-maplibre'
 import { GeoGrid } from 'geogrid-maplibre-gl'
 import { useEffect, useRef, useState } from 'react'
-import { createPopupHTML, localSet, getMaps, useMode, getPaint, gridAlgorithm, useGrid, gridHelpers, boundsToCoord } from "@/lib/utils.js"
+import { createPopupHTML, localSet, getMaps, useMode, getPaint, gridAlgorithm, useGrid, gridHelpers, boundsToCoord, useStore } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import SearchBar from './searchbar'
 import * as turf from '@turf/turf'
@@ -117,6 +117,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
   const { mode } = useMode()
+  const { filters } = useStore()
   const recreateListeners = useDraw(s => s.recreateListeners)
   // get latest state for these values
   const modeRef = useRef(mode)
@@ -393,6 +394,19 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       });
     }
 
+    // apply a filter
+    // TODO: add a scalable way to do this for systems
+    // console.log("FILTER", filters)
+    if (filters === "legends" && name === "starwars") {
+      wrapper.getMap().setFilter("location", [
+        "all",
+        ["==", "$type", "Point"],
+        ["!=", "canon", 0],
+      ])
+    } else if (!filters && wrapper.getMap().getLayer("location")?.filter?.length === 3) {
+      wrapper.getMap().setFilter("location", ["==", "$type", "Point"])
+    }
+
     if (name === "starwars" || name === "alien") {
       const { formatLabels } = gridHelpers(name, GRID_DENSITY || 1)
       new GeoGrid({
@@ -431,8 +445,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       }
     }
 
-
-
     const interval = setInterval(checkWebGLCrash, 1_500) // check every 1.5s
     return () => {
       clearInterval(interval)
@@ -450,7 +462,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       wrapper.off("click", "polygon-user", territoryClickRef.current)
       wrapper.off("click", "location", locationClickRef.current)
     }
-  }, [wrapper, recreateListeners, params.get("preview"), mode, locationGroups, data])
+  }, [wrapper, recreateListeners, params.get("preview"), mode, locationGroups, data, filters])
 
   useEffect(() => {
     // minimap fit to bounds of feature from query params
@@ -593,7 +605,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
           layout={{
             "icon-optional": true, // default false
             "text-optional": true, // default false
-            // "icon-overlap": "never",
+            "icon-overlap": ["step", ["zoom"], "never", 9.5, "always"],
             "icon-size": ["get", "icon-size"],
             "text-offset": [0, 1.8],
             "icon-padding": 0, // default 2

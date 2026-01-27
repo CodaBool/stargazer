@@ -868,16 +868,6 @@ export default function SharedSettings({
                                 }
 
 
-
-                                if (f.geometry.type === "Point" && !f.properties.fill) {
-                                  f.properties.fill = getRandomNeonColor()
-                                } else if (f.geometry.type.includes("Poly") && !f.properties.fill) {
-                                  f.properties.fill = `${getRandomNeonColor()}1A` // 10% opacity
-                                }
-                                if ((f.geometry.type.includes("LineString") || f.geometry.type.includes("Poly")) && !f.properties.stroke) {
-                                  f.properties.stroke = `${getRandomNeonColor()}80` // 50% opacity
-                                }
-                                // f.properties.userCreated = true
                               })
 
                               if (altered) toast.success(`Added ${altered} required value${altered > 1 ? 's' : ''} to your uploaded map`);
@@ -1169,19 +1159,4 @@ function makeBgImageOnChangeHandler({ form, getCurrentBounds, maxDen = 30, debou
       }
     }, debounceMs);
   };
-}
-
-const neonColors = [
-  "#FF00FF", // Neon Magenta
-  "#00FFFF", // Neon Cyan
-  "#FFFF00", // Neon Yellow
-  "#FF1493", // Deep Pink
-  "#00FF00", // Lime
-  "#00FF7F", // Spring Green
-  "#FF4500", // Orange Red
-  "#7FFF00", // Chartreuse
-];
-
-function getRandomNeonColor() {
-  return neonColors[Math.floor(Math.random() * neonColors.length)];
 }

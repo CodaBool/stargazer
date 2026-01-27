@@ -2,10 +2,9 @@
 
 import { useRouter } from 'next/navigation'
 import { useForm } from "react-hook-form"
-import { ArrowLeft, LoaderCircle, Settings, X } from "lucide-react"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import 'react-quill-new/dist/quill.bubble.css'
-import { combineAndDownload, combineLayers, getConsts, getMaps, hexToRgb, localGet, localSet } from "@/lib/utils"
+import { getConsts, getMaps, localSet } from "@/lib/utils"
 import SharedSettings from "./sharedSettings"
 
 export default function MapSettings({ map, id }) {
@@ -33,10 +32,30 @@ export default function MapSettings({ map, id }) {
       delete body.STYLE
     }
 
+
     if (body.file) {
       if (approved) {
         // console.log("submit with file", body)
         const geojson = body.file
+
+        geojson.features.forEach(f => {
+          // Remove properties with null or empty string values
+          for (const key in f.properties) {
+            if (f.properties[key] === null || f.properties[key] === "" || f.properties[key] === "undefined") {
+              console.log("removing", key, "val", f.properties[key])
+              delete f.properties[key];
+            }
+          }
+          // set a fill and stroke when needed
+          if (f.geometry.type === "Point" && !f.properties.fill) {
+            f.properties.fill = getRandomNeonColor()
+          } else if (f.geometry.type.includes("Poly") && !f.properties.fill) {
+            f.properties.fill = `${getRandomNeonColor()}1A` // 10% opacity
+          }
+          if ((f.geometry.type.includes("LineString") || f.geometry.type.includes("Poly")) && !f.properties.stroke) {
+            f.properties.stroke = `${getRandomNeonColor()}80` // 50% opacity
+          }
+        })
         newObj.geojson = geojson
       } else {
         // show a dialog letting the user know how many features they would add
@@ -155,4 +174,20 @@ export default function MapSettings({ map, id }) {
     data={data}
     {...DEFAULTS}
   />
+}
+
+
+const neonColors = [
+  "#FF00FF", // Neon Magenta
+  "#00FFFF", // Neon Cyan
+  "#FFFF00", // Neon Yellow
+  "#FF1493", // Deep Pink
+  "#00FF00", // Lime
+  "#00FF7F", // Spring Green
+  "#FF4500", // Orange Red
+  "#7FFF00", // Chartreuse
+];
+
+function getRandomNeonColor() {
+  return neonColors[Math.floor(Math.random() * neonColors.length)];
 }

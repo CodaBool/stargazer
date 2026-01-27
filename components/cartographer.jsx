@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import MapComponent from './map'
-import { combineLayers, getConsts, getMaps, isMobile, accelerationCheck, localSet, USER_LOCATION_ID_START } from '@/lib/utils'
+import { combineLayers, getConsts, getMaps, isMobile, hardwareCheck, localSet, USER_LOCATION_ID_START, useStore } from '@/lib/utils'
 import Map from '@vis.gl/react-maplibre'
 import Controls from './controls.jsx'
 import Editor from './editor'
@@ -27,7 +27,7 @@ export default function Cartographer({ name, data, uuid, remoteConfig }) {
 
   useEffect(() => {
     if (name === "warhammer") window.alert("The Warhammer 40k map is still in an unfinished state. Follow on itch.io or GitHub for updates.")
-    accelerationCheck()
+    hardwareCheck()
   }, [])
   useEffect(() => {
     // set size

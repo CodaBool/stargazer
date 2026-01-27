@@ -5,7 +5,7 @@ import EditorForm from "./forms/editor";
 import randomName from "@scaleway/random-name";
 import { X } from "lucide-react";
 import { useDraw } from "./controls";
-import { getMaps, localSet, useStore } from "@/lib/utils";
+import { getMaps, localSet, useStore } from "@/lib/utils"
 
 export default function Editor({ mapName, params, TYPES, data, GEO_EDIT }) {
   const { map } = useMap()

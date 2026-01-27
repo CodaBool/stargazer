@@ -18,6 +18,9 @@ import { claimThreeCanvas } from "./threeHostRegistry.js";
 import { Button } from "./ui/button.jsx";
 import { toast } from 'sonner'
 import Link from "next/link.js";
+import sanitize from "sanitize-html"
+import style from "@/app/contribute/[map]/md.module.css"
+import { sanitizeContent } from "./forms/editor.jsx";
 
 export default function DrawerComponent({
   drawerContent,
@@ -145,7 +148,6 @@ export default function DrawerComponent({
     coordinatesPretty = `${(coordinates[1] + offset[0]).toFixed(1)}, ${(coordinates[0] + offset[1]).toFixed(1)}`;
   }
 
-  const cloudPercent = typeof display.cloudPercent === "number" ? display.cloudPercent : 0;
   const iconType = display.type
   const iconName = display.name || "Unknown";
 
@@ -272,7 +274,7 @@ export default function DrawerComponent({
             </div>
 
             {/* right */}
-            {(display?.me?._geometry?.type === "Point" && IS_GALAXY) &&
+            {/* {(display?.me?._geometry?.type === "Point" && IS_GALAXY) &&
               <div className="w-full p-0 lg:p-4 pb-5">
                 <div className="w-full h-full flex flex-col-reverse">
                   <div>
@@ -286,68 +288,64 @@ export default function DrawerComponent({
                     )}
 
 
-
-                    {/* {typeof display.cloudPercent === "number" && (
-                      <p>{(cloudPercent * 100).toFixed(0)}% cloud coverage</p>
+                    {typeof display.cloudPercent !== "undefined" && (
+                      <p>{(Number(display.cloudPercent) * 100).toFixed(0)}% cloud coverage</p>
                     )}
 
-                    {typeof display.hydroPercent === "number" && (
+                    {typeof display.hydroPercent !== "undefined" && (
                       <p>
                         {(
                           (display.type === "ice_planet"
-                            ? 1 - (typeof display.icePercent === "number" ? display.icePercent : 0)
-                            : display.hydroPercent) * 100
+                            ? 1 - (typeof display.icePercent !== "undefined" ? Number(display.icePercent) : 0)
+                            : Number(display.hydroPercent)) * 100
                         ).toFixed(0)}
                         % hydrosphere
                       </p>
                     )}
 
-                    {typeof display.diameter === "number" && (
+                    {typeof display.diameter !== "undefined" && (
                       <p>
-                        {display.diameter.toFixed(2)}{" "}
+                        {Number(display.diameter).toFixed(2)}{" "}
                         {display.type === "star" ? "solar radii" : "km"}
                       </p>
                     )}
 
-                    {typeof display.temperature === "number" && display.type !== "star" && (
-                      <p>{Math.floor(display.temperature)}°C</p>
+                    {typeof display.temperature !== "undefined" && display.type !== "star" && (
+                      <p>{Math.floor(Number(display.temperature))}°C</p>
                     )}
 
-                    {typeof display.temperature === "number" && display.type === "star" && (
-                      <p>{Math.floor(display.temperature) + 273}°K</p>
+                    {typeof display.temperature !== "undefined" && display.type === "star" && (
+                      <p>{Math.floor(Number(display.temperature)) + 273}°K</p>
                     )}
 
-                    {typeof display.dominantChemical === "string" &&
-                      display.dominantChemical.length > 0 && (
-                        <p>Dominant Chemical: {display.dominantChemical}</p>
-                      )}
+                    {typeof display.composition === "string" && display.composition.length > 0 && (
+                      <p>Composition: {display.composition}</p>
+                    )}
 
-                    {typeof display.daysInYear === "number" && <p>{display.daysInYear} days/year</p>}
-                    {typeof display.hoursInDay === "number" && <p>{display.hoursInDay} hours/day</p>}
+                    {typeof display.daysInYear !== "undefined" && <p>{display.daysInYear} days/year</p>}
+                    {typeof display.hoursInDay !== "undefined" && <p>{display.hoursInDay} hours/day</p>}
 
-                    {typeof display.gravity === "number" && (
+                    {typeof display.gravity !== "undefined" && (
                       <p>Gravity: {(display.gravity * 0.0010197162).toFixed(1)} g</p>
                     )}
 
-                    {typeof display.pressure === "number" && display.pressure > 0 && (
+                    {typeof display.pressure !== "undefined" && display.pressure > 0 && (
                       <p>Pressure: {(display.pressure / 1000).toFixed(1)} bars</p>
                     )}
 
                     {Array.isArray(display.moons) && display.moons.length > 0 && (
-                      <p>
-                        {display.moons.length} moon{display.moons.length > 1 ? "s" : ""}
-                      </p>
+                      <p>{display.moons.length} moon{display.moons.length > 1 ? "s" : ""}</p>
                     )}
 
                     {typeof display.modifier === "string" && display.modifier.length > 0 && (
                       <p>{display.modifier}</p>
                     )}
 
-                    {display.isMoon && <p>Moon</p>}*/}
+                    {display.isMoon && <p>Moon</p>}
                   </div>
                 </div>
               </div>
-            }
+            }*/}
           </div>
 
           {/* BOTTOM – Name/Type */}
@@ -409,7 +407,7 @@ export default function DrawerComponent({
         )}
 
         {display.description ||
-        display.locations ? (
+        display.locations || display.notes ? (
           <>
             <hr className="my-2" />
             <div className="max-w-3xl mx-auto px-4 overflow-auto mb-28">
@@ -432,6 +430,13 @@ export default function DrawerComponent({
               <p className="text-base lg:text-lg leading-relaxed break-words select-text">
                 {display.description}
               </p>
+
+              {display.notes && <div
+                className={style.markdown}
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeContent(display.notes, sanitize),
+                }}
+              ></div>}
             </div>
           </>
         ) : null}
