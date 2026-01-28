@@ -33,7 +33,7 @@
     "@scaleway/random-name": "^5.1.3",
     "@stripe/react-stripe-js": "^5.5.0",
     "@stripe/stripe-js": "^8.6.4",
-    "@turf/turf": "^7.3.2",
+    "@turf/turf": "^7.3.3",
     "@vis.gl/react-maplibre": "^8.1.0",
     "boring-avatars": "^2.0.4",
     "class-variance-authority": "^0.7.1",
