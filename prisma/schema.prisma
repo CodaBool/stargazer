@@ -70,10 +70,11 @@ model User {
   name          String?   @db.VarChar(16)
 
   // purchases
-  stripeCustomerId        String?   @unique // find all payments by a customer
-  stripeCheckoutSessionId String?   @unique // exact Checkout Session
-  stripePaymentIntentId   String?   @unique // find the payment object for status
-  premiumGrantedAt        DateTime?
+  stripeSession    String?   @unique // exact Checkout Session
+  stripePayment    String?   @unique // find the payment object for status
+  stripeName       String?
+  stripeEmail      String?
+  premiumGrantedAt DateTime?
 
   accounts  Account[]
   comments  Comment[]

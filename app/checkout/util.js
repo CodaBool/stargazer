@@ -8,16 +8,12 @@ export async function fetchClientSecret(userId, userName, email) {
   const origin = (await headers()).get('origin')
   const session = await stripe.checkout.sessions.create({
     ui_mode: 'embedded',
-    line_items: [
-      {
-        price: process.env.PRICE_ID,
-        quantity: 1,
-      }
-    ],
+    line_items: [{
+      price: process.env.PRICE_ID,
+      quantity: 1,
+    }],
     mode: 'payment',
     return_url: `${origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
-    // success_url: `${req.headers.origin}/success`,
-    // cancel_url: `${req.headers.origin}/cancel`,
     metadata: { userId, userName, email },
     client_reference_id: userId,
   })

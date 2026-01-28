@@ -26,6 +26,13 @@ import { ArrowLeft, LoaderCircle, User, X } from "lucide-react"
 import { useState } from "react"
 import Avatar from 'boring-avatars'
 import Link from "next/link"
+import { Badge } from "@/components/ui/badge"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 export default function CreateLocation({ user }) {
   const [submitting, setSubmitting] = useState()
@@ -118,6 +125,8 @@ export default function CreateLocation({ user }) {
                 '#615566',
               ]}
             />
+            {user.premium && <Badge>Premium User</Badge>}
+            {user.vip && <Badge>VIP</Badge>}
             <FormField
               control={form.control}
               name="name"
@@ -155,24 +164,36 @@ export default function CreateLocation({ user }) {
               }
             </Button>
 
-            <hr className="w-full opacity-60 my-6" />
+            <Accordion type="single" collapsible className="w-full mt-6">
+              <AccordionItem value="danger" className="">
+                <AccordionTrigger className="cursor-pointer px-4 text-gray-400">
+                  Danger Zone
+                </AccordionTrigger>
 
-            <Button
-              variant="destructive"
-              className="w-full"
-              type="button"
-              onClick={deleteAccount}
-            >
-              Delete Account
-            </Button>
-            <Button
-              variant="destructive"
-              className="w-full"
-              type="button"
-              onClick={() => signOut({ callbackUrl: "/" })}
-            >
-              Sign out
-            </Button>
+                <AccordionContent className="px-4 pb-4">
+                  <div className="flex flex-col gap-3">
+                    <Button
+                      variant="destructive"
+                      className="w-full"
+                      type="button"
+                      onClick={deleteAccount}
+                    >
+                      Delete Account
+                    </Button>
+
+                    <Button
+                      variant="destructive"
+                      className="w-full"
+                      type="button"
+                      onClick={() => signOut({ callbackUrl: "/" })}
+                    >
+                      Sign out
+                    </Button>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
           </CardFooter>
         </Card>
       </form>

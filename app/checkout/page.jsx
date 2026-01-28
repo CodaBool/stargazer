@@ -5,8 +5,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import Checkout from "./component.jsx";
 
 export default async function CheckoutPage() {
-  console.log("env check", {price: process.env.PRICE_ID, secret: process.env.STRIPE_SECRET_KEY, public: process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY, wh: process.env.STRIPE_SECRET_WEBHOOK})
-
+  // console.log("env check", {price: process.env.PRICE_ID, secret: process.env.STRIPE_SECRET_KEY, public: process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY, wh: process.env.STRIPE_SECRET_WEBHOOK})
 
   const session = await getServerSession(authOptions)
   // console.log("session", session)

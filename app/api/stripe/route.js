@@ -1,5 +1,4 @@
 import Stripe from "stripe";
-import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import db from "@/lib/db";
 
@@ -7,60 +6,29 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 export async function POST(req) {
   try {
-
     const sig = (await headers()).get("stripe-signature");
     if (!sig) throw "missing signature"
-
-
     const body = await req.text();
-
     const event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_SECRET_WEBHOOK)
 
-    if (event.type !== "checkout.session.completed") throw "unhandled event type " + event.type
-    const session = event.data.object
-    const userId = (session.metadata?.userId) ?? (session.client_reference_id)
+    if (event.type !== "checkout.session.completed") {
+      console.log("unhandled stripe event", event.type)
+      return Response.json({ ok: true })
+    }
 
-    if (!userId) return NextResponse.json({ ok: true });
-
-    const checkoutSessionId = session.id;
-    const paymentIntentId =
-      typeof session.payment_intent === "string"
-        ? session.payment_intent
-        : session.payment_intent?.id;
-
-    const customerId =
-      typeof session.customer === "string" ? session.customer : session.customer?.id;
-
-    const paid = (session.payment_status === "paid");
-    if (!paid) return NextResponse.json({ ok: true })
-
-
-    console.log("success let's update user with", {
-      premium: true,
-      premiumGrantedAt: new Date(),
-      stripeCheckoutSessionId: checkoutSessionId,
-      stripePaymentIntentId: paymentIntentId ?? undefined,
-      stripeCustomerId: customerId ?? undefined,
-    })
-
+    const { id, payment_intent, client_reference_id, customer_details } = event.data.object
     await db.user.update({
-      where: { id: userId },
+      where: { id: client_reference_id },
       data: {
         premium: true,
         premiumGrantedAt: new Date(),
-        stripeCheckoutSessionId: checkoutSessionId,
-        stripePaymentIntentId: paymentIntentId ?? undefined,
-        stripeCustomerId: customerId ?? undefined,
+        stripePayment: payment_intent,
+        stripeSession: id,
+        stripeEmail: customer_details.email,
+        stripeName: customer_details.name,
       },
-    });
+    })
 
-
-
-    // const session = await getServerSession(authOptions)
-    // if (!session) throw "unauthorized"
-    // const body = await req.json()
-    // const user = await db.user.findUnique({ where: { email: session.user.email } })
-    // if (!user) throw "there is an issue with your account or session"
     return Response.json({ msg: "success" })
   } catch (error) {
     console.error(error)

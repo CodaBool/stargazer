@@ -24,7 +24,6 @@ const STAR_SCHEMES = ["blue", "orange", "red", "white", "yellow"];
 // BUG: ice has bugged box around it on mobile, just remove from pool
 if (!ismobile) {
   PLANET_TYPES.push('ice')
-  PLANET_TYPES.push('terrestrial')
 }
 
 const randomIndex = Math.floor(Math.random() * PLANET_TYPES.length)
