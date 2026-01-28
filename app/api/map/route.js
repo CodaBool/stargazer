@@ -227,8 +227,8 @@ export async function POST(req) {
       where: { userId: user.id },
     })
 
-    if (maps.length > 9) {
-      throw "only 10 cloud maps are allowed"
+    if (!user.premium && maps.length > 0) {
+      throw "only 1 upload allowed for free users"
     }
 
     let maxIdStart = getStartingMaxId(body.geojson, null)

@@ -1,9 +1,8 @@
 // export const revalidate = 1200 // seconds before a MISS (1200 is 20 minutes)
 
 import db from "@/lib/db"
-// import { getServerSession } from "next-auth/next"
-// import { authOptions } from '../../../auth/[...nextauth]/route'
 
+// foundry likely
 export async function GET(req) {
   try {
 
