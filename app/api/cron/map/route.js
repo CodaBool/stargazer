@@ -100,7 +100,7 @@ export async function GET(req) {
     })
     console.log("expired maps", expiredMaps)
 
-    if (expiredMaps.length === 0) return Response.json({ok: true})
+    if (expiredMaps.length === 0) return Response.json({msg: "no expired maps"})
 
     const res = await s3.send(new DeleteObjectsCommand({
       Bucket: "maps",
@@ -126,7 +126,7 @@ export async function GET(req) {
       `[DELETE] Deleted ${dbRes.count} expired maps (non-premium, >= 90d old).`,
     )
 
-    return Response.json({ ok: true })
+    return Response.json({ deleted: dbRes.count, day3Emails: notice3ByUser.length, day30Emails: notice30ByUser.length })
   } catch (error) {
     console.error(error)
     if (typeof error === "string") {
