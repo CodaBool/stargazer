@@ -58,20 +58,28 @@ model Map {
 }
 
 model User {
-  id            String     @id @default(cuid())
-  vip           Boolean    @default(false)
-  email         String     @unique
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id            String    @id @default(cuid())
+  vip           Boolean   @default(false)
+  premium       Boolean   @default(false)
+  email         String    @unique
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   emailVerified DateTime?
-  secret        String     @unique @default(uuid(7))
+  secret        String    @unique @default(uuid(7))
   image         String?
-  name          String?    @db.VarChar(16)
-  accounts      Account[]
-  comments      Comment[]
-  locations     Location[]
-  maps          Map[]
-  sessions      Session[]
+  name          String?   @db.VarChar(16)
+
+  // purchases
+  stripeCustomerId        String?   @unique // find all payments by a customer
+  stripeCheckoutSessionId String?   @unique // exact Checkout Session
+  stripePaymentIntentId   String?   @unique // find the payment object for status
+  premiumGrantedAt        DateTime?
+
+  accounts  Account[]
+  comments  Comment[]
+  locations Location[]
+  maps      Map[]
+  sessions  Session[]
 }
 
 model Account {

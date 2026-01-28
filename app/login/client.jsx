@@ -45,13 +45,21 @@ export default function SignInClient({ providers, backUrl, callbackUrl }) {
     }
   }, [searchParams])
 
+  useEffect(() => {
+    // show any redirected to error message
+    const queryParams = new URLSearchParams(window.location.search)
+    if (queryParams.get("toast")) {
+      toast.warning(queryParams.get("toast"))
+    }
+  }, [])
+
   // TODO: find out what happens with these common email providers
   // yahoo.com
   // aol.com
   // icloud.com
   // msn.com
 
-  console.log("backUrl", backUrl)
+  // console.log("backUrl", backUrl)
   return (
     <div className="flex mt-20 mx-4 items-center justify-center bg-black starfield">
       <Card className="w-full max-w-md shadow-lg">
