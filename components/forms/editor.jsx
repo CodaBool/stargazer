@@ -29,7 +29,7 @@ import { RgbaColorPicker } from "react-colorful"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
-import { CircleHelp, Image, Pencil, Plus, Save, Trash2, Link as Chain, Notebook, StickyNote, Code, Map, MessageCircleWarning } from "lucide-react"
+import { CircleHelp, Image, Pencil, Plus, Save, Trash2, Link as Chain, Notebook, StickyNote, Code, Map, MessageCircleWarning, Undo2 } from "lucide-react"
 import { AVAILABLE_PROPERTIES, SVG_BASE, useStore, getIconHTML } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import IconSelector from "../iconSelector"
@@ -100,6 +100,15 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
 
       // Switch back to "Add Row" mode
       setIsAddingRow(false)
+    } else {
+      setEditorTable(null)
+    }
+  }
+
+  function handleCancel() {
+    if (isAddingRow) {
+      setIsAddingRow(false)
+      setNewRow({ key: "", value: "" })
     } else {
       setEditorTable(null)
     }
@@ -342,9 +351,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
                   placeholder="key"
                   className="h-8"
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSave()
-                    }
+                    if (e.key === "Enter") handleSave()
                   }}
                 />
               </TableCell>
@@ -356,9 +363,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
                   placeholder="value"
                   className="h-8"
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSave()
-                    }
+                    if (e.key === "Enter") handleSave()
                   }}
                 />
               </TableCell>
@@ -435,10 +440,18 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
 
         </>
         :
-        <Button size="sm" onClick={handleSave} className="cursor-pointer w-full h-[30px]">
-          <Save className="mr-2 h-4 w-4" />
-          Save
-        </Button>
+        (
+          <>
+            <Button size="sm" onClick={handleSave} className="cursor-pointer w-full h-[30px]">
+              <Save className="mr-2 h-4 w-4" />
+              Save
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleCancel} className="cursor-pointer w-full h-[30px]">
+              <Undo2 className="mr-2 h-4 w-4" />
+                Cancel
+            </Button>
+          </>
+        )
       }
 
       <IconSelector mapName={mapName.includes("lancer") ? "lancer" : mapName} onSelect={selectIcon} show={(!isAddingRow && !editorTable && !feature.properties.icon)} />
