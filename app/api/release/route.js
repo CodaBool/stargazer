@@ -33,7 +33,7 @@ export async function GET(req) {
             </style>
         </head>
         <body>
-            <div>DELAYED! main Stargazer code is finished. Just working on FoundryVTT code and promo now. New Stargazer release will be in ${diff} days</div>
+            <div>DELAYED! added more maps. The vast majority of code is complete. New Stargazer release will be in ${diff} days</div>
         </body>
         </html>
         `,
