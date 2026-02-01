@@ -75,10 +75,8 @@ function getRandomNeonColor() {
 
 export default function Controls({ name, params, setSize, TYPES, GEO_EDIT }) {
   const [saveTrigger, setSaveTrigger] = useState()
-  // const { setTutorial, tutorial } = useStore()
   const [mapId, setMapId] = useState()
   const { map: wrapper } = useMap()
-  const mobile = isMobile()
   const draw = useDraw(d => d.draw)
   const setDraw = useDraw(d => d.setDraw)
   const setRecreateListeners = useDraw(d => d.setRecreateListeners)
@@ -90,24 +88,20 @@ export default function Controls({ name, params, setSize, TYPES, GEO_EDIT }) {
     const geojson = draw.getAll()
 
     if (!geojson.features.length) return
+    let add
 
     geojson.features.forEach(f => {
-      // TYPES: {
-      //   "polygon": ["sector", "cluster", "nebulae"],
-      //   "point": ["station", "jovian", "moon", "terrestrial", "desert planet", "ocean planet", "barren planet", "ice planet", "asteroid", "lava planet", "ringed planet", "gate", "red dwarf", "orange star", "yellow star", "white dwarf", "red giant", "red supergiant", "blue giant", "blue supergiant", "red star", "blue star", "black hole", "wormhole", "exoplanet", "neutron star", "comet"],
-      //   "linestring": ["guide", "hyperspace"],
-      // },
-
+      add = false
       const types = TYPES[f.geometry.type.toLowerCase().trim()]
       if (!f.properties.name) {
         f.properties.name = randomName('', ' ')
-        draw.add(f)
+        add = true
       }
       if (!f.properties.type) {
         console.log("Found point with no type, setting randomly from", TYPES)
         // console.log("found missing type for feature", f, "adding", availableTypes[0])
         f.properties.type = types[0] || "placeholder"
-        draw.add(f)
+        add = true
       }
       if ((f.geometry.type === "Point" || f.geometry.type.includes("Poly")) && !f.properties.fill) {
         if (f.geometry.type.includes("Poly")) {
@@ -115,7 +109,7 @@ export default function Controls({ name, params, setSize, TYPES, GEO_EDIT }) {
         } else {
           f.properties.fill = getRandomNeonColor()
         }
-        draw.add(f)
+        add = true
       }
       if ((f.geometry.type.includes("LineString") || f.geometry.type.includes("Poly")) && !f.properties.stroke) {
         if (f.properties.fill?.length > 7) {
@@ -123,8 +117,9 @@ export default function Controls({ name, params, setSize, TYPES, GEO_EDIT }) {
         } else {
           f.properties.stroke = `${getRandomNeonColor()}80` // 50% opacity
         }
-        draw.add(f)
+        add = true
       }
+      if (add) draw.add(f)
     })
 
     getMaps().then(maps => {

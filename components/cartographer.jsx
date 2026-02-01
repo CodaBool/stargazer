@@ -112,6 +112,13 @@ export default function Cartographer({ name, data, uuid, remoteConfig }) {
       map.geojson.features.forEach(f => {
         f.properties.userCreated = true
         f.id = id++
+        if (params.get("preview")) {
+          Object.keys(f.properties).forEach(key => {
+            if (f.properties[key] === "") {
+              delete f.properties[key];
+            }
+          });
+        }
       })
 
       // TODO: likely a race condition

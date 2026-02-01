@@ -20,7 +20,6 @@ import { toast } from 'sonner'
 import Link from "next/link.js";
 import sanitize from "sanitize-html"
 import style from "@/app/contribute/[map]/md.module.css"
-import { sanitizeContent } from "./forms/editor.jsx";
 
 export default function DrawerComponent({
   drawerContent,
@@ -427,9 +426,17 @@ export default function DrawerComponent({
                 </>
               ) : null}
 
-              <p className="text-base lg:text-lg leading-relaxed break-words select-text">
+              {/* <p className="text-base lg:text-lg">
                 {display.description}
-              </p>
+              </p>*/}
+
+              {display.description && <div
+                  className={style.markdown}
+                  style={{lineHeight: "1.625", overflowWrap: "break-word", userSelect: "text", fontSize: "1.2em"}}
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeContent(display.description, sanitize),
+                }}
+              ></div>}
 
               {display.notes && <div
                 className={style.markdown}
@@ -443,4 +450,44 @@ export default function DrawerComponent({
       </DrawerContent>
     </Drawer>
   );
+}
+
+
+function sanitizeContent(html, sanitizeFunc) {
+  if (!html) return ""
+
+  return sanitizeFunc(html, {
+    // Start from defaults, then remove dangerous tags you forbade with DOMPurify
+    allowedTags: sanitizeFunc.defaults.allowedTags.filter(
+      (tag) => !["img", "svg", "math", "script", "table", "iframe"].includes(tag)
+    ),
+    // Allow normal attributes + link attributes
+    allowedAttributes: {
+      ...sanitizeFunc.defaults.allowedAttributes,
+      a: ["href", "name", "target", "rel"],
+    },
+    transformTags: {
+      a: (tagName, attribs) => {
+        const href = attribs.href || ""
+
+        // If not relative and not your trusted domain, wrap through /link
+        if (
+          href &&
+          !href.startsWith("/") &&
+          !href.startsWith("https://stargazer.vercel.app/")
+        ) {
+          const qs = new URLSearchParams({ url: href }).toString()
+          return {
+            tagName,
+            attribs: {
+              ...attribs,
+              href: `/link?${qs}`,
+            },
+          }
+        }
+
+        return { tagName, attribs }
+      },
+    },
+  })
 }

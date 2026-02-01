@@ -28,13 +28,12 @@ export default function Editor({ mapName, params, TYPES, data, GEO_EDIT }) {
     return () => map.off('click', handleClick)
   }, [map, draw])
 
+
+  // TODO: replace editortable
   useEffect(() => {
     if (!popup) setEditorTable(null)
   }, [popup])
 
-  useEffect(() => {
-    setEditorTable(null)
-  }, [])
 
   useEffect(() => {
     if (!popup || !draw) return
@@ -82,11 +81,9 @@ export default function Editor({ mapName, params, TYPES, data, GEO_EDIT }) {
         }}
         className="editor-table border"
       >
-        <div className="flex justify-end">
-          <Button variant="ghost" className="p-0 w-6 h-3 cursor-pointer" onClick={e => setPopup(null)}>
-            <X />
-          </Button>
-        </div>
+        <Button variant="ghost" className="right-0 top-2 z-10 w-4 h-4 cursor-pointer absolute" onClick={e => setPopup(null)}>
+          <X/>
+        </Button>
         <EditorForm feature={popup} mapName={mapName} draw={draw} setPopup={setPopup} popup={popup} params={params} TYPES={TYPES} />
       </div>
     );

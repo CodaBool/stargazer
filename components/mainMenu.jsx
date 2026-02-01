@@ -50,7 +50,7 @@ import {
 } from '@/components/ui/card'
 import Image from 'next/image'
 import { toast } from "sonner"
-import StarsBackground from "@/components/ui/starbackground"
+// import StarsBackground from "@/components/ui/starbackground"
 import StarsBackgroundSimple from "@/components/ui/starbackgroundSimple"
 import { useRouter } from 'next/navigation'
 import { animateText, combineAndDownload, combineLayers, combineLayersForTopoJSON, getDailyMenuQuote, isMobile, localSet, TITLE, REPO, USER, getMaps } from "@/lib/utils"

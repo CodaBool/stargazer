@@ -15,7 +15,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Image, X } from 'lucide-react'
 
-export default function IconSelector({ onSelect, mapName, show }) {
+export default function IconSelector({ onSelect, mapName, show, children }) {
   const [search, setSearch] = useState('')
   const [commonIcons, setCommonIcons] = useState([])
   const [mainIcons, setMainIcons] = useState([])
@@ -61,10 +61,7 @@ export default function IconSelector({ onSelect, mapName, show }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="sm" className="cursor-pointer w-full h-[30px] icon-dialog-open mb-2" variant="secondary" hidden={!show}>
-          <Image className="mr-2 h-4 w-4" />
-          Customize Icon
-        </Button>
+        {children}
       </DialogTrigger>
       <DialogContent className="max-w-lg h-[650px] icon-dialog">
         <DialogHeader>
