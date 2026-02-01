@@ -5,7 +5,7 @@ export async function GET(req) {
   try {
 
     const now = new Date();
-    const release = new Date('2026-01-31');
+    const release = new Date('2026-02-20');
     const diff = Math.ceil((release.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
     return new Response(
