@@ -10,7 +10,7 @@ import RBush from 'rbush'
 // allows for local editing
 const GEO_EDIT = (false && process.env.NEXT_PUBLIC_URL === "http://192.168.0.16:3000")
 
-export default function Cartographer({ name, data, uuid, remoteConfig }) {
+export default function Cartographer({ name, data, uuid, remoteConfig, iconIndex }) {
   const CONFIG = getConsts(name)
   const [crashed, setCrashed] = useState() // crash reloading
   const [size, setSize] = useState()
@@ -190,7 +190,7 @@ export default function Cartographer({ name, data, uuid, remoteConfig }) {
         <MapComponent locationGroups={groups} width={size.width} height={size.height} name={name} data={combined || data} mobile={mobile} params={params} locked={locked} setCrashed={setCrashed} {...config} GEO_EDIT={GEO_EDIT} uuid={uuid} />
         {showControls && <Controls name={name} params={params} setSize={setSize} TYPES={config.TYPES} GEO_EDIT={GEO_EDIT} />}
       </Map>
-      {showEditor && <Editor mapName={name} params={params} TYPES={config.TYPES} data={data} GEO_EDIT={GEO_EDIT} />}
+      {showEditor && <Editor mapName={name} params={params} TYPES={config.TYPES} data={data} GEO_EDIT={GEO_EDIT} iconIndex={iconIndex} />}
       <div style={{ width: size.width, height: size.height, background: `radial-gradient(${config.BG})`, zIndex: -1, top: 0, position: "absolute" }}></div>
     </>
   )

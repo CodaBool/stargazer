@@ -9,6 +9,7 @@ import { redirect } from "next/navigation"
 import { combineAndDownload, getConsts } from "@/lib/utils"
 import { Skull } from "lucide-react"
 import Link from "next/link"
+import { generateIconIdList } from "../page"
 const s3 = new S3Client({
   region: "auto",
   endpoint: `https://${process.env.CF_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -84,6 +85,7 @@ export default async function mapLobby({ params }) {
   fs.readdirSync(dataDir).forEach(file => {
     path.resolve(`app/[map]/topojson/${file}`)
   })
+  const iconIndex = generateIconIdList(map)
 
   let geojson
   if (map === "custom") {
@@ -105,5 +107,5 @@ export default async function mapLobby({ params }) {
     }
   })
 
-  return <Cartographer data={geojson} remoteConfig={obj.config || {}} name={map} uuid={id} />
+  return <Cartographer data={geojson} remoteConfig={obj.config || {}} name={map} uuid={id} iconIndex={iconIndex} />
 }

@@ -45,7 +45,7 @@ import dynamic from "next/dynamic"
 import { CommaTagsField, SelectTagsField } from "./tagFields"
 import { useForm, Controller } from "react-hook-form"
 
-export default function EditorForm({ feature, draw, setPopup, mapName, popup, params, TYPES }) {
+export default function EditorForm({ feature, draw, setPopup, mapName, popup, params, TYPES, iconIndex }) {
   const Quill = useMemo(() => dynamic(() => import("react-quill-new"), { ssr: false }), [])
   const [iconHTML, setIconHTML] = useState(null)
 
@@ -254,6 +254,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
                 <IconSelector
                   mapName={mapName.includes("lancer") ? "lancer" : mapName}
                   onSelect={selectIcon}
+                  iconIndex={iconIndex}
                 >
                   <img
                     src={icon || "#"}

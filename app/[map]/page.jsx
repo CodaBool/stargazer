@@ -9,8 +9,9 @@ import Link from "next/link"
 export default async function mapLobby({ params }) {
   const { map } = await params
   if (map === "favicon.ico") return
+  const iconIndex = generateIconIdList(map)
   if (map === "custom") {
-    return <Cartographer name={map} fid={0} data={{ type: "FeatureCollection", features: [] }} />
+    return <Cartographer name={map} fid={0} data={{ type: "FeatureCollection", features: [] }} iconIndex={iconIndex} />
   }
 
   // 404
@@ -78,7 +79,56 @@ export default async function mapLobby({ params }) {
     }
   })
 
-  return <Cartographer data={data} name={map} />
+  return <Cartographer data={data} name={map} iconIndex={iconIndex} />
+}
+
+export function generateIconIdList(mapName) {
+  const root = process.cwd()
+
+  const MAIN_SVG_FOLDERS = [
+    "public/svg/fontawesome",
+    "public/svg/lucide",
+    "public/svg/foundry",
+  ]
+
+  const mainIndex = [];
+  const mapIndex = [];
+
+
+  // ---------- main folders ----------
+  for (const folder of MAIN_SVG_FOLDERS) {
+    const absDir = path.join(root, folder);
+    if (!fs.existsSync(absDir)) continue;
+
+    const prefix = path.basename(folder);
+
+    const files = fs.readdirSync(absDir, { withFileTypes: true });
+    for (const file of files) {
+      if (!file.isFile() || !file.name.endsWith(".svg")) continue;
+
+      const name = path.basename(file.name, ".svg");
+      mainIndex.push(`${prefix}-${name}`);
+    }
+  }
+
+  // ---------- map-specific folder ----------
+  const mapDir = path.join(root, `public/svg/${mapName}`);
+
+  if (fs.existsSync(mapDir)) {
+    const files = fs.readdirSync(mapDir, { withFileTypes: true });
+
+    for (const file of files) {
+      if (!file.isFile() || !file.name.endsWith(".svg")) continue;
+
+      const name = path.basename(file.name, ".svg")
+      mapIndex.push(name);
+    }
+  }
+
+  return [
+    mainIndex.sort(),
+    mapIndex.sort(),
+  ];
 }
 
 export function generateStaticParams() {

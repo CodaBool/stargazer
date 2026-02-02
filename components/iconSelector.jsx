@@ -13,37 +13,19 @@ import {
 } from '@/components/ui/dialog'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
-import { Image, X } from 'lucide-react'
 
-export default function IconSelector({ onSelect, mapName, show, children }) {
+export default function IconSelector({ onSelect, mapName, children, iconIndex }) {
   const [search, setSearch] = useState('')
-  const [commonIcons, setCommonIcons] = useState([])
-  const [mainIcons, setMainIcons] = useState([])
-  const [mapIcons, setMapIcons] = useState([])
   const [filteredMain, setFilteredMain] = useState([])
   const [urlInput, setUrlInput] = useState('')
 
   useEffect(() => {
-    fetch('/svg/common.json').then(res => res.json()).then(setCommonIcons)
-    fetch('/svg/main.json').then(res => res.json()).then(data => {
-      setMainIcons(data)
-      setFilteredMain(data)
-    })
-
-    if (mapName) {
-      fetch(`/svg/${mapName}.json`)
-        .then(res => res.json())
-        .then(setMapIcons)
-    }
-  }, [mapName])
-
-  useEffect(() => {
-    if (!search) return setFilteredMain(mainIcons.slice(0, 22))
-    const filtered = mainIcons.filter(name =>
+    if (!search) return setFilteredMain(iconIndex[0].slice(0, 22))
+    const filtered = iconIndex[0].filter(name =>
       name.toLowerCase().includes(search.toLowerCase())
     )
     setFilteredMain(filtered.slice(0, 22))
-  }, [search, mainIcons])
+  }, [search])
 
 
   const renderIcon = (name, folder) => (
@@ -73,7 +55,7 @@ export default function IconSelector({ onSelect, mapName, show, children }) {
           <div>
             <div className="text-sm font-medium mb-1">Common Icons</div>
             <div className="flex flex-wrap gap-2 max-h-[120px] overflow-y-auto">
-              {commonIcons.map(icon => {
+              {COMMON_ICONS.map(icon => {
                 return renderIcon(icon, 'main')
               })}
             </div>
@@ -83,7 +65,7 @@ export default function IconSelector({ onSelect, mapName, show, children }) {
           <Tabs defaultValue="main" className="w-full">
             <TabsList className="mb-2">
               <TabsTrigger value="main">Main</TabsTrigger>
-              {mapIcons.length > 0 && <TabsTrigger value="map">{mapName}</TabsTrigger>}
+              <TabsTrigger value="map">{mapName}</TabsTrigger>
               <TabsTrigger value="url">URL</TabsTrigger>
             </TabsList>
 
@@ -103,15 +85,14 @@ export default function IconSelector({ onSelect, mapName, show, children }) {
               <p className='text-sm mt-4 ml-2 text-muted-foreground'>Not all icons shown, use search to find an icon</p>
             </TabsContent>
 
-            {mapIcons.length > 0 && (
-              <TabsContent value="map">
-                <div className="flex flex-wrap gap-2 max-h-[250px] overflow-auto">
-                  {mapIcons.map(icon => {
-                    return renderIcon(icon, mapName)
-                  })}
-                </div>
-              </TabsContent>
-            )}
+            <TabsContent value="map">
+              <div className="flex flex-wrap gap-2 max-h-[250px] overflow-auto">
+                {iconIndex[1].map(icon => {
+                  return renderIcon(icon, mapName)
+                })}
+              </div>
+            </TabsContent>
+
             <TabsContent value="url">
               <div className="space-y-2">
                 <Input
@@ -208,3 +189,26 @@ export default function IconSelector({ onSelect, mapName, show, children }) {
     </Dialog>
   )
 }
+
+// TODO: add a non galaxy
+const COMMON_ICONS = [
+  "fontawesome-location-dot",
+  "fontawesome-exclamation",
+  "fontawesome-question",
+  "fontawesome-shield",
+  "fontawesome-crown",
+  "fontawesome-tree",
+  "fontawesome-mountain",
+  "fontawesome-skull",
+  "fontawesome-ban",
+  "fontawesome-star",
+  "fontawesome-earth-americas",
+  "fontawesome-heart",
+  "fontawesome-city",
+  "fontawesome-hammer",
+  "fontawesome-dice-d20",
+  "fontawesome-key",
+  "fontawesome-coins",
+  "lucide-sword",
+  "foundry-chest"
+]
