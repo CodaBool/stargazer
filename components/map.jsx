@@ -293,7 +293,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     }
 
     if (d.geometry.type === "Point") {
-      // console.log("setting", myGroup, "d", d)
+      console.log("setting", myGroup, "d", d)
       setDrawerContent({ coordinates, selectedId: d.id, myGroup: group, d })
     }
   }
