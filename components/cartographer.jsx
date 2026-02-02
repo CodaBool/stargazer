@@ -7,7 +7,8 @@ import Controls from './controls.jsx'
 import Editor from './editor'
 import { useSearchParams } from 'next/navigation'
 import RBush from 'rbush'
-const GEO_EDIT = (false && process.env.NEXT_PUBLIC_URL === "http://192.168.0.16:3000") // local debugging
+// allows for local editing
+const GEO_EDIT = (false && process.env.NEXT_PUBLIC_URL === "http://192.168.0.16:3000")
 
 export default function Cartographer({ name, data, uuid, remoteConfig }) {
   const CONFIG = getConsts(name)
@@ -136,6 +137,7 @@ export default function Cartographer({ name, data, uuid, remoteConfig }) {
   }, [params])
 
   function setupMap(config, data) {
+    if (config.STYLE?.sprite) config.STYLE.sprite = `https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/sprite/${name}`
     setConfig(config)
     // console.log("writing", config)
     // what's better than 2 race conditions...3!

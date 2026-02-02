@@ -3,7 +3,7 @@ import maplibregl from 'maplibre-gl'
 import { useMap, Layer, Source, Popup } from '@vis.gl/react-maplibre'
 import { GeoGrid } from 'geogrid-maplibre-gl'
 import { useEffect, useRef, useState } from 'react'
-import { createPopupHTML, localSet, getMaps, useMode, getPaint, gridAlgorithm, useGrid, gridHelpers, boundsToCoord, useStore } from "@/lib/utils.js"
+import { createPopupHTML, localSet, getMaps, useMode, getPaint, gridHelpers, boundsToCoord, useStore } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import SearchBar from './searchbar'
 import * as turf from '@turf/turf'
@@ -62,7 +62,7 @@ const mouseMove = (e, wrapper, IS_GALAXY, name, IGNORE_POLY, mobile, modeRef) =>
     if (e.features[0].geometry.type === "Point") wrapper.getCanvas().style.cursor = 'pointer'
 
     let coordinates = e.features[0].geometry.coordinates.slice()
-    const popupContent = createPopupHTML(e, IS_GALAXY, name)
+    const popupContent = createPopupHTML(e, name)
 
     // Ensure that if the map is zoomed out such that multiple
     // copies of the feature are visible, the popup appears
@@ -191,7 +191,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   const territoryClick = (e, wrapper, IGNORE_POLY, IS_GALAXY, name) => {
     if (IGNORE_POLY?.includes(e.features[0].properties.type) || modeRef.current === "measure") return
     const coordinates = e.lngLat;
-    const popupContent = createPopupHTML(e, IS_GALAXY, name, setDrawerContent)
+    const popupContent = createPopupHTML(e, name)
     if (mobile) {
       // place in center of screen
       popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap())

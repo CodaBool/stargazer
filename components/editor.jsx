@@ -11,7 +11,6 @@ export default function Editor({ mapName, params, TYPES, data, GEO_EDIT }) {
   const { map } = useMap()
   const draw = useDraw(s => s.draw)
   const [popup, setPopup] = useState()
-  const { setEditorTable } = useStore()
 
   function handleClick(e) {
     if (!draw.getSelected().features.length) return
@@ -27,13 +26,6 @@ export default function Editor({ mapName, params, TYPES, data, GEO_EDIT }) {
     map.on('click', handleClick)
     return () => map.off('click', handleClick)
   }, [map, draw])
-
-
-  // TODO: replace editortable
-  useEffect(() => {
-    if (!popup) setEditorTable(null)
-  }, [popup])
-
 
   useEffect(() => {
     if (!popup || !draw) return
