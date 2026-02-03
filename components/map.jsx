@@ -139,6 +139,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   function locationClick(e, manual) {
     if (modeRef.current === "measure" || (modeRef.current === "crosshair" && mobile) || locked) return
     const clicked = e?.features[0] || manual
+    if (clicked.properties.type === "text") return
 
     // console.log("clicked", clicked)
 
