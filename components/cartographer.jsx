@@ -190,7 +190,7 @@ export default function Cartographer({ name, data, uuid, remoteConfig, iconIndex
         <MapComponent locationGroups={groups} width={size.width} height={size.height} name={name} data={combined || data} mobile={mobile} params={params} locked={locked} setCrashed={setCrashed} {...config} GEO_EDIT={GEO_EDIT} uuid={uuid} />
         {showControls && <Controls name={name} params={params} setSize={setSize} TYPES={config.TYPES} GEO_EDIT={GEO_EDIT} />}
       </Map>
-      {showEditor && <Editor mapName={name} params={params} TYPES={config.TYPES} data={data} GEO_EDIT={GEO_EDIT} iconIndex={iconIndex} />}
+      {showEditor && <Editor mapName={name} params={params} TYPES={config.TYPES} data={data} GEO_EDIT={GEO_EDIT} iconIndex={iconIndex} IS_GALAXY={config.IS_GALAXY} />}
       <div style={{ width: size.width, height: size.height, background: `radial-gradient(${config.BG})`, zIndex: -1, top: 0, position: "absolute" }}></div>
     </>
   )

@@ -30,6 +30,7 @@ import {
   Trash2,
 } from "lucide-react"
 import { SVG_BASE, getIconHTML } from "@/lib/utils"
+import AdvancedEditor from "@/components/forms/advEditor"
 import { STAR_VARIANT_WEIGHTS } from "@/lib/fakeData.js"
 import {
   Select,
@@ -45,7 +46,7 @@ import dynamic from "next/dynamic"
 import { CommaTagsField, SelectTagsField } from "./tagFields"
 import { useForm, Controller } from "react-hook-form"
 
-export default function EditorForm({ feature, draw, setPopup, mapName, popup, params, TYPES, iconIndex }) {
+export default function EditorForm({ feature, draw, setPopup, mapName, popup, params, TYPES, iconIndex, IS_GALAXY }) {
   const Quill = useMemo(() => dynamic(() => import("react-quill-new"), { ssr: false }), [])
   const [iconHTML, setIconHTML] = useState(null)
 
@@ -166,6 +167,11 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
                           <SelectContent>
                             {availableTypes.map((type, index) => (
                               <SelectItem key={index} value={type} className="cursor-pointer">
+                                <img
+                                  src={`${SVG_BASE}${mapName}/${type}.svg`}
+                                  alt={`${type} icon`}
+                                  className="inline-block w-4 h-4 mr-2 object-contain align-middle"
+                                />
                                 {type.replaceAll("_", " ")}
                               </SelectItem>
                             ))}
@@ -299,6 +305,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
           </TableBody>
         </Table>
 
+        <label className="block text-sm font-medium mb-1">description</label>
         <Controller
           name="description"
           control={form.control}
@@ -319,10 +326,13 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, pa
           {form.formState.errors.name && <p className="text-red-500">name is required</p>}
         </div>
 
-        <Button size="sm" type="button" variant="secondary" onClick={() => console.log("See More")} className="cursor-pointer w-full h-[30px]">
-          <Menu className="mr-2 h-4 w-4" />
-          See More
-        </Button>
+
+        <AdvancedEditor IS_GALAXY={IS_GALAXY} mapName={mapName} feature={feature} editProp={editProp}>
+          <Button type="button" variant="secondary" className="cursor-pointer w-full h-[30px]">
+            <Menu className="mr-2 h-4 w-4" />
+            See More
+          </Button>
+        </AdvancedEditor>
 
         {params.get("secret") && <Link editProp={editProp} feature={feature} />}
       </form>

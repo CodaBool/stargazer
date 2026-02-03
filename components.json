@@ -3,11 +3,12 @@
   "style": "default",
   "rsc": true,
   "tsx": false,
+  "rtl": false,
   "tailwind": {
     "config": "tailwind.config.js",
     "css": "app/global.css",
     "baseColor": "slate",
-    "cssVariables": false,
+    "cssVariables": true,
     "prefix": ""
   },
   "aliases": {
@@ -17,5 +18,6 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
-  "iconLibrary": "lucide"
+  "iconLibrary": "lucide",
+  "registries": {}
 }

@@ -101,7 +101,7 @@ export default function CreateLocation({ user }) {
             <div className="flex items-center justify-between">
               <CardTitle>Profile</CardTitle>
               <Link href="/">
-                <Button variant="ghost">
+                <Button variant="ghost" type="button">
                   <ArrowLeft />
                 </Button>
               </Link>
@@ -159,7 +159,7 @@ export default function CreateLocation({ user }) {
           <CardFooter className="flex flex-col gap-4 w-full">
             {!user.premium && (
               <>
-                <Button onClick={() => router.push("/checkout")} variant="outline" className="w-full">
+                <Button onClick={() => router.push("/checkout")} type="button" variant="outline" className="w-full">
                   Purchase Premium
                 </Button>
                 <p className="text-slate-400 mb-8 text-sm">Premium is a one time purchase which allows for unlimited map uploads. As well as disables the 90 day auto-delete policy for map uploads.</p>

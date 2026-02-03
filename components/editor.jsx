@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 import { useDraw } from "./controls";
 import { getMaps, localSet, useStore } from "@/lib/utils"
 
-export default function Editor({ mapName, params, TYPES, data, GEO_EDIT, iconIndex }) {
+export default function Editor({ mapName, params, TYPES, data, GEO_EDIT, iconIndex, IS_GALAXY }) {
   const { map } = useMap()
   const draw = useDraw(s => s.draw)
   const [popup, setPopup] = useState()
@@ -76,7 +76,7 @@ export default function Editor({ mapName, params, TYPES, data, GEO_EDIT, iconInd
         <Button variant="ghost" className="right-0 top-2 z-10 w-4 h-4 cursor-pointer absolute" onClick={e => setPopup(null)}>
           <X/>
         </Button>
-        <EditorForm feature={popup} mapName={mapName} draw={draw} setPopup={setPopup} popup={popup} params={params} TYPES={TYPES} iconIndex={iconIndex} />
+        <EditorForm feature={popup} mapName={mapName} draw={draw} setPopup={setPopup} popup={popup} params={params} TYPES={TYPES} iconIndex={iconIndex} IS_GALAXY={IS_GALAXY} />
       </div>
     );
   }

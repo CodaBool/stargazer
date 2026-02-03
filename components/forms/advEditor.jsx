@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState, cloneElement} from "react"
 import {
   Table,
   TableBody,
@@ -16,6 +16,7 @@ import {
   DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -25,17 +26,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { RgbaColorPicker } from "react-colorful"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { toast } from "sonner"
 import {
   CircleHelp,
   Image,
   Pencil,
-  Plus,
   Save,
   Trash2,
+  Plus,
+  X,
   Link as Chain,
   Notebook,
   StickyNote,
@@ -63,8 +61,214 @@ import "react-quill-new/dist/quill.bubble.css"
 import sanitize from "sanitize-html"
 import { useMemo } from "react"
 import dynamic from "next/dynamic"
+import { toast } from "sonner"
+import { Controller, useForm } from "react-hook-form"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import { RgbaColorPicker } from "react-colorful"
+import { CommaTagsField } from "./tagFields"
 
-export default function EditorForm({
+export default function AdvancedEditor({ children, IS_GALAXY, mapName, feature, editProp }) {
+  return (
+    <Dialog defaultOpen={true}>
+      <DialogTrigger className="" asChild>{children}</DialogTrigger>
+      <DialogContent className="">
+        <DialogHeader>
+          <DialogTitle>titl</DialogTitle>
+          {/* <DialogDescription>*/}
+            <FormComponent
+              IS_GALAXY={IS_GALAXY}
+              mapName={mapName}
+              feature={feature}
+              editProp={editProp}
+            />
+          {/* </DialogDescription>*/}
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Save</Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+
+export function FormComponent({
+  feature,
+  mapName,
+  IS_GALAXY,
+  editProp,
+}) {
+  const Quill = useMemo(() => dynamic(() => import("react-quill-new"), { ssr: false }),[])
+  const type = feature?.properties?.type
+  const form = useForm({
+    defaultValues: feature?.properties ?? {},
+  })
+
+  const f = (name, node) => (
+    <Controller
+      name={name}
+      control={form.control}
+      render={({ field }) =>
+        cloneElement(node, {
+          ...field,
+          onChange: (v) => {
+            const val = v?.target ? v.target.value : v
+            field.onChange(val)
+            editProp(val, name)
+          },
+        })
+      }
+    />
+  )
+
+  const checkbox = (name) =>
+    f(
+      name,
+      <Checkbox
+        checked={!!form.watch(name)}
+        onCheckedChange={(v) => editProp(v, name)}
+      />
+    )
+
+  return (
+    <div className="space-y-6 text-sm">
+
+      {/* ---------- common ---------- */}
+      <Section title="Metadata">
+        <Comma name="alias" label="Alias" form={form} editProp={editProp} />
+        <Comma name="region" label="Region" form={form} editProp={editProp} />
+        <Comma name="people" label="People" form={form} editProp={editProp} />
+        {f("image", <Input placeholder="Image URL" />)}
+        {f("caption", <Input placeholder="Caption" />)}
+        {f("seed", <Input />)}
+        {f("source", <Input />)}
+        <Row label="Tint">
+          <ColorGrid
+            value={form.watch("tint")}
+            count={1}
+            onChange={(v) => editProp(v, "tint")}
+          />
+        </Row>
+        <Row label="Unofficial">{checkbox("unofficial")}</Row>
+        <Row label="Destroyed">{checkbox("destroyed")}</Row>
+        <Row label="Capital">{checkbox("capital")}</Row>
+        <Row label="Visible">{checkbox("visibility")}</Row>
+        <Row label="Notes Visible">{checkbox("notesVisibility")}</Row>
+      </Section>
+
+      {/* ---------- notes ---------- */}
+      <Section title="Notes">
+        <Controller
+          name="notes"
+          control={form.control}
+          render={({ field }) => (
+            <Quill
+              theme="bubble"
+              value={field.value ?? ""}
+              onChange={(v) => {
+                field.onChange(v)
+                editProp(v, "notes")
+              }}
+            />
+          )}
+        />
+      </Section>
+
+      {/* ---------- galaxy only ---------- */}
+      {IS_GALAXY && (
+        <>
+          <Section title="Colors">
+            <Row label="Base Colors">
+              <ColorGrid
+                value={form.watch("baseColors")}
+                count={4}
+                onChange={(v) => editProp(v, "baseColors")}
+              />
+            </Row>
+            <Row label="Feature Colors">
+              <ColorGrid
+                value={form.watch("featureColors")}
+                count={4}
+                onChange={(v) => editProp(v, "featureColors")}
+              />
+            </Row>
+            <Row label="Layer Colors">
+              <ColorGrid
+                value={form.watch("layerColors")}
+                count={4}
+                alpha
+                onChange={(v) => editProp(v, "layerColors")}
+              />
+            </Row>
+            {(type === "terrestrial" || type === "ocean_planet") && (
+              <Row label="Atmosphere">
+                <ColorGrid
+                  value={form.watch("atmosphereColors")}
+                  count={3}
+                  alpha
+                  onChange={(v) => editProp(v, "atmosphereColors")}
+                />
+              </Row>
+            )}
+          </Section>
+
+          <Section title="Physics">
+            {f("planetSize", <Input type="number" />)}
+            {f("temperature", <Input type="number" />)}
+            {f("diameter", <Input type="number" />)}
+            {f("gravity", <Input type="number" />)}
+            {f("pressure", <Input type="number" />)}
+            {f("icePercent", <Input type="number" step="0.01" />)}
+          </Section>
+
+          <Section title="Custom Properties">
+            <CustomFields
+              properties={feature.properties}
+              editProp={editProp}
+            />
+          </Section>
+        </>
+      )}
+    </div>
+  )
+}
+
+// function FormComponent({ IS_GALAXY, mapName, feature, editProp }) {
+//   const [submitting, setSubmitting] = useState()
+//   const form = useForm()
+//   const Quill = useMemo(() => dynamic(() => import("react-quill-new"), { ssr: false }),[])
+
+
+//   async function submit(body) {
+//     // setSubmitting(true)
+//     console.log("submit", body)
+//   }
+
+//   return (
+//   <Form {...form}>
+//     <form onSubmit={form.handleSubmit(submit)} className="container mx-auto">
+//     </form>
+//   </Form>
+//   )
+// }
+
+export function EditorForm({
   feature,
   draw,
   setPopup,
@@ -824,30 +1028,6 @@ export const PopoverPicker = ({ color, onChange, editProp }) => {
   )
 }
 
-const rgbaToObj = rgba => {
-  if (!rgba) return
-  if (typeof rgba === "object") return rgba
-  const rgbaRegex =
-    /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d*\.?\d+)\s*\)/
-  const result = rgba?.match(rgbaRegex)
-  // const result = rgba?.match(/rgba?\((\d+), (\d+), (\d+), (\d+\.?\d*)\)/);
-  // console.log("result", result, rgba)
-  return result
-    ? {
-        r: parseInt(result[1], 10),
-        g: parseInt(result[2], 10),
-        b: parseInt(result[3], 10),
-        a: parseFloat(result[4]),
-      }
-    : undefined
-}
-
-const objToRgba = rgba => {
-  if (!rgba) return
-  if (typeof rgba !== "object") return rgba
-  return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`
-}
-
 // duplicate of what's in @/app/contribute/[map]/[id]/page.jsx
 export function sanitizeContent(html, sanitizeFunc) {
   if (!html) return ""
@@ -886,4 +1066,164 @@ export function sanitizeContent(html, sanitizeFunc) {
       },
     },
   })
+}
+
+function Section({ title, children }) {
+  return (
+    <div className="space-y-3 border-b pb-4">
+      <h3 className="font-semibold text-xs uppercase opacity-70">
+        {title}
+      </h3>
+      {children}
+    </div>
+  )
+}
+
+function Row({ label, children }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <Label className="w-40">{label}</Label>
+      {children}
+    </div>
+  )
+}
+
+function Comma({ name, label, form, editProp }) {
+  return (
+    <div>
+      <Label>{label}</Label>
+      <CommaTagsField
+        control={form.control}
+        name={name}
+        onImmediateChange={(v) => editProp(v, name)}
+      />
+    </div>
+  )
+}
+
+/* ------------------ custom arbitrary fields ------------------ */
+
+function CustomFields({ properties, editProp }) {
+  const [key, setKey] = useState("")
+  const [val, setVal] = useState("")
+
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <Input placeholder="key" value={key} onChange={(e) => setKey(e.target.value)} />
+        <Input placeholder="value" value={val} onChange={(e) => setVal(e.target.value)} />
+        <Button
+          size="icon"
+          onClick={() => {
+            if (!key) return
+            editProp(val, key)
+            setKey("")
+            setVal("")
+          }}
+        >
+          <Plus />
+        </Button>
+      </div>
+
+      <div className="text-xs opacity-70">
+        Adds arbitrary properties directly to feature.properties
+      </div>
+    </div>
+  )
+}
+
+const rgbaToObj = (rgba) => {
+  if (!rgba) return { r: 255, g: 255, b: 255, a: 1 }
+  if (typeof rgba === "object") return rgba
+  const m = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d.]+)?\)/)
+  return m
+    ? { r: +m[1], g: +m[2], b: +m[3], a: m[4] ? +m[4] : 1 }
+    : { r: 255, g: 255, b: 255, a: 1 }
+}
+
+const objToRgba = (o) =>
+  typeof o === "object"
+    ? `rgba(${o.r}, ${o.g}, ${o.b}, ${o.a})`
+    : o
+
+const rgbToHex = ({ r, g, b }) =>
+  "#" +
+  [r, g, b]
+    .map((v) => v.toString(16).padStart(2, "0"))
+    .join("")
+
+const rgbaToHexA = ({ r, g, b, a }) =>
+  "#" +
+  [r, g, b, Math.round(a * 255)]
+    .map((v) => v.toString(16).padStart(2, "0"))
+    .join("")
+
+const splitCsv = (v, count) =>
+  (v ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .slice(0, count)
+    .concat(Array(count).fill("#ffffff"))
+    .slice(0, count)
+
+/* ------------------ inline color grid ------------------ */
+
+function ColorGrid({
+  value,
+  count,
+  alpha = false,
+  onChange,
+}) {
+  const colors = splitCsv(value, count)
+
+  return (
+    <div className="flex gap-2 flex-wrap">
+      {colors.map((c, i) => (
+        <SingleColor
+          key={i}
+          value={c}
+          alpha={alpha}
+          onChange={(next) => {
+            const nextArr = [...colors]
+            nextArr[i] = next
+            onChange(nextArr.join(","))
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+function SingleColor({ value, alpha, onChange }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const h = (e) => ref.current && !ref.current.contains(e.target) && setOpen(false)
+    document.addEventListener("mousedown", h)
+    return () => document.removeEventListener("mousedown", h)
+  }, [])
+
+  const rgba = rgbaToObj(value)
+
+  return (
+    <div ref={ref} className="relative">
+      <div
+        className="w-6 h-6 border cursor-pointer"
+        style={{ background: objToRgba(rgba) }}
+        onClick={() => setOpen(true)}
+      />
+      {open && (
+        <div className="absolute z-50 mt-2 bg-black p-2 border">
+          <RgbaColorPicker
+            color={rgba}
+            onChange={(obj) => {
+              const v = alpha ? rgbaToHexA(obj) : rgbToHex(obj)
+              onChange(v)
+            }}
+          />
+        </div>
+      )}
+    </div>
+  )
 }
