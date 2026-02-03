@@ -266,6 +266,11 @@ body {
 
 .react-colorful {
   height: 140px !important;
+  z-index: 999;
+}
+
+.ql-tooltip {
+  position: sticky !important;
 }
 
 .maplibregl-popup {

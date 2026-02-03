@@ -1,16 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState, cloneElement} from "react"
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import {
   Dialog,
   DialogClose,
@@ -21,1059 +11,281 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {
-  CircleHelp,
-  Image,
-  Pencil,
-  Save,
-  Trash2,
-  Plus,
-  X,
-  Link as Chain,
-  Notebook,
-  StickyNote,
-  Code,
-  Map,
-  MessageCircleWarning,
-  Undo2,
-} from "lucide-react"
-import {
-  AVAILABLE_PROPERTIES,
-  SVG_BASE,
-  useStore,
-  getIconHTML,
-} from "@/lib/utils"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select"
-import IconSelector from "../iconSelector"
-import style from "@/app/contribute/[map]/md.module.css"
-import "react-quill-new/dist/quill.bubble.css"
-import sanitize from "sanitize-html"
-import { useMemo } from "react"
-import dynamic from "next/dynamic"
-import { toast } from "sonner"
-import { Controller, useForm } from "react-hook-form"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Plus, X, Trash2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { RgbaColorPicker } from "react-colorful"
-import { CommaTagsField } from "./tagFields"
+import { debounce } from "@/lib/utils"
+import dynamic from "next/dynamic"
 
 export default function AdvancedEditor({ children, IS_GALAXY, mapName, feature, editProp }) {
   return (
-    <Dialog defaultOpen={true}>
-      <DialogTrigger className="" asChild>{children}</DialogTrigger>
-      <DialogContent className="">
+    <Dialog>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent className="min-w-[600px] max-h-[80vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle>titl</DialogTitle>
-          {/* <DialogDescription>*/}
-            <FormComponent
-              IS_GALAXY={IS_GALAXY}
-              mapName={mapName}
-              feature={feature}
-              editProp={editProp}
-            />
-          {/* </DialogDescription>*/}
+          <DialogTitle className="text-center">{feature.properties.name}</DialogTitle>
+          <DialogDescription className="text-center">
+            Some values when left blank will be filled in with generated values
+          </DialogDescription>
+          <FormComponent
+            IS_GALAXY={IS_GALAXY}
+            mapName={mapName}
+            feature={feature}
+            editProp={editProp}
+          />
         </DialogHeader>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Save</Button>
-          </DialogClose>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
 }
 
-
-export function FormComponent({
-  feature,
-  mapName,
-  IS_GALAXY,
-  editProp,
-}) {
-  const Quill = useMemo(() => dynamic(() => import("react-quill-new"), { ssr: false }),[])
+export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
+  const Quill = useMemo(() => dynamic(() => import("react-quill-new"), { ssr: false }), [])
   const type = feature?.properties?.type
-  const form = useForm({
-    defaultValues: feature?.properties ?? {},
-  })
 
-  const f = (name, node) => (
-    <Controller
-      name={name}
-      control={form.control}
-      render={({ field }) =>
-        cloneElement(node, {
-          ...field,
-          onChange: (v) => {
-            const val = v?.target ? v.target.value : v
-            field.onChange(val)
-            editProp(val, name)
-          },
-        })
-      }
-    />
-  )
+  // local UI state (fast), debounced persistence (slow)
+  const [values, setValues] = useState(() => feature?.properties ?? {})
 
-  const checkbox = (name) =>
-    f(
-      name,
-      <Checkbox
-        checked={!!form.watch(name)}
-        onCheckedChange={(v) => editProp(v, name)}
-      />
-    )
+  useEffect(() => {
+    const incoming = feature?.properties ?? {}
+    setValues((prev) => ({ ...prev, ...incoming }))
+  }, [feature?.id]) // important: feature id, not whole object
+
+  const debouncedRef = useRef(null)
+  if (!debouncedRef.current) {
+    debouncedRef.current = debounce((val, key) => editProp(val, key), 150)
+  }
+  const persistSoon = (val, key) => debouncedRef.current(val, key)
+  const persistNow = (val, key) => editProp(val, key)
+
+  const set = (key, val, { immediate = false } = {}) => {
+    setValues((prev) => ({ ...prev, [key]: val }))
+    if (immediate) persistNow(val, key)
+    else persistSoon(val, key)
+  }
+
+  const removeKey = (key) => {
+    setValues((prev) => {
+      const next = { ...prev }
+      delete next[key]
+      return next
+    })
+    // persist delete
+    persistNow(undefined, key) // or set(key, undefined, { immediate: true }) if your parent deletes on undefined
+  }
 
   return (
     <div className="space-y-6 text-sm">
+      <Section>
+        <Comma name="alias" label="Alias" value={values.alias} onChange={(v) => set("alias", v, { immediate: true })} />
+        <Comma name="region" label="Region" value={values.region} onChange={(v) => set("region", v, { immediate: true })} />
+        <Comma name="people" label="People" value={values.people} onChange={(v) => set("people", v, { immediate: true })} />
 
-      {/* ---------- common ---------- */}
-      <Section title="Metadata">
-        <Comma name="alias" label="Alias" form={form} editProp={editProp} />
-        <Comma name="region" label="Region" form={form} editProp={editProp} />
-        <Comma name="people" label="People" form={form} editProp={editProp} />
-        {f("image", <Input placeholder="Image URL" />)}
-        {f("caption", <Input placeholder="Caption" />)}
-        {f("seed", <Input />)}
-        {f("source", <Input />)}
-        <Row label="Tint">
-          <ColorGrid
-            value={form.watch("tint")}
-            count={1}
-            onChange={(v) => editProp(v, "tint")}
-          />
-        </Row>
-        <Row label="Unofficial">{checkbox("unofficial")}</Row>
-        <Row label="Destroyed">{checkbox("destroyed")}</Row>
-        <Row label="Capital">{checkbox("capital")}</Row>
-        <Row label="Visible">{checkbox("visibility")}</Row>
-        <Row label="Notes Visible">{checkbox("notesVisibility")}</Row>
+        <Field label="Image">{input(values.image, (v) => set("image", v))}</Field>
+        <Field label="Caption">{input(values.caption, (v) => set("caption", v))}</Field>
+        <Field label="Seed">{input(values.seed, (v) => set("seed", v))}</Field>
+        <Field label="Source">{input(values.source, (v) => set("source", v))}</Field>
+
+        <BoolRow label="Unofficial" value={!!values.unofficial} onChange={(v) => set("unofficial", v, { immediate: true })} />
+        <BoolRow label="Destroyed" value={!!values.destroyed} onChange={(v) => set("destroyed", v, { immediate: true })} />
+        <BoolRow label="Capital" value={!!values.capital} onChange={(v) => set("capital", v, { immediate: true })} />
+        <BoolRow label="Visible" value={!!values.visibility} onChange={(v) => set("visibility", v, { immediate: true })} />
+        <BoolRow label="Notes Visible" value={!!values.notesVisibility} onChange={(v) => set("notesVisibility", v, { immediate: true })} />
       </Section>
 
-      {/* ---------- notes ---------- */}
       <Section title="Notes">
-        <Controller
-          name="notes"
-          control={form.control}
-          render={({ field }) => (
-            <Quill
-              theme="bubble"
-              value={field.value ?? ""}
-              onChange={(v) => {
-                field.onChange(v)
-                editProp(v, "notes")
-              }}
-            />
-          )}
+        <Quill
+          theme="bubble"
+          value={values.notes ?? ""}
+          onChange={(v) => set("notes", v)} // debounced
         />
       </Section>
 
-      {/* ---------- galaxy only ---------- */}
-      {IS_GALAXY && (
-        <>
-          <Section title="Colors">
-            <Row label="Base Colors">
+      <Section title="Colors">
+        <Row label="Icon Tint In Drawer">
+          <ColorGrid
+            value={values.tint}
+            count={1}
+            onChange={(v) => set("tint", v, { immediate: true })}
+          />
+        </Row>
+        {IS_GALAXY && (
+          <>
+            <Row label="Planet Base">
               <ColorGrid
-                value={form.watch("baseColors")}
+                value={values.baseColors}
                 count={4}
-                onChange={(v) => editProp(v, "baseColors")}
+                onChange={(v) => set("baseColors", v, { immediate: true })}
               />
             </Row>
-            <Row label="Feature Colors">
+            <Row label="Planet Feature">
               <ColorGrid
-                value={form.watch("featureColors")}
+                value={values.featureColors}
                 count={4}
-                onChange={(v) => editProp(v, "featureColors")}
+                onChange={(v) => set("featureColors", v, { immediate: true })}
               />
             </Row>
-            <Row label="Layer Colors">
+            <Row label="Planet Layer">
               <ColorGrid
-                value={form.watch("layerColors")}
+                value={values.layerColors}
                 count={4}
                 alpha
-                onChange={(v) => editProp(v, "layerColors")}
+                onChange={(v) => set("layerColors", v, { immediate: true })}
               />
             </Row>
+
             {(type === "terrestrial" || type === "ocean_planet") && (
-              <Row label="Atmosphere">
+              <Row label="Planet Atmosphere">
                 <ColorGrid
-                  value={form.watch("atmosphereColors")}
+                  value={values.atmosphereColors}
                   count={3}
                   alpha
-                  onChange={(v) => editProp(v, "atmosphereColors")}
+                  onChange={(v) => set("atmosphereColors", v, { immediate: true })}
                 />
               </Row>
             )}
+          </>
+        )}
+      </Section>
+
+      {IS_GALAXY && (
+        <>
+          <Section title="Planet Details">
+            <Field label="Model Size (1-3, smaller is larger)">{numberInput(values.planetSize, (v) => set("planetSize", v))}</Field>
+            <Field label="Temperature (°C)">{numberInput(values.temperature, (v) => set("temperature", v))}</Field>
+            <Field label={`Diameter (${type === "star" ? "solar radii" : "km"})`}>{numberInput(values.diameter, (v) => set("diameter", v))}</Field>
+            <Field label="Gravity (cm/s²)">{numberInput(values.gravity, (v) => set("gravity", v))}</Field>
+            <Field label="Pressure (milibars)">{numberInput(values.pressure, (v) => set("pressure", v))}</Field>
+            <Field label="Ice % (0-1)">{numberInput(values.icePercent, (v) => set("icePercent", v), { step: "0.01" })}</Field>
           </Section>
 
-          <Section title="Physics">
-            {f("planetSize", <Input type="number" />)}
-            {f("temperature", <Input type="number" />)}
-            {f("diameter", <Input type="number" />)}
-            {f("gravity", <Input type="number" />)}
-            {f("pressure", <Input type="number" />)}
-            {f("icePercent", <Input type="number" step="0.01" />)}
-          </Section>
-
-          <Section title="Custom Properties">
-            <CustomFields
-              properties={feature.properties}
-              editProp={editProp}
-            />
-          </Section>
+          <CustomFieldsRender
+            values={values}
+            setProp={(k, v, opts) => set(k, v, opts)}
+            debouncedRef={debouncedRef}
+            setValues={setValues}
+            removeKey={removeKey}
+          />
         </>
       )}
     </div>
   )
 }
 
-// function FormComponent({ IS_GALAXY, mapName, feature, editProp }) {
-//   const [submitting, setSubmitting] = useState()
-//   const form = useForm()
-//   const Quill = useMemo(() => dynamic(() => import("react-quill-new"), { ssr: false }),[])
-
-
-//   async function submit(body) {
-//     // setSubmitting(true)
-//     console.log("submit", body)
-//   }
-
-//   return (
-//   <Form {...form}>
-//     <form onSubmit={form.handleSubmit(submit)} className="container mx-auto">
-//     </form>
-//   </Form>
-//   )
-// }
-
-export function EditorForm({
-  feature,
-  draw,
-  setPopup,
-  mapName,
-  popup,
-  params,
-  TYPES,
+function CustomFieldsRender({
+  values,        // the local values object from AdvancedEditor
+  setProp,       // your set(key, val, { immediate }) helper
+  debouncedRef,
+  setValues,
+  removeKey,
 }) {
-  const { editorTable, setEditorTable } = useStore()
-  const Quill = useMemo(
-    () => dynamic(() => import("react-quill-new"), { ssr: false }),
-    [],
-  )
-  const [deleteDialog, setDeleteDialog] = useState()
-  const [isAddingRow, setIsAddingRow] = useState(false)
-  const [errorStroke, setErrorStroke] = useState()
-  const [errorFill, setErrorFill] = useState()
-  const [iconHTML, setIconHTML] = useState(null)
-  const availableTypes = TYPES[feature.geometry.type.toLowerCase().trim()]
-  const [newRow, setNewRow] = useState({
-    key: "",
-    value: "",
-  })
+  const [keyDraft, setKeyDraft] = useState("")
+  const [valDraft, setValDraft] = useState("")
 
-  function handleInputChange(e) {
-    setNewRow(prev => ({ ...prev, [e.target.name]: e.target.value }))
-  }
-  function handleNotesBtn(e) {
-    setIsAddingRow(true)
-    setNewRow({ key: "notes", value: "" })
-  }
+  // per-key debouncers so multiple custom fields don't fight one timer
+  const debouncersRef = useRef(new Map())
 
-  function deleteRow() {
-    if (!draw || !deleteDialog?.i) return
-    const newProperties = { ...feature.properties }
-    const keyToDelete = Object.keys(newProperties)[deleteDialog.i]
-    delete newProperties[keyToDelete]
-    const latestFeature = draw.get(feature.id)
-    const newFeature = { ...latestFeature, properties: newProperties }
-    draw.add(newFeature)
-    setPopup(newFeature)
-    if (document.querySelector(".unsaved-text")) {
-      document.querySelector(".unsaved-text").style.visibility = "visible"
-    }
-    setDeleteDialog(null)
+  const customEntries = useMemo(() => {
+    const obj = values ?? {}
+    return Object.entries(obj)
+      .filter(([k]) => !KNOWN_KEYS.has(k))
+      .filter(([k]) => !k.startsWith("_")) // optional: hide internal keys
+      .sort(([a], [b]) => a.localeCompare(b))
+  }, [values])
+
+  function addField() {
+    const k = keyDraft.trim()
+    if (!k) return
+    if (KNOWN_KEYS.has(k)) return // can't shadow known fields
+    if ((values ?? {})[k] !== undefined) return // no duplicates
+
+    setProp(k, valDraft ?? "", { immediate: true })
+    setKeyDraft("")
+    setValDraft("")
   }
 
-  function handleSave() {
-    if (isAddingRow) {
-      if (!newRow.key || !newRow.value || !draw) {
-        setIsAddingRow(false)
-        return
-      }
-      const latestFeature = draw.get(feature.id)
-      const keyExists = Object.keys(feature.properties).includes(newRow.key)
-      if (keyExists && newRow.key !== "notes") {
-        toast.warning(`"${newRow.key}" Key already exists`)
-        return
-      }
-      const newFeature = {
-        ...latestFeature,
-        properties: { ...feature.properties, [newRow.key]: newRow.value },
-      }
-      draw.add(newFeature)
-      setPopup(newFeature)
-      // Reset the form
-      setNewRow({
-        key: "",
-        value: "",
-      })
-
-      // Switch back to "Add Row" mode
-      setIsAddingRow(false)
-    } else {
-      setEditorTable(null)
-    }
-  }
-
-  function handleCancel() {
-    if (isAddingRow) {
-      setIsAddingRow(false)
-      setNewRow({ key: "", value: "" })
-    } else {
-      setEditorTable(null)
-    }
-  }
-
-  function editProp(newVal, key) {
-    const newProperties = { ...feature.properties }
-    newProperties[key] = newVal
-    // if (key === "type") {
-    //   newProperties[key] = newVal.replaceAll(" ", "_")
-    // }
-    const latestFeature = draw.get(feature.id)
-    const newFeature = { ...latestFeature, properties: newProperties }
-    // console.log("new feature:", newFeature, "latest", latestFeature)
-    draw.add(newFeature)
-    setPopup(newFeature)
-    setEditorTable(newFeature.properties)
-    if (document.querySelector(".unsaved-text")) {
-      document.querySelector(".unsaved-text").style.visibility = "visible"
-    }
-  }
-
-  function selectIcon(icon) {
-    let url = icon
-    if (typeof icon === "object") {
-      url = `${SVG_BASE}${icon.folder}/${icon.name}.svg`
-    }
-    // console.log("icon", icon, " | remote =", url)
-    editProp(url, "icon")
-    // close dialog
-    // console.log("clicking button", document.querySelector('.icon-dialog').childNodes[2])
-    document.querySelector(".icon-dialog").childNodes[2].click()
-  }
-
-  useEffect(() => {
-    // error messages
-    if (
-      feature.geometry.type === "Polygon" ||
-      feature.geometry.type === "Point"
-    ) {
-      if (!feature.properties.fill) {
-        setErrorFill(true)
-      } else {
-        setErrorFill(null)
-      }
-    }
-    if (
-      feature.geometry.type.includes("LineString") ||
-      feature.geometry.type.includes("Poly")
-    ) {
-      if (!feature.properties.stroke) {
-        setErrorStroke(true)
-      } else {
-        setErrorStroke(null)
-      }
-    }
-
-    // fetch icon as a promise
-    if (popup.geometry.type === "Point") {
-      getIconHTML(popup, mapName).then(r => {
-        setIconHTML(r)
-      })
-    }
-  }, [popup])
-
-  function handleFillOrStroke(type, newVal) {
-    if (type === "fill") {
-      editProp(objToRgba(newVal), type)
-    } else if (type === "stroke") {
-      editProp(objToRgba(newVal), type)
-    }
+  function removeField(k) {
+    setValues((prev) => {
+      const next = { ...prev }
+      delete next[k]
+      return next
+    })
+    setProp(k, undefined, { immediate: true }) // persists deletion
   }
 
   return (
-    <div
-      className="space-y-4 font-mono select-text editor-table"
-      style={{ minWidth: "400px" }}
-    >
-      {popup.geometry.type === "Point" && iconHTML && (
-        <div
-          dangerouslySetInnerHTML={{ __html: iconHTML }}
-          className="w-5 h-5 popup-preview overflow-hidden"
-        ></div>
-      )}
-      {popup.geometry.type === "Polygon" && (
-        <div className="popup-preview">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill={popup.properties.fill}
-            stroke={popup.properties.stroke}
-          >
-            <rect x="4" y="4" width="19" height="19" strokeWidth="3" />
-          </svg>
+    <div className="space-y-3">
+      {/* add new */}
+      <div className="space-y-2">
+        <Label className="text-xs uppercase opacity-70">Custom Properties</Label>
+        <div className="flex gap-2">
+          <Input
+            placeholder="key"
+            value={keyDraft}
+            onChange={(e) => setKeyDraft(e.target.value)}
+          />
+          <Input
+            placeholder="value"
+            value={valDraft}
+            onChange={(e) => setValDraft(e.target.value)}
+          />
+          <Button type="button" size="icon" onClick={addField} title="Add field">
+            <Plus className="h-4 w-4" />
+          </Button>
         </div>
-      )}
-      {popup.geometry.type.includes("LineString") && (
-        <div className="popup-preview">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            stroke={popup.properties.stroke}
-          >
-            <line x1="4" y1="4" x2="20" y2="20" strokeWidth="2" />
-          </svg>
-        </div>
-      )}
-      <Table>
-        <TableHeader>
-          <TableRow className="text-center">
-            <TableHead className="text-center">Key</TableHead>
-            <TableHead className="text-center">Value</TableHead>
-            <TableHead className="text-center"></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {editorTable &&
-            Object.entries(feature.properties).map((arr, i) => {
-              if (typeof arr[1] === "undefined" || arr[1] === null) return null
-              const isNotes =
-                arr[0] === "notes"
-                  ? { padding: "2.6em", paddingTop: "0", bool: true }
-                  : { bool: false }
-              return (
-                <TableRow
-                  key={i}
-                  style={{ height: isNotes.bool ? "120px" : "auto" }}
-                >
-                  <TableCell className="font-medium">{arr[0]}</TableCell>
-                  <TableCell style={isNotes}>
-                    {arr[0] === "type" && (
-                      <Select
-                        onValueChange={e => editProp(e, arr[0])}
-                        defaultValue={editorTable[arr[0]]}
-                      >
-                        <SelectTrigger className="w-full cursor-pointer">
-                          <SelectValue placeholder="Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableTypes.map((type, index) => (
-                            <SelectItem
-                              key={index}
-                              value={type}
-                              selected={arr[1] === type}
-                              className="cursor-pointer"
-                            >
-                              {type.replaceAll("_", " ")}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                    {arr[0] === "stroke" && (
-                      <PopoverPicker
-                        color={popup.properties.stroke}
-                        onChange={newVal =>
-                          handleFillOrStroke("stroke", newVal)
-                        }
-                      />
-                    )}
-                    {arr[0] === "fill" && (
-                      <PopoverPicker
-                        color={popup.properties.fill}
-                        onChange={newVal => handleFillOrStroke("fill", newVal)}
-                      />
-                    )}
-                    {arr[0] === "icon" && (
-                      <img
-                        src={arr[1]}
-                        alt="Custom icon"
-                        className="w-5 h-5 object-contain cursor-pointer"
-                        onClick={() =>
-                          document.querySelector(".icon-dialog-open").click()
-                        }
-                      />
-                    )}
-                    {isNotes.bool && (
-                      <Quill
-                        theme="bubble"
-                        value={editorTable[arr[0]]}
-                        onChange={e => editProp(e, arr[0])}
-                        className="border border-gray-800"
-                      />
-                    )}
-                    {arr[0] !== "type" &&
-                      arr[0] !== "stroke" &&
-                      arr[0] !== "fill" &&
-                      arr[0] !== "icon" &&
-                      arr[0] !== "notes" && (
-                        <Input
-                          value={editorTable[arr[0]]}
-                          onChange={e => editProp(e.target.value, arr[0])}
-                          className="h-8"
-                          onKeyDown={e => {
-                            if (e.key === "Enter") {
-                              handleSave()
-                            }
-                          }}
-                        />
-                      )}
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-
-          {!editorTable &&
-            Object.entries(feature.properties).map((arr, i) => {
-              if (
-                typeof arr[1] === "undefined" ||
-                arr[1] === null ||
-                typeof arr[1] === "object"
-              )
-                return null
-              const isColor =
-                arr[1]?.toString().startsWith("rgba") ||
-                (arr[1]?.toString().startsWith("#") && arr[1]?.length === 7)
-              const isNote = arr[0] === "notes"
-              return (
-                <TableRow key={i}>
-                  <TableCell className="font-medium">{arr[0]}</TableCell>
-                  {arr[1]?.toString().startsWith("http") && (
-                    <TableCell>
-                      <svg width="20" height="20">
-                        <image href={arr[1]} width="20" height="20" />
-                      </svg>
-                    </TableCell>
-                  )}
-                  {isColor && (
-                    <TableCell>
-                      {arr[0] === "stroke" ? (
-                        <div
-                          className="swatch w-5 h-5 border border-white"
-                          style={{ backgroundColor: popup.properties.stroke }}
-                        />
-                      ) : (
-                        <div
-                          className="swatch w-5 h-5 border border-white"
-                          style={{
-                            backgroundColor: popup.properties.fill || "",
-                          }}
-                        />
-                      )}
-                    </TableCell>
-                  )}
-                  {arr[0] === "type" && (
-                    <TableCell>{arr[1].replaceAll("_", " ")}</TableCell>
-                  )}
-                  {!isColor &&
-                    !arr[1]?.toString().startsWith("http") &&
-                    arr[0] !== "type" &&
-                    !isNote && (
-                      <TableCell>
-                        {arr[1]?.length > 40
-                          ? `${arr[1]?.substring(0, 40)}...`
-                          : arr[1]}
-                      </TableCell>
-                    )}
-                  {isNote && (
-                    <TableCell>
-                      <div
-                        className={style.markdown}
-                        dangerouslySetInnerHTML={{
-                          __html: sanitizeContent(arr[1], sanitize),
-                        }}
-                      ></div>
-                    </TableCell>
-                  )}
-                  <TableCell>
-                    {arr[0] !== "type" && arr[0] !== "name" && (
-                      <Trash2
-                        className="cursor-pointer stroke-gray-400"
-                        size={14}
-                        onClick={() =>
-                          setDeleteDialog({ key: arr[0], value: arr[1], i })
-                        }
-                      />
-                    )}
-                    <Dialog
-                      open={!!deleteDialog}
-                      onOpenChange={o => !o && setDeleteDialog(null)}
-                    >
-                      <DialogContent className="max-h-[600px]">
-                        <DialogHeader>
-                          <DialogTitle>
-                            Confirm <b>delete</b> row <b>{deleteDialog?.key}</b>
-                            ?
-                          </DialogTitle>
-                          <table className="w-full text-left my-4 select-text">
-                            <tbody>
-                              <tr>
-                                <td className="border p-2">
-                                  {deleteDialog?.key}
-                                </td>
-                                {deleteDialog?.key === "notes" ? (
-                                  <td className="border p-2 max-w-[400px] overflow-auto">
-                                    <div
-                                      className={style.markdown}
-                                      dangerouslySetInnerHTML={{
-                                        __html: sanitizeContent(
-                                          deleteDialog?.value,
-                                          sanitize,
-                                        ),
-                                      }}
-                                    ></div>
-                                  </td>
-                                ) : (
-                                  <td className="border p-2 max-w-[400px] overflow-auto">
-                                    {deleteDialog?.value}
-                                  </td>
-                                )}
-                              </tr>
-                            </tbody>
-                          </table>
-                          <div className="flex justify-between">
-                            <Button
-                              variant="destructive"
-                              onClick={() => deleteRow()}
-                              className="cursor-pointer rounded"
-                            >
-                              Delete
-                            </Button>
-                            <DialogClose asChild>
-                              <Button
-                                variant="secondary"
-                                className="cursor-pointer rounded"
-                              >
-                                Cancel
-                              </Button>
-                            </DialogClose>
-                          </div>
-                        </DialogHeader>
-                      </DialogContent>
-                    </Dialog>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-
-          {isAddingRow && newRow.key !== "notes" && (
-            <TableRow>
-              <TableCell>
-                <Input
-                  name="key"
-                  value={newRow.key}
-                  onChange={handleInputChange}
-                  placeholder="key"
-                  className="h-8"
-                  onKeyDown={e => {
-                    if (e.key === "Enter") handleSave()
-                  }}
-                />
-              </TableCell>
-              <TableCell>
-                <Input
-                  name="value"
-                  value={newRow.value}
-                  onChange={handleInputChange}
-                  placeholder="value"
-                  className="h-8"
-                  onKeyDown={e => {
-                    if (e.key === "Enter") handleSave()
-                  }}
-                />
-              </TableCell>
-            </TableRow>
-          )}
-          {isAddingRow && newRow.key === "notes" && (
-            <TableRow style={{ height: "120px" }}>
-              <TableCell
-                colSpan={2}
-                style={{
-                  padding: "2.6em",
-                  paddingTop: "0",
-                  paddingLeft: "5em",
-                }}
-              >
-                <Quill
-                  theme="bubble"
-                  value={newRow?.value}
-                  onChange={val => setNewRow({ key: "notes", value: val })}
-                  className="border border-gray-800"
-                />
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-      <div className="text-center m-1">
-        {errorStroke && <p className="text-red-500">Missing 'stroke' color</p>}
-        {errorFill && <p className="text-red-500">Missing 'fill' color</p>}
       </div>
-      {!isAddingRow && !editorTable ? (
-        <>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                size="sm"
-                className="cursor-pointer w-full h-[30px] mb-2"
-                variant="secondary"
-              >
-                <CircleHelp
-                  className="cursor-pointer stroke-gray-400 inline"
-                  size={14}
-                />{" "}
-                Special Keys
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-[1000px]">
-              <DialogHeader>
-                <DialogTitle>Special Properties</DialogTitle>
-                <DialogDescription>
-                  The keys below have special impact on the map
-                </DialogDescription>
-              </DialogHeader>
 
-              <Table>
-                <TableHeader>
-                  <TableRow className="text-center">
-                    <TableHead className="">Key</TableHead>
-                    <TableHead className="text-center">Effect</TableHead>
-                    <TableHead className="text-center">Type</TableHead>
-                    <TableHead className="text-center">Required</TableHead>
-                  </TableRow>
-                </TableHeader>
+      {/* existing custom */}
+      {customEntries.length > 0 && (
+        <div className="space-y-2">
+          <div className="space-y-2">
+            {customEntries.map(([k, v]) => (
+              <div key={k} className="flex items-center gap-2">
+                {/* locked key */}
+                <div className="min-w-[180px] max-w-[220px] px-2 py-1 border rounded text-xs opacity-80 truncate">
+                  {k}
+                </div>
 
-                <TableBody>
-                  {Object.entries(AVAILABLE_PROPERTIES).map((obj, i) => (
-                    <TableRow key={i}>
-                      <TableCell className="">{obj[0]}</TableCell>
-                      <TableCell>
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: obj[1].split("|")[0],
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {obj[1].split("|type=")[1]}
-                      </TableCell>
-                      {obj[1].includes("|required") && (
-                        <TableCell
-                          title="this field is required"
-                          className="cursor-help text-center"
-                        >
-                          🚩
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </DialogContent>
-          </Dialog>
-          <Button
-            size="sm"
-            onClick={() => {
-              setNewRow({ key: "", value: "" })
-              setIsAddingRow(true)
-            }}
-            className="cursor-pointer w-full h-[30px] mb-2"
-            variant="secondary"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Data
-          </Button>
+                {/* editable value */}
+                <Input
+                  value={v ?? ""}
+                  onChange={(e) => {
+                    const next = e.target.value
+                    // local update only
+                    setValues((prev) => ({ ...prev, [k]: next }))
+                    // persist debounced once
+                    debouncedRef.current(next, k)
+                  }}
 
-          {!feature.properties.notes && (
-            <Button
-              size="sm"
-              onClick={handleNotesBtn}
-              className="cursor-pointer w-full h-[30px] mb-2"
-              variant="secondary"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Notes
-            </Button>
-          )}
-          <Button
-            size="sm"
-            onClick={() => setEditorTable(feature.properties)}
-            className="cursor-pointer w-full h-[30px] mb-2"
-            variant="secondary"
-          >
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit Data
-          </Button>
-        </>
-      ) : (
-        <>
-          <Button
-            size="sm"
-            onClick={handleSave}
-            className="cursor-pointer w-full h-[30px]"
-          >
-            <Save className="mr-2 h-4 w-4" />
-            Save
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleCancel}
-            className="cursor-pointer w-full h-[30px]"
-          >
-            <Undo2 className="mr-2 h-4 w-4" />
-            Cancel
-          </Button>
-        </>
-      )}
+                />
 
-      <IconSelector
-        mapName={mapName.includes("lancer") ? "lancer" : mapName}
-        onSelect={selectIcon}
-        show={!isAddingRow && !editorTable && !feature.properties.icon}
-      />
-      {params.get("secret") && (
-        <Link editProp={editProp} handleSave={handleSave} feature={feature} />
+                <Trash2
+                  className="cursor-pointer opacity-70 hover:opacity-100"
+                  // size={18}
+                  onClick={() => removeKey(k)}
+                  title="Delete field"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   )
 }
 
-export const Link = ({ editProp, handleSave, feature }) => {
-  const [documentId, setDocumentId] = useState()
-  const [open, setOpen] = useState()
-  const [hasQuests, setHasQuests] = useState()
 
-  const handleSubmit = (tab, doc) => {
-    if (feature.geometry.type !== "Point") {
-      toast.warning(
-        "Only Point locations can have links. Stay tuned for a future update to add more geometry link support.",
-      )
-      return
-    }
-    window.parent.postMessage({ type: "listen", tab, doc }, "*")
-  }
-
-  const saveUUID = value => {
-    editProp(value || documentId || "", "link")
-    handleSave()
-    setOpen(false)
-  }
-
-  useEffect(() => {
-    const listener = e => {
-      if (e.data.type === "uuid") {
-        setDocumentId(e.data.uuid)
-        saveUUID(e.data.uuid)
-      } else if (e.data.type === "modules") {
-        if (e.data.modules.includes("forien-quest-log")) {
-          setHasQuests(true)
-        }
-      }
-    }
-    window.addEventListener("message", listener)
-    window.parent.postMessage(
-      { type: "modules", desc: "give me all active modules" },
-      "*",
-    )
-    return () => {
-      window.removeEventListener("message", listener)
-    }
-  }, [])
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          size="sm"
-          onClick={() => setOpen(!open)}
-          className="cursor-pointer w-full h-[30px]"
-          variant="secondary"
-        >
-          <Chain className="mr-2" />
-          Link to Foundry
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="flex flex-col">
-        <p className="mb-3 text-gray-400">
-          Link a Foundry Document to this feature. A UUID can be entered
-          manually or you can connect it by using the buttons.
-        </p>
-        <hr className="border my-4 border-gray-500" />
-        <Input
-          className="w-full mb-4"
-          value={documentId || ""}
-          placeholder="Foundry Document UUID"
-          onChange={e => setDocumentId(e.target.value)}
-        />
-        {documentId && (
-          <Button className="cursor-pointer w-full" onClick={saveUUID}>
-            <Chain className="ml-[.6em] inline" />{" "}
-            <span className="ml-[5px]">Link</span>
-          </Button>
-        )}
-        <Button
-          className="cursor-pointer w-full my-2 mt-6"
-          variant="secondary"
-          onClick={() => handleSubmit("journal", "journal")}
-        >
-          <Notebook className="ml-[.6em] inline" />{" "}
-          <span className="ml-[5px]">Journal</span>
-        </Button>
-        <Button
-          className="cursor-pointer w-full my-2"
-          variant="secondary"
-          onClick={() => handleSubmit("journal", "journal page")}
-        >
-          <StickyNote className="ml-[.6em] inline" />{" "}
-          <span className="ml-[5px]">Journal Page</span>
-        </Button>
-        <Button
-          className="cursor-pointer w-full my-2"
-          variant="secondary"
-          onClick={() => handleSubmit("macros", "macro")}
-        >
-          <Code className="ml-[.6em] inline" />{" "}
-          <span className="ml-[5px]">Macro</span>
-        </Button>
-        <Button
-          className="cursor-pointer w-full my-2"
-          variant="secondary"
-          onClick={() => handleSubmit("scenes", "scene")}
-        >
-          <Map className="ml-[.6em] inline" />{" "}
-          <span className="ml-[5px]">Scene</span>
-        </Button>
-        {hasQuests && (
-          <Button
-            className="cursor-pointer w-full my-2"
-            variant="secondary"
-            onClick={() => handleSubmit(null, "quest")}
-          >
-            <MessageCircleWarning className="ml-[.6em] inline" />{" "}
-            <span className="ml-[5px]">Quest</span>
-          </Button>
-        )}
-      </PopoverContent>
-    </Popover>
-  )
-}
-
-export const PopoverPicker = ({ color, onChange, editProp }) => {
-  const popover = useRef()
-  const [isOpen, toggle] = useState(false)
-  const close = useCallback(() => toggle(false), [])
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (popover.current && !popover.current.contains(event.target)) {
-        close()
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [popover, close])
-
-  return (
-    <>
-      {isOpen ? (
-        <div className="popover" ref={popover}>
-          <RgbaColorPicker color={rgbaToObj(color)} onChange={onChange} />
-        </div>
-      ) : (
-        <div
-          className="swatch w-5 h-5 cursor-pointer border border-white"
-          style={{ backgroundColor: objToRgba(color) }}
-          onClick={() => toggle(true)}
-        />
-      )}
-    </>
-  )
-}
-
-// duplicate of what's in @/app/contribute/[map]/[id]/page.jsx
-export function sanitizeContent(html, sanitizeFunc) {
-  if (!html) return ""
-
-  return sanitizeFunc(html, {
-    // Start from defaults, then remove dangerous tags you forbade with DOMPurify
-    allowedTags: sanitizeFunc.defaults.allowedTags.filter(
-      tag => !["img", "svg", "math", "script", "table", "iframe"].includes(tag),
-    ),
-    // Allow normal attributes + link attributes
-    allowedAttributes: {
-      ...sanitizeFunc.defaults.allowedAttributes,
-      a: ["href", "name", "target", "rel"],
-    },
-    transformTags: {
-      a: (tagName, attribs) => {
-        const href = attribs.href || ""
-
-        // If not relative and not your trusted domain, wrap through /link
-        if (
-          href &&
-          !href.startsWith("/") &&
-          !href.startsWith("https://stargazer.vercel.app/")
-        ) {
-          const qs = new URLSearchParams({ url: href }).toString()
-          return {
-            tagName,
-            attribs: {
-              ...attribs,
-              href: `/link?${qs}`,
-            },
-          }
-        }
-
-        return { tagName, attribs }
-      },
-    },
-  })
-}
+/* ------------------ ui helpers ------------------ */
 
 function Section({ title, children }) {
   return (
     <div className="space-y-3 border-b pb-4">
-      <h3 className="font-semibold text-xs uppercase opacity-70">
-        {title}
-      </h3>
+      <h3 className="font-semibold text-xs uppercase opacity-70">{title}</h3>
       {children}
     </div>
   )
@@ -1088,22 +300,151 @@ function Row({ label, children }) {
   )
 }
 
-function Comma({ name, label, form, editProp }) {
+function Field({ label, children }) {
   return (
-    <div>
+    <div className="space-y-1">
       <Label>{label}</Label>
-      <CommaTagsField
-        control={form.control}
-        name={name}
-        onImmediateChange={(v) => editProp(v, name)}
+      {children}
+    </div>
+  )
+}
+
+function BoolRow({ label, value, onChange }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <Label className="w-40">{label}</Label>
+      <Checkbox
+        checked={!!value}
+        onCheckedChange={(v) => onChange(v === true)}
       />
+    </div>
+  )
+}
+
+function input(value, onChange) {
+  return (
+    <Input
+      value={value ?? ""}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  )
+}
+
+function numberInput(value, onChange, { step } = {}) {
+  return (
+    <Input
+      type="number"
+      step={step}
+      value={value ?? ""}
+      onChange={(e) => {
+        const raw = e.target.value
+        onChange(raw === "" ? "" : Number(raw))
+      }}
+    />
+  )
+}
+
+/* ------------------ comma tags (no RHF) ------------------ */
+
+function parseCsv(csv) {
+  if (!csv) return []
+  return csv
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
+function toCsv(tags) {
+  return tags.join(", ")
+}
+
+function uniq(arr) {
+  return [...new Set(arr)]
+}
+
+function Comma({ name, label, value, onChange, placeholder = "" }) {
+  const [draft, setDraft] = useState("")
+
+  const tags = uniq(parseCsv(value))
+
+  function commit(nextTags) {
+    onChange(toCsv(nextTags))
+  }
+
+  function addFromDraft() {
+    const incoming = draft
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean)
+    if (!incoming.length) return
+    commit(uniq([...tags, ...incoming]))
+    setDraft("")
+  }
+
+  function removeTag(tag) {
+    commit(tags.filter((t) => t !== tag))
+  }
+
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+
+      <div className="flex gap-2">
+        <Input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder={placeholder}
+          className="h-8"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault()
+              addFromDraft()
+            }
+          }}
+        />
+        <Button
+          type="button"
+          variant="secondary"
+          size="icon"
+          className="h-8 w-8"
+          onClick={addFromDraft}
+          title="Add"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {tags.length > 0 && (
+        <div className="grid grid-cols-2 gap-2 select-none">
+          {tags.map((tag) => (
+            <Badge
+              key={tag}
+              variant="secondary"
+              className="flex items-center justify-between gap-2 py-1"
+            >
+              <span className="truncate">{tag}</span>
+              <button
+                type="button"
+                className="opacity-70 hover:opacity-100 cursor-pointer"
+                onClick={() => removeTag(tag)}
+                aria-label={`Remove ${tag}`}
+              >
+                <span className="sr-only">Remove</span>
+                <span className="inline-flex">
+                  <X size={14} />
+                </span>
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
 
 /* ------------------ custom arbitrary fields ------------------ */
 
-function CustomFields({ properties, editProp }) {
+function CustomFields({ editProp }) {
   const [key, setKey] = useState("")
   const [val, setVal] = useState("")
 
@@ -1114,6 +455,7 @@ function CustomFields({ properties, editProp }) {
         <Input placeholder="value" value={val} onChange={(e) => setVal(e.target.value)} />
         <Button
           size="icon"
+          type="button"
           onClick={() => {
             if (!key) return
             editProp(val, key)
@@ -1132,6 +474,8 @@ function CustomFields({ properties, editProp }) {
   )
 }
 
+/* ------------------ colors ------------------ */
+
 const rgbaToObj = (rgba) => {
   if (!rgba) return { r: 255, g: 255, b: 255, a: 1 }
   if (typeof rgba === "object") return rgba
@@ -1142,21 +486,13 @@ const rgbaToObj = (rgba) => {
 }
 
 const objToRgba = (o) =>
-  typeof o === "object"
-    ? `rgba(${o.r}, ${o.g}, ${o.b}, ${o.a})`
-    : o
+  typeof o === "object" ? `rgba(${o.r}, ${o.g}, ${o.b}, ${o.a})` : o
 
 const rgbToHex = ({ r, g, b }) =>
-  "#" +
-  [r, g, b]
-    .map((v) => v.toString(16).padStart(2, "0"))
-    .join("")
+  "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")
 
 const rgbaToHexA = ({ r, g, b, a }) =>
-  "#" +
-  [r, g, b, Math.round(a * 255)]
-    .map((v) => v.toString(16).padStart(2, "0"))
-    .join("")
+  "#" + [r, g, b, Math.round(a * 255)].map((v) => v.toString(16).padStart(2, "0")).join("")
 
 const splitCsv = (v, count) =>
   (v ?? "")
@@ -1166,20 +502,13 @@ const splitCsv = (v, count) =>
     .concat(Array(count).fill("#ffffff"))
     .slice(0, count)
 
-/* ------------------ inline color grid ------------------ */
-
-function ColorGrid({
-  value,
-  count,
-  alpha = false,
-  onChange,
-}) {
+function ColorGrid({ value, count, alpha = false, onChange }) {
   const colors = splitCsv(value, count)
 
   return (
     <div className="flex gap-2 flex-wrap">
       {colors.map((c, i) => (
-        <SingleColor
+        <PopoverPickerSimple
           key={i}
           value={c}
           alpha={alpha}
@@ -1194,36 +523,134 @@ function ColorGrid({
   )
 }
 
-function SingleColor({ value, alpha, onChange }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
+const clamp = (n, min, max) => Math.min(max, Math.max(min, n))
 
-  useEffect(() => {
-    const h = (e) => ref.current && !ref.current.contains(e.target) && setOpen(false)
-    document.addEventListener("mousedown", h)
-    return () => document.removeEventListener("mousedown", h)
-  }, [])
+const rgbaObjToCss = ({ r, g, b, a }) =>
+  `rgba(${clamp(Math.round(r), 0, 255)}, ${clamp(Math.round(g), 0, 255)}, ${clamp(Math.round(b), 0, 255)}, ${clamp(a ?? 1, 0, 1)})`
 
-  const rgba = rgbaToObj(value)
+const hexToRgbaObj = (hex) => {
+  if (!hex) return { r: 255, g: 255, b: 255, a: 1 }
+  if (typeof hex === "object") return hex
+  if (typeof hex !== "string") return { r: 255, g: 255, b: 255, a: 1 }
+
+  const s = hex.trim()
+  if (!s.startsWith("#")) return rgbaToObj(s) // fallback to rgba()
+
+  const h = s.slice(1)
+  if (h.length === 6) {
+    const r = parseInt(h.slice(0, 2), 16)
+    const g = parseInt(h.slice(2, 4), 16)
+    const b = parseInt(h.slice(4, 6), 16)
+    return { r, g, b, a: 1 }
+  }
+
+  if (h.length === 8) {
+    const r = parseInt(h.slice(0, 2), 16)
+    const g = parseInt(h.slice(2, 4), 16)
+    const b = parseInt(h.slice(4, 6), 16)
+    const a = parseInt(h.slice(6, 8), 16) / 255
+    return { r, g, b, a }
+  }
+
+  return { r: 255, g: 255, b: 255, a: 1 }
+}
+
+const rgbaObjToHex6 = ({ r, g, b }) =>
+  "#" +
+  [r, g, b]
+    .map((v) => clamp(Math.round(v), 0, 255).toString(16).padStart(2, "0"))
+    .join("")
+
+const rgbaObjToHex8 = ({ r, g, b, a }) =>
+  "#" +
+  [r, g, b, Math.round(clamp(a ?? 1, 0, 1) * 255)]
+    .map((v) => clamp(Math.round(v), 0, 255).toString(16).padStart(2, "0"))
+    .join("")
+
+
+function PopoverPickerSimple({ value, onChange, alpha = false }) {
+  // value may be #RRGGBB, #RRGGBBAA, rgba(...), or object
+  const rgba = hexToRgbaObj(value)
 
   return (
-    <div ref={ref} className="relative">
-      <div
-        className="w-6 h-6 border cursor-pointer"
-        style={{ background: objToRgba(rgba) }}
-        onClick={() => setOpen(true)}
-      />
-      {open && (
-        <div className="absolute z-50 mt-2 bg-black p-2 border">
-          <RgbaColorPicker
-            color={rgba}
-            onChange={(obj) => {
-              const v = alpha ? rgbaToHexA(obj) : rgbToHex(obj)
-              onChange(v)
-            }}
-          />
-        </div>
-      )}
-    </div>
+    <Popover>
+      <PopoverTrigger asChild>
+        <div
+          className="swatch w-5 h-5 cursor-pointer border border-white"
+          style={{ backgroundColor: rgbaObjToCss(rgba) }}
+          title={typeof value === "string" ? value : ""}
+        />
+      </PopoverTrigger>
+
+      <PopoverContent
+        side="right"
+        align="start"
+        sideOffset={12}
+        className="z-[9999] w-auto p-2"
+      >
+        <RgbaColorPicker
+          color={rgba}
+          onChange={(nextObj) => {
+            const next = alpha ? rgbaObjToHex8(nextObj) : rgbaObjToHex6(nextObj)
+            onChange(next)
+          }}
+        />
+      </PopoverContent>
+    </Popover>
   )
 }
+
+
+const KNOWN_KEYS = new Set([
+  // earth + galaxy
+  "alias",
+  "region",
+  "image",
+  "caption",
+  "people",
+  "notes",
+  "tint",
+  "seed",
+  "source",
+  "unofficial",
+  "destroyed",
+  "capital",
+  "visibility",
+  "notesVisibility",
+
+  // common
+  "name",
+  "type",
+  "starType", // galaxy only
+  "fill",
+  "stroke",
+  "icon",
+  "faction",
+  "locations",
+  "description",
+
+  // galaxy-only extras
+  "pixels",
+  "baseColors",
+  "featureColors",
+  "layerColors",
+  "atmosphereColors",
+  "schemeColor",
+  "cloudPercent",
+  "hydroPercent",
+  "lavaPercent",
+  "ringSize",
+  "size",
+  "clouds",
+  "planetSize",
+  "temperature",
+  "diameter",
+  "isMoon",
+  "modifier",
+  "hoursInDay",
+  "daysInYear",
+  "gravity",
+  "pressure",
+  "icePercent",
+  "composition",
+])
