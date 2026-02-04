@@ -3,7 +3,7 @@ import maplibregl from 'maplibre-gl'
 import { useMap, Layer, Source, Popup } from '@vis.gl/react-maplibre'
 import { GeoGrid } from 'geogrid-maplibre-gl'
 import { useEffect, useRef, useState } from 'react'
-import { createPopupHTML, localSet, getMaps, useMode, getPaint, gridHelpers, boundsToCoord, useStore } from "@/lib/utils.js"
+import { createPopupHTML, localSet, getMaps, useMode, getPaint, gridHelpers, boundsToCoord, useStore, withUserFilters, hasFilterClause } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import SearchBar from './searchbar'
 import * as turf from '@turf/turf'
@@ -113,7 +113,7 @@ const removePopup = () => {
   if (popup._container) popup.remove()
 }
 
-export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, uuid, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET, VIEW, GRID_DENSITY, MIN_ZOOM, MAX_ZOOM, TRAVEL_RATE, TRAVEL_RATE_UNIT, TRAVEL_TIME_UNIT, SHIP_CLASS, TIME_DILATION, BG_IMAGE }) {
+export default function Map({ width, height, locationGroups, data, name, mobile, params, locked, setCrashed, uuid, SEARCH_POINT_ZOOM, GENERATE_LOCATIONS, LAYOUT_OVERRIDE, IGNORE_POLY, UNIT, DISTANCE_CONVERTER, STYLES, IS_GALAXY, SEARCH_SIZE, GEO_EDIT, COORD_OFFSET, VIEW, GRID_DENSITY, MIN_ZOOM, MAX_ZOOM, TRAVEL_RATE, TRAVEL_RATE_UNIT, TRAVEL_TIME_UNIT, SHIP_CLASS, TIME_DILATION, BG_IMAGE, FILTERS }) {
   const { map: wrapper } = useMap()
   const [drawerContent, setDrawerContent] = useState()
   const { mode } = useMode()
@@ -135,6 +135,16 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   const panMoveRef = useRef(null)
   const mouseUpRef = useRef(null)
   window.setDrawerContent = setDrawerContent
+  const userFilters = [
+      "all",
+      ...FILTERS.flatMap((obj) =>
+        Object.entries(obj).map(([key, value]) => ([
+          "any",
+          ["!has", key],
+          ["!=", key, value],
+        ]))
+      ),
+    ];
 
   function locationClick(e, manual) {
     if (modeRef.current === "measure" || (modeRef.current === "crosshair" && mobile) || locked) return
@@ -395,17 +405,15 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       });
     }
 
-    // apply a filter
-    // TODO: add a scalable way to do this for systems
-    // console.log("FILTER", filters)
+    // starwars cannon filter
     if (filters === "legends" && name === "starwars") {
-      wrapper.getMap().setFilter("location", [
+      wrapper.getMap().setFilter("location", withUserFilters([
         "all",
         ["==", "$type", "Point"],
         ["!=", "canon", 0],
-      ])
-    } else if (!filters && wrapper.getMap().getLayer("location")?.filter?.length === 3) {
-      wrapper.getMap().setFilter("location", ["==", "$type", "Point"])
+      ], userFilters))
+    } else if (!filters && hasFilterClause(wrapper.getMap().getLayer("location")?.filter, ["!=", "canon", 0])) {
+      wrapper.getMap().setFilter("location", withUserFilters(['==', '$type', 'Point'], userFilters))
     }
 
     if (name === "starwars" || name === "alien") {
@@ -560,13 +568,13 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
           type="line"
           id="line"
           paint={getPaint(name, "line", "line", STYLES)}
-          filter={['==', '$type', 'LineString']}
+          filter={withUserFilters(['==', '$type', 'LineString'], userFilters)}
         />
         <Layer
           type="fill"
           id="polygon-user"
           paint={getPaint(name, "fill", "polygon-user", STYLES)}
-          filter={["all", ["==", "userCreated", true], ["==", "$type", "Polygon"]]}
+          filter={withUserFilters(["all", ["==", "userCreated", true], ["==", "$type", "Polygon"]], userFilters)}
         />
         <Layer
           type="symbol"
@@ -580,8 +588,16 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
             "text-field": ["get", "name"],
             "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
           }}
-          filter={["all", ["!=", "type", "line"], ["!=", "type", "bg"], ["!=", "type", "bg-texture"], ["==", "$type", "Polygon"]]}
           paint={getPaint(name, "symbol", "polygon-label", STYLES)}
+          filter={withUserFilters(
+            ["all",
+              ["!=", "type", "line"],
+              ["!=", "type", "bg"],
+              ["!=", "type", "bg-texture"],
+              ["==", "$type", "Polygon"]
+            ],
+            userFilters
+          )}
         />
         <Layer
           type="symbol"
@@ -594,11 +610,14 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
             "text-letter-spacing": 0.07
           }}
           paint={getPaint(name, "symbol", "line-label", STYLES)}
-          filter={[
-            'all',
-            ['!=', 'no-label', true],
-            ['==', '$type', 'LineString'],
-          ]}
+          filter={withUserFilters(
+            ["all",
+              ["!=", "no-label", true],
+              ["==", "$type", "LineString"],
+            ],
+            userFilters
+          )}
+
         />
         <Layer
           type="symbol"
@@ -630,7 +649,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
             ...LAYOUT_OVERRIDE
           }}
           paint={getPaint(name, "symbol", "location", STYLES)}
-          filter={['==', '$type', 'Point']}
+          filter={withUserFilters(['==', '$type', 'Point'], userFilters)}
         />
       </Source>
       {params.get("zoom") !== "0" && <div className="absolute mt-28 ml-11 mr-[.3em] cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" style={{ transition: 'bottom 0.5s ease-in-out' }}>

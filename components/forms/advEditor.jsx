@@ -24,7 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export default function AdvancedEditor({ children, IS_GALAXY, mapName, feature, editProp }) {
   return (
-    <Dialog defaultOpen={true}>
+    <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="min-w-[600px] max-h-[80vh] overflow-auto">
         <DialogHeader>
