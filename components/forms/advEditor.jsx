@@ -1,12 +1,10 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState, useCallback } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -21,10 +19,12 @@ import { Button } from "@/components/ui/button"
 import { RgbaColorPicker } from "react-colorful"
 import { debounce } from "@/lib/utils"
 import dynamic from "next/dynamic"
+import { Slider } from "../ui/slider"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function AdvancedEditor({ children, IS_GALAXY, mapName, feature, editProp }) {
   return (
-    <Dialog>
+    <Dialog defaultOpen={true}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="min-w-[600px] max-h-[80vh] overflow-auto">
         <DialogHeader>
@@ -32,12 +32,7 @@ export default function AdvancedEditor({ children, IS_GALAXY, mapName, feature, 
           <DialogDescription className="text-center">
             Some values when left blank will be filled in with generated values
           </DialogDescription>
-          <FormComponent
-            IS_GALAXY={IS_GALAXY}
-            mapName={mapName}
-            feature={feature}
-            editProp={editProp}
-          />
+          <FormComponent IS_GALAXY={IS_GALAXY} mapName={mapName} feature={feature} editProp={editProp} />
         </DialogHeader>
       </DialogContent>
     </Dialog>
@@ -54,7 +49,7 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
   useEffect(() => {
     const incoming = feature?.properties ?? {}
     setValues((prev) => ({ ...prev, ...incoming }))
-  }, [feature?.id]) // important: feature id, not whole object
+  }, [feature?.id])
 
   const debouncedRef = useRef(null)
   if (!debouncedRef.current) {
@@ -75,16 +70,29 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
       delete next[key]
       return next
     })
-    // persist delete
-    persistNow(undefined, key) // or set(key, undefined, { immediate: true }) if your parent deletes on undefined
+    persistNow(undefined, key)
   }
+
+  // -------- sliders config helpers --------
+  const numOr = (v, fallback) => (typeof v === "number" && !Number.isNaN(v) ? v : fallback)
+
+  const diameterRange = useMemo(() => {
+    if (type === "asteroid") return { min: 0.1, max: 1000, step: 0.1 }
+    if (type === "station" || type === "ship") return { min: 0.05, max: 50, step: 0.05 }
+    if (type === "star") return { min: 0.01, max: 1000, step: 0.01 }
+    return { min: 1_000, max: 150_000, step: 1_000 }
+  }, [type])
+  const temperatureRange = useMemo(() => {
+    if (type === "star") return { min: 2_000, max: 25_000, step: 1_000 }
+    return { min: -273, max: 300, step: 1 }
+  }, [type])
 
   return (
     <div className="space-y-6 text-sm">
       <Section>
-        <Comma name="alias" label="Alias" value={values.alias} onChange={(v) => set("alias", v, { immediate: true })} />
-        <Comma name="region" label="Region" value={values.region} onChange={(v) => set("region", v, { immediate: true })} />
-        <Comma name="people" label="People" value={values.people} onChange={(v) => set("people", v, { immediate: true })} />
+        <Comma label="Alias" value={values.alias} onChange={(v) => set("alias", v, { immediate: true })} />
+        <Comma label="Region" value={values.region} onChange={(v) => set("region", v, { immediate: true })} />
+        <Comma label="People" value={values.people} onChange={(v) => set("people", v, { immediate: true })} />
 
         <Field label="Image">{input(values.image, (v) => set("image", v))}</Field>
         <Field label="Caption">{input(values.caption, (v) => set("caption", v))}</Field>
@@ -99,47 +107,37 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
       </Section>
 
       <Section title="Notes">
-        <Quill
-          theme="bubble"
-          value={values.notes ?? ""}
-          onChange={(v) => set("notes", v)} // debounced
-        />
+        <Quill theme="bubble" value={values.notes ?? ""} onChange={(v) => set("notes", v)} />
       </Section>
 
       <Section title="Colors">
         <Row label="Icon Tint In Drawer">
-          <ColorGrid
-            value={values.tint}
-            count={1}
-            onChange={(v) => set("tint", v, { immediate: true })}
-          />
+          <ColorGrid value={values.tint} count={1} onChange={(v) => set("tint", v, { immediate: true })} />
         </Row>
+
         {IS_GALAXY && (
           <>
-            <Row label="Planet Base">
-              <ColorGrid
-                value={values.baseColors}
-                count={4}
-                onChange={(v) => set("baseColors", v, { immediate: true })}
-              />
-            </Row>
-            <Row label="Planet Feature">
-              <ColorGrid
-                value={values.featureColors}
-                count={4}
-                onChange={(v) => set("featureColors", v, { immediate: true })}
-              />
-            </Row>
-            <Row label="Planet Layer">
-              <ColorGrid
-                value={values.layerColors}
-                count={4}
-                alpha
-                onChange={(v) => set("layerColors", v, { immediate: true })}
-              />
-            </Row>
+            {type !== "star" && (
+              <Row label="Base">
+                <ColorGrid value={values.baseColors} count={4} onChange={(v) => set("baseColors", v, { immediate: true })} />
+              </Row>
+            )}
+            {(type === "barren_planet" || type === "moon" || type === "ice_planet" || type === "eyeball_planet" || type === "jovian" || type === "lava_planet" || type === "terrestrial" || type === "ocean_planet" || type === "ecumenopolis") && (
+              <Row label="Features">
+                <ColorGrid
+                  value={values.featureColors}
+                  count={4}
+                  onChange={(v) => set("featureColors", v, { immediate: true })}
+                />
+              </Row>
+            )}
+            {(type === "ringed_planet" || type === "lava_planet" || type === "terrestrial" || type === "ocean_planet" || type === "ecumenopolis") && (
+            <Row label="Extra Layer">
+              <ColorGrid value={values.layerColors} count={4} alpha onChange={(v) => set("layerColors", v, { immediate: true })} />
+              </Row>
+            )}
 
-            {(type === "terrestrial" || type === "ocean_planet") && (
+            {(type === "terrestrial" || type === "ecumenopolis") && (
               <Row label="Planet Atmosphere">
                 <ColorGrid
                   value={values.atmosphereColors}
@@ -156,12 +154,173 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
       {IS_GALAXY && (
         <>
           <Section title="Planet Details">
-            <Field label="Model Size (1-3, smaller is larger)">{numberInput(values.planetSize, (v) => set("planetSize", v))}</Field>
-            <Field label="Temperature (°C)">{numberInput(values.temperature, (v) => set("temperature", v))}</Field>
-            <Field label={`Diameter (${type === "star" ? "solar radii" : "km"})`}>{numberInput(values.diameter, (v) => set("diameter", v))}</Field>
-            <Field label="Gravity (cm/s²)">{numberInput(values.gravity, (v) => set("gravity", v))}</Field>
-            <Field label="Pressure (milibars)">{numberInput(values.pressure, (v) => set("pressure", v))}</Field>
-            <Field label="Ice % (0-1)">{numberInput(values.icePercent, (v) => set("icePercent", v), { step: "0.01" })}</Field>
+            {/* New fields */}
+            <Field label="Pixels">
+              {sliderNum(
+                numOr(values.pixels, 200),
+                (v) => set("pixels", v),
+                50,
+                1000,
+                50
+              )}
+            </Field>
+
+            {(type === "terrestrial" || type === "ecumenopolis" || type === "ocean_planet") && (
+              <Field label="Cloud %">
+                {sliderNum(numOr(values.cloudPercent, 0), (v) => set("cloudPercent", v), 0, 1, 0.01, true)}
+              </Field>
+            )}
+
+            {(type === "terrestrial" || type === "ocean_planet" || type === "ice_planet" || type === "eyeball_planet") && (
+              <Field label="Hydro %">
+                {sliderNum(numOr(values.hydroPercent, 0), (v) => set("hydroPercent", v), 0, 1, 0.01, true)}
+              </Field>
+            )}
+
+            {type === "lava_planet" && (
+              <Field label="Lava %">
+                {sliderNum(
+                  numOr(values.lavaPercent, 0),
+                  (v) => set("lavaPercent", v),
+                  0,
+                  1,
+                  0.01,
+                  true,
+                )}
+              </Field>
+            )}
+
+            {(type !== "star" && type !== "station") && (
+              <Field label="Ice %">
+                {sliderNum(numOr(values.icePercent, 0), (v) => set("icePercent", v), 0, 1, 0.01, true)}
+              </Field>
+            )}
+
+            {type === "ringed_planet" && (
+              <Field label="Ring Size">
+                {sliderNum(numOr(values.ringSize, 0), (v) => set("ringSize", v), 0.001, 0.2, 0.005, null, true)}
+              </Field>
+            )}
+
+
+            {type === "asteroid" && (
+              <Field label="Asteroid Size">
+                {sliderNum(numOr(values.size, 1), (v) => set("size", v), 1, 9, 1)}
+              </Field>
+            )}
+
+            {/* <Field label="Modifier">
+              <Select
+                value={values.modifier ?? "none"}
+                onValueChange={(v) => set("modifier", v === "none" ? undefined : v, { immediate: true })}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="None" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {["moon", "dwarf", "supermassive", "giant"].map((m) => (
+                    <SelectItem key={m} value={m}>
+                      {m}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>*/}
+
+            {(type !== "star") && (
+              <>
+                {/* <BoolRow label="Is Moon" value={!!values.isMoon} onChange={(v) => set("isMoon", v, { immediate: true })} />*/}
+                <Field label="Hours in a Day">
+                  <SliderWithInput
+                    value={numOr(values.hoursInDay, 24)}
+                    onChange={(v) => set("hoursInDay", v)}
+                    min={0}
+                    max={1_000}
+                    step={1}
+                  />
+                </Field>
+                <Field label="Days in a Year">
+                  <SliderWithInput
+                    value={numOr(values.daysInYear, 365)}
+                    onChange={(v) => set("daysInYear", v)}
+                    min={0}
+                    max={3_000}
+                    step={1}
+                  />
+                </Field>
+                <Field label="Composition">
+                  <Comma
+                    label={null}
+                    value={values.composition}
+                    onChange={(v) => set("composition", v, { immediate: true })}
+                    placeholder="iron, silicate, methane..."
+                    hideLabel
+                  />
+                </Field>
+              </>
+            )}
+
+            {/* Convert previous number inputs to sliders */}
+            <Field label="Model Size">
+              <PlanetSizeSlider
+                value={numOr(values.planetSize, 2)}
+                onChange={(v) => set("planetSize", v)}
+              />
+            </Field>
+
+            <Field label="Temperature (°C)">
+              {type !== "star" && <p className="text-sm text-muted-foreground inline ms-4">Earth = 15°C</p>}
+              {type === "star" && <p className="text-sm text-muted-foreground inline ms-4">Sun = 5499°C</p>}
+              <SliderWithInput
+                value={numOr(values.temperature, temperatureRange.min)}
+                onChange={(v) => set("temperature", v)}
+                min={temperatureRange.min}
+                max={temperatureRange.max}
+                step={temperatureRange.step}
+              />
+            </Field>
+
+            <Field label={`Diameter (${type === "star" ? "solar radii" : "km"})`}>
+              {type === "star" && <p className="text-sm text-muted-foreground inline ms-4">solar radii</p>}
+              {type === "asteroid" && <p className="text-sm text-muted-foreground inline ms-4">1 Ceres (largest asteroid) = 939 km</p>}
+              {type === "station" && <p className="text-sm text-muted-foreground inline ms-4">The Citadel (Mass Effect) = 44 km</p>}
+              {type === "ship" && <p className="text-sm text-muted-foreground inline ms-4">Star Destroyer = 1.6 km</p>}
+              {(type !== "star" && type !== "asteroid" && type !== "station" && type !== "ship") && <p className="text-sm text-muted-foreground inline ms-4">Earth = 12,742 km</p>}
+              <SliderWithInput
+                value={numOr(values.diameter, diameterRange.min)}
+                onChange={v => set("diameter", v)}
+                min={diameterRange.min}
+                max={diameterRange.max}
+                step={diameterRange.step}
+              />
+            </Field>
+
+
+            {(type !== "star") && (
+              <>
+                <Field label="Gravity (cm/s²)">
+                  <p className="text-sm text-muted-foreground inline ms-4">Earth = 981 cm/s²</p>
+                  <SliderWithInput
+                    value={numOr(values.gravity, 980)}
+                    onChange={v => set("gravity", v)}
+                    min={0}
+                    max={4_000}
+                    step={10}
+                  />
+                </Field>
+                <Field label="Pressure (millibars)">
+                  <p className="text-sm text-muted-foreground inline ms-4">Earth = 1013 mb</p>
+                  <SliderWithInput
+                    value={numOr(values.pressure, 1000)}
+                    onChange={v => set("pressure", v)}
+                    min={0}
+                    max={10_000}
+                    step={10}
+                  />
+                </Field>
+              </>
+            )}
           </Section>
 
           <CustomFieldsRender
@@ -177,112 +336,102 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
   )
 }
 
-function CustomFieldsRender({
-  values,        // the local values object from AdvancedEditor
-  setProp,       // your set(key, val, { immediate }) helper
-  debouncedRef,
-  setValues,
-  removeKey,
-}) {
+/* ------------------ planetSize slider w/ icon ------------------ */
+
+function PlanetSizeSlider({ value, onChange }) {
+  const v = clampNum(value, 1, 3)
+  const icon = "🪐"
+  const steps = [
+    3.4, 3.2, 3.0, 2.8, 2.6,
+    2.4, 2.2, 2.0, 1.8, 1.6, 1.4,
+  ]
+  const t = (v - 1) / 2 // 0 → 1
+  const idx = Math.min(steps.length - 1, Math.floor(t * steps.length))
+  const scale = steps[steps.length - 1 - idx]
+  return (
+    <div className="flex items-center gap-3">
+      <Slider value={[v]} onValueChange={(arr) => onChange(arr[0])} min={1} max={3} step={0.2} className="w-[411px]" />
+      <div
+        className="text-center select-none ms-12"
+        style={{ transform: `scale(${scale})`, transformOrigin: "center" }}
+      >
+        {icon}
+      </div>
+    </div>
+  )
+}
+
+/* ------------------ custom fields ------------------ */
+
+function CustomFieldsRender({ values, setProp, debouncedRef, setValues, removeKey }) {
   const [keyDraft, setKeyDraft] = useState("")
   const [valDraft, setValDraft] = useState("")
-
-  // per-key debouncers so multiple custom fields don't fight one timer
-  const debouncersRef = useRef(new Map())
 
   const customEntries = useMemo(() => {
     const obj = values ?? {}
     return Object.entries(obj)
       .filter(([k]) => !KNOWN_KEYS.has(k))
-      .filter(([k]) => !k.startsWith("_")) // optional: hide internal keys
+      .filter(([k]) => !k.startsWith("_"))
       .sort(([a], [b]) => a.localeCompare(b))
   }, [values])
 
   function addField() {
     const k = keyDraft.trim()
     if (!k) return
-    if (KNOWN_KEYS.has(k)) return // can't shadow known fields
-    if ((values ?? {})[k] !== undefined) return // no duplicates
+    if (KNOWN_KEYS.has(k)) return
+    if ((values ?? {})[k] !== undefined) return
 
     setProp(k, valDraft ?? "", { immediate: true })
     setKeyDraft("")
     setValDraft("")
   }
 
-  function removeField(k) {
-    setValues((prev) => {
-      const next = { ...prev }
-      delete next[k]
-      return next
-    })
-    setProp(k, undefined, { immediate: true }) // persists deletion
-  }
-
   return (
     <div className="space-y-3">
-      {/* add new */}
       <div className="space-y-2">
         <Label className="text-xs uppercase opacity-70">Custom Properties</Label>
         <div className="flex gap-2">
-          <Input
-            placeholder="key"
-            value={keyDraft}
-            onChange={(e) => setKeyDraft(e.target.value)}
-          />
-          <Input
-            placeholder="value"
-            value={valDraft}
-            onChange={(e) => setValDraft(e.target.value)}
-          />
+          <Input placeholder="key" value={keyDraft} onChange={(e) => setKeyDraft(e.target.value)} />
+          <Input placeholder="value" value={valDraft} onChange={(e) => setValDraft(e.target.value)} />
           <Button type="button" size="icon" onClick={addField} title="Add field">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* existing custom */}
       {customEntries.length > 0 && (
         <div className="space-y-2">
-          <div className="space-y-2">
-            {customEntries.map(([k, v]) => (
-              <div key={k} className="flex items-center gap-2">
-                {/* locked key */}
-                <div className="min-w-[180px] max-w-[220px] px-2 py-1 border rounded text-xs opacity-80 truncate">
-                  {k}
-                </div>
-
-                {/* editable value */}
-                <Input
-                  value={v ?? ""}
-                  onChange={(e) => {
-                    const next = e.target.value
-                    // local update only
-                    setValues((prev) => ({ ...prev, [k]: next }))
-                    // persist debounced once
-                    debouncedRef.current(next, k)
-                  }}
-
-                />
-
-                <Trash2
-                  className="cursor-pointer opacity-70 hover:opacity-100"
-                  // size={18}
-                  onClick={() => removeKey(k)}
-                  title="Delete field"
-                />
+          {customEntries.map(([k, v]) => (
+            <div key={k} className="flex items-center gap-2">
+              <div className="min-w-[180px] max-w-[220px] px-2 py-1 border rounded text-xs opacity-80 truncate">
+                {k}
               </div>
-            ))}
-          </div>
+
+              <Input
+                value={v ?? ""}
+                onChange={(e) => {
+                  const next = e.target.value
+                  setValues((prev) => ({ ...prev, [k]: next }))
+                  debouncedRef.current(next, k)
+                }}
+              />
+
+              <Trash2
+                className="cursor-pointer opacity-70 hover:opacity-100"
+                onClick={() => removeKey(k)}
+                title="Delete field"
+              />
+            </div>
+          ))}
         </div>
       )}
     </div>
   )
 }
 
-
 /* ------------------ ui helpers ------------------ */
 
-function Section({ title, children }) {
+function Section({ title = "Metadata", children }) {
   return (
     <div className="space-y-3 border-b pb-4">
       <h3 className="font-semibold text-xs uppercase opacity-70">{title}</h3>
@@ -303,7 +452,7 @@ function Row({ label, children }) {
 function Field({ label, children }) {
   return (
     <div className="space-y-1">
-      <Label>{label}</Label>
+      {label && <Label>{label}</Label>}
       {children}
     </div>
   )
@@ -313,38 +462,32 @@ function BoolRow({ label, value, onChange }) {
   return (
     <div className="flex items-center justify-between gap-4">
       <Label className="w-40">{label}</Label>
-      <Checkbox
-        checked={!!value}
-        onCheckedChange={(v) => onChange(v === true)}
-      />
+      <Checkbox checked={!!value} onCheckedChange={(v) => onChange(v === true)} />
+    </div>
+  )
+}
+
+function sliderNum(value, onChange, min = 0, max = 1, step = 0.1, isPercent = false, hideNumber = false) {
+  const safe = clampNum(value, min, max)
+  return (
+    <div className="flex items-center gap-3">
+      {!hideNumber && <div className="w-20 text-xs opacity-70 tabular-nums">{isPercent ? `${Math.round(safe * 100)}` : safe}</div>}
+      <Slider value={[safe]} onValueChange={(v) => onChange(v[0])} min={min} max={max} step={step} className="flex-1" />
     </div>
   )
 }
 
 function input(value, onChange) {
-  return (
-    <Input
-      value={value ?? ""}
-      onChange={(e) => onChange(e.target.value)}
-    />
-  )
+  return <Input value={value ?? ""} onChange={(e) => onChange(e.target.value)} />
 }
 
-function numberInput(value, onChange, { step } = {}) {
-  return (
-    <Input
-      type="number"
-      step={step}
-      value={value ?? ""}
-      onChange={(e) => {
-        const raw = e.target.value
-        onChange(raw === "" ? "" : Number(raw))
-      }}
-    />
-  )
+function clampNum(v, min, max) {
+  const n = typeof v === "number" ? v : Number(v)
+  if (Number.isNaN(n)) return min
+  return Math.min(max, Math.max(min, n))
 }
 
-/* ------------------ comma tags (no RHF) ------------------ */
+/* ------------------ comma tags ------------------ */
 
 function parseCsv(csv) {
   if (!csv) return []
@@ -353,18 +496,15 @@ function parseCsv(csv) {
     .map((s) => s.trim())
     .filter(Boolean)
 }
-
 function toCsv(tags) {
   return tags.join(", ")
 }
-
 function uniq(arr) {
   return [...new Set(arr)]
 }
 
-function Comma({ name, label, value, onChange, placeholder = "" }) {
+function Comma({ label, value, onChange, placeholder = "", hideLabel = false }) {
   const [draft, setDraft] = useState("")
-
   const tags = uniq(parseCsv(value))
 
   function commit(nextTags) {
@@ -372,10 +512,7 @@ function Comma({ name, label, value, onChange, placeholder = "" }) {
   }
 
   function addFromDraft() {
-    const incoming = draft
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean)
+    const incoming = draft.split(",").map((t) => t.trim()).filter(Boolean)
     if (!incoming.length) return
     commit(uniq([...tags, ...incoming]))
     setDraft("")
@@ -387,7 +524,7 @@ function Comma({ name, label, value, onChange, placeholder = "" }) {
 
   return (
     <div className="space-y-2">
-      <Label>{label}</Label>
+      {!hideLabel && label && <Label>{label}</Label>}
 
       <div className="flex gap-2">
         <Input
@@ -402,14 +539,7 @@ function Comma({ name, label, value, onChange, placeholder = "" }) {
             }
           }}
         />
-        <Button
-          type="button"
-          variant="secondary"
-          size="icon"
-          className="h-8 w-8"
-          onClick={addFromDraft}
-          title="Add"
-        >
+        <Button type="button" variant="secondary" size="icon" className="h-8 w-8" onClick={addFromDraft} title="Add">
           <Plus className="h-4 w-4" />
         </Button>
       </div>
@@ -417,11 +547,7 @@ function Comma({ name, label, value, onChange, placeholder = "" }) {
       {tags.length > 0 && (
         <div className="grid grid-cols-2 gap-2 select-none">
           {tags.map((tag) => (
-            <Badge
-              key={tag}
-              variant="secondary"
-              className="flex items-center justify-between gap-2 py-1"
-            >
+            <Badge key={tag} variant="secondary" className="flex items-center justify-between gap-2 py-1">
               <span className="truncate">{tag}</span>
               <button
                 type="button"
@@ -442,57 +568,52 @@ function Comma({ name, label, value, onChange, placeholder = "" }) {
   )
 }
 
-/* ------------------ custom arbitrary fields ------------------ */
-
-function CustomFields({ editProp }) {
-  const [key, setKey] = useState("")
-  const [val, setVal] = useState("")
-
-  return (
-    <div className="space-y-2">
-      <div className="flex gap-2">
-        <Input placeholder="key" value={key} onChange={(e) => setKey(e.target.value)} />
-        <Input placeholder="value" value={val} onChange={(e) => setVal(e.target.value)} />
-        <Button
-          size="icon"
-          type="button"
-          onClick={() => {
-            if (!key) return
-            editProp(val, key)
-            setKey("")
-            setVal("")
-          }}
-        >
-          <Plus />
-        </Button>
-      </div>
-
-      <div className="text-xs opacity-70">
-        Adds arbitrary properties directly to feature.properties
-      </div>
-    </div>
-  )
-}
-
 /* ------------------ colors ------------------ */
 
 const rgbaToObj = (rgba) => {
   if (!rgba) return { r: 255, g: 255, b: 255, a: 1 }
   if (typeof rgba === "object") return rgba
   const m = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d.]+)?\)/)
-  return m
-    ? { r: +m[1], g: +m[2], b: +m[3], a: m[4] ? +m[4] : 1 }
-    : { r: 255, g: 255, b: 255, a: 1 }
+  return m ? { r: +m[1], g: +m[2], b: +m[3], a: m[4] ? +m[4] : 1 } : { r: 255, g: 255, b: 255, a: 1 }
 }
 
-const objToRgba = (o) =>
-  typeof o === "object" ? `rgba(${o.r}, ${o.g}, ${o.b}, ${o.a})` : o
+const clamp = (n, min, max) => Math.min(max, Math.max(min, n))
 
-const rgbToHex = ({ r, g, b }) =>
-  "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")
+const rgbaObjToCss = ({ r, g, b, a }) =>
+  `rgba(${clamp(Math.round(r), 0, 255)}, ${clamp(Math.round(g), 0, 255)}, ${clamp(Math.round(b), 0, 255)}, ${clamp(a ?? 1, 0, 1)})`
 
-const rgbaToHexA = ({ r, g, b, a }) =>
-  "#" + [r, g, b, Math.round(a * 255)].map((v) => v.toString(16).padStart(2, "0")).join("")
+const hexToRgbaObj = (hex) => {
+  if (!hex) return { r: 255, g: 255, b: 255, a: 1 }
+  if (typeof hex === "object") return hex
+  if (typeof hex !== "string") return { r: 255, g: 255, b: 255, a: 1 }
+
+  const s = hex.trim()
+  if (!s.startsWith("#")) return rgbaToObj(s)
+
+  const h = s.slice(1)
+  if (h.length === 6) {
+    const r = parseInt(h.slice(0, 2), 16)
+    const g = parseInt(h.slice(2, 4), 16)
+    const b = parseInt(h.slice(4, 6), 16)
+    return { r, g, b, a: 1 }
+  }
+  if (h.length === 8) {
+    const r = parseInt(h.slice(0, 2), 16)
+    const g = parseInt(h.slice(2, 4), 16)
+    const b = parseInt(h.slice(4, 6), 16)
+    const a = parseInt(h.slice(6, 8), 16) / 255
+    return { r, g, b, a }
+  }
+  return { r: 255, g: 255, b: 255, a: 1 }
+}
+
+const rgbaObjToHex6 = ({ r, g, b }) =>
+  "#" + [r, g, b].map((v) => clamp(Math.round(v), 0, 255).toString(16).padStart(2, "0")).join("")
+const rgbaObjToHex8 = ({ r, g, b, a }) =>
+  "#" +
+  [r, g, b, Math.round(clamp(a ?? 1, 0, 1) * 255)]
+    .map((v) => clamp(Math.round(v), 0, 255).toString(16).padStart(2, "0"))
+    .join("")
 
 const splitCsv = (v, count) =>
   (v ?? "")
@@ -504,7 +625,6 @@ const splitCsv = (v, count) =>
 
 function ColorGrid({ value, count, alpha = false, onChange }) {
   const colors = splitCsv(value, count)
-
   return (
     <div className="flex gap-2 flex-wrap">
       {colors.map((c, i) => (
@@ -523,53 +643,47 @@ function ColorGrid({ value, count, alpha = false, onChange }) {
   )
 }
 
-const clamp = (n, min, max) => Math.min(max, Math.max(min, n))
+function SliderWithInput({
+  value,
+  onChange,
+  min,
+  max,
+  step,
+}) {
+  const v = typeof value === "number" ? value : Number(value)
+  const safe = Number.isFinite(v) ? v : min
 
-const rgbaObjToCss = ({ r, g, b, a }) =>
-  `rgba(${clamp(Math.round(r), 0, 255)}, ${clamp(Math.round(g), 0, 255)}, ${clamp(Math.round(b), 0, 255)}, ${clamp(a ?? 1, 0, 1)})`
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex-1">
+        <Slider
+          value={[safe]}
+          onValueChange={(arr) => onChange(arr[0])}
+          min={min}
+          max={max}
+          step={step}
+        />
+      </div>
 
-const hexToRgbaObj = (hex) => {
-  if (!hex) return { r: 255, g: 255, b: 255, a: 1 }
-  if (typeof hex === "object") return hex
-  if (typeof hex !== "string") return { r: 255, g: 255, b: 255, a: 1 }
-
-  const s = hex.trim()
-  if (!s.startsWith("#")) return rgbaToObj(s) // fallback to rgba()
-
-  const h = s.slice(1)
-  if (h.length === 6) {
-    const r = parseInt(h.slice(0, 2), 16)
-    const g = parseInt(h.slice(2, 4), 16)
-    const b = parseInt(h.slice(4, 6), 16)
-    return { r, g, b, a: 1 }
-  }
-
-  if (h.length === 8) {
-    const r = parseInt(h.slice(0, 2), 16)
-    const g = parseInt(h.slice(2, 4), 16)
-    const b = parseInt(h.slice(4, 6), 16)
-    const a = parseInt(h.slice(6, 8), 16) / 255
-    return { r, g, b, a }
-  }
-
-  return { r: 255, g: 255, b: 255, a: 1 }
+      <Input
+        type="number"
+        className="w-28 h-8"
+        value={Number.isFinite(safe) ? safe : ""}
+        onChange={(e) => {
+          const raw = e.target.value
+          if (raw === "") return onChange("")
+          onChange(Number(raw))
+        }}
+        min={min}
+        max={max}
+        step={step}
+      />
+    </div>
+  )
 }
-
-const rgbaObjToHex6 = ({ r, g, b }) =>
-  "#" +
-  [r, g, b]
-    .map((v) => clamp(Math.round(v), 0, 255).toString(16).padStart(2, "0"))
-    .join("")
-
-const rgbaObjToHex8 = ({ r, g, b, a }) =>
-  "#" +
-  [r, g, b, Math.round(clamp(a ?? 1, 0, 1) * 255)]
-    .map((v) => clamp(Math.round(v), 0, 255).toString(16).padStart(2, "0"))
-    .join("")
 
 
 function PopoverPickerSimple({ value, onChange, alpha = false }) {
-  // value may be #RRGGBB, #RRGGBBAA, rgba(...), or object
   const rgba = hexToRgbaObj(value)
 
   return (
@@ -582,12 +696,7 @@ function PopoverPickerSimple({ value, onChange, alpha = false }) {
         />
       </PopoverTrigger>
 
-      <PopoverContent
-        side="right"
-        align="start"
-        sideOffset={12}
-        className="z-[9999] w-auto p-2"
-      >
+      <PopoverContent side="right" align="start" sideOffset={12} className="z-[9999] w-auto p-2">
         <RgbaColorPicker
           color={rgba}
           onChange={(nextObj) => {
@@ -599,7 +708,6 @@ function PopoverPickerSimple({ value, onChange, alpha = false }) {
     </Popover>
   )
 }
-
 
 const KNOWN_KEYS = new Set([
   // earth + galaxy
@@ -641,7 +749,6 @@ const KNOWN_KEYS = new Set([
   "lavaPercent",
   "ringSize",
   "size",
-  "clouds",
   "planetSize",
   "temperature",
   "diameter",

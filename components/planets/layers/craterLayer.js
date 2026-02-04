@@ -115,8 +115,8 @@ export function createCraterLayer(lightPos = new Vector2(0.39, 0.7), colors, rot
   const craterGeometry = new PlaneGeometry(1, 1);
   const craterMaterial = new ShaderMaterial({
     uniforms: {
-      color1: { value: colorPalette[0] },
       pixels: { value: pixels || 100.0 },
+      color1: { value: colorPalette[0] },
       color2: { value: colorPalette[1] },
       light_origin: { value: lightPos },
       time_speed: { value: rotationSpeed },

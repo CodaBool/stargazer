@@ -77,6 +77,7 @@ export default function EditorForm({
       newProperties[key] = newVal
     }
     const newFeature = { ...f, properties: newProperties }
+    console.log(newFeature.properties)
     draw.add(newFeature)
     setPopup(newFeature)
 
@@ -213,6 +214,7 @@ export default function EditorForm({
           )}
 
           {/* icon */}
+
           <TableRow>
             <TableCell className="font-medium">Icon</TableCell>
             <TableCell className="flex items-center justify-between">
@@ -224,26 +226,13 @@ export default function EditorForm({
                 />
               )}
 
-              {!values.icon && popup.geometry.type === "Polygon" && (
-                <div
-                  className="popup-preview cursor-pointer"
+              {!values.icon && (popup.geometry.type === "Polygon" || popup.geometry.type.includes("LineString")) && (
+                <img
+                  src={`${SVG_BASE}${mapName}/${popup.properties.type}.svg`}
+                  alt="type icon"
+                  className="inline-block w-4 h-4 mr-2 object-contain align-middle cursor-pointer popup-preview"
                   onClick={() => document.querySelector(".icon-dialog-open")?.click()}
-                >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill={popup.properties.fill} stroke={popup.properties.stroke}>
-                    <rect x="4" y="4" width="19" height="19" strokeWidth="3" />
-                  </svg>
-                </div>
-              )}
-
-              {!values.icon && popup.geometry.type.includes("LineString") && (
-                <div
-                  className="popup-preview cursor-pointer"
-                  onClick={() => document.querySelector(".icon-dialog-open")?.click()}
-                >
-                  <svg width="24" height="24" viewBox="0 0 24 24" stroke={popup.properties.stroke}>
-                    <line x1="4" y1="4" x2="20" y2="20" strokeWidth="2" />
-                  </svg>
-                </div>
+                />
               )}
 
               <IconSelector

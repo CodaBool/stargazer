@@ -247,7 +247,13 @@ export default function SharedSettings({
                   <p className="inline ml-5 text-gray-400 text-sm">{form.getValues("ZOOM")}</p>
                   <FormControl>
                     <div className="flex">
-                      <Input type="range" min={0} max={24} step={0.1} {...field} />
+                      <Slider
+                        value={[field.value]}
+                        onValueChange={(v) => field.onChange(v[0])}
+                        min={0}
+                        max={24}
+                        step={0.1}
+                      />
                       <Button variant="outline" type="button" onClick={() => form.setValue("ZOOM", VIEW.zoom)} className="ml-3">
                         Reset
                       </Button>
@@ -277,7 +283,13 @@ export default function SharedSettings({
                   <p className="inline ml-5 text-gray-400 text-sm">{form.getValues("MAX_ZOOM")}</p>
                   <FormControl>
                     <div className="flex">
-                      <Input type="range" min={0} max={24} step={0.1} {...field} />
+                      <Slider
+                        value={[field.value]}
+                        onValueChange={(v) => field.onChange(v[0])}
+                        min={0}
+                        max={24}
+                        step={0.1}
+                      />
                       <Button variant="outline" type="button" onClick={() => form.setValue("MAX_ZOOM", defaults().MAX_ZOOM)} className="ml-3">
                         Reset
                       </Button>
@@ -307,7 +319,13 @@ export default function SharedSettings({
                   <p className="inline ml-5 text-gray-400 text-sm">{form.getValues("MIN_ZOOM")}</p>
                   <FormControl>
                     <div className="flex">
-                      <Input type="range" min={0} max={24} step={0.1} {...field} />
+                      <Slider
+                        value={[field.value]}
+                        onValueChange={(v) => field.onChange(v[0])}
+                        min={0}
+                        max={24}
+                        step={0.1}
+                      />
                       <Button variant="outline" type="button" onClick={() => form.setValue("MIN_ZOOM", defaults().MIN_ZOOM)} className="ml-3">
                         Reset
                       </Button>
@@ -337,7 +355,13 @@ export default function SharedSettings({
                   <p className="inline ml-5 text-gray-400 text-sm">{form.getValues("SEARCH_SIZE")}</p>
                   <FormControl>
                     <div className="flex">
-                      <Input type="range" min={0} max={2} step={0.001} {...field} />
+                      <Slider
+                        value={[field.value]}
+                        onValueChange={(v) => field.onChange(v[0])}
+                        min={0}
+                        max={2}
+                        step={0.001}
+                      />
                       <Button variant="outline" type="button" onClick={() => form.setValue("SEARCH_SIZE", defaults().SEARCH_SIZE)} className="ml-3">
                         Reset
                       </Button>

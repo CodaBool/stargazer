@@ -10,7 +10,6 @@ export const createEarthPlanet = ({
   seed,
   hydroPercent,
   cloudPercent,
-  clouds,
 }) => {
   const earth = new Group();
   if (!colors.base) {
@@ -47,7 +46,7 @@ export const createEarthPlanet = ({
   const atmosphere = createAtmosphereLayer(colors, pixels);
 
   earth.add(basePlanet, landmass, atmosphere);
-  if (clouds) {
+  if (cloudPercent !== 0) {
     const cloudsLayer = createCloudLayer(
       colors,
       undefined,

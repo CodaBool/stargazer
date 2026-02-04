@@ -182,7 +182,6 @@ export default function DrawerComponent({
                   layerColors={display.layerColors}
                   schemeColor={display.schemeColor}
                   atmosphereColors={display.atmosphereColors}
-                  clouds={display.clouds}
                   cloudPercent={display.cloudPercent}
                   hydroPercent={display.hydroPercent}
                   lavaPercent={display.lavaPercent}

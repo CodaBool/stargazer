@@ -200,7 +200,6 @@ export default function SolarSystemDiagram({
                     layerColors={p.layerColors}
                     schemeColor={p.schemeColor}
                     atmosphereColors={p.atmosphereColors}
-                    clouds={p.clouds}
                     cloudPercent={p.cloudPercent}
                     size={p.size}
                     hydroPercent={p.hydroPercent}

@@ -158,7 +158,6 @@ function ThreejsPlanet({
   layerColors,
   schemeColor,
   atmosphereColors,
-  clouds,
   cloudPercent,
   size,
   ringSize,
@@ -231,7 +230,7 @@ function ThreejsPlanet({
 
       const { computedW, computedH } = computeSize();
       camera = new PerspectiveCamera(75, computedW / computedH, 0.1, 2000);
-      camera.position.z = planetSize || 1;
+      camera.position.z = 4 - (planetSize ?? 3)
 
       clock = new Clock();
       planetGroup = new Group();
@@ -245,7 +244,6 @@ function ThreejsPlanet({
           scheme: schemeColor || undefined,
           atmosphereColors: atmosphereColors || undefined,
         },
-        clouds: clouds === "false" ? false : true,
         type: type || "terrestrial",
         size: size ? Number(size) : undefined,
         ringSize: ringSize ? Number(ringSize) : undefined,
@@ -478,7 +476,6 @@ function ThreejsPlanet({
     layerColors,
     schemeColor,
     atmosphereColors,
-    clouds,
     cloudPercent,
     size,
     ringSize,
