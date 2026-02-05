@@ -26,7 +26,7 @@ export default function AdvancedEditor({ children, IS_GALAXY, mapName, feature, 
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="min-w-[600px] max-h-[80vh] overflow-auto">
+      <DialogContent className="min-w-[600px] max-h-[80vh] overflow-auto adv-editor-dialog">
         <DialogHeader>
           <DialogTitle className="text-center">{feature.properties.name}</DialogTitle>
           <DialogDescription className="text-center">
@@ -77,14 +77,14 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
   const numOr = (v, fallback) => (typeof v === "number" && !Number.isNaN(v) ? v : fallback)
 
   const diameterRange = useMemo(() => {
-    if (type === "asteroid") return { min: 0.1, max: 1000, step: 0.1 }
-    if (type === "station" || type === "ship") return { min: 0.05, max: 50, step: 0.05 }
-    if (type === "star") return { min: 0.01, max: 1000, step: 0.01 }
-    return { min: 1_000, max: 150_000, step: 1_000 }
+    if (type === "asteroid") return { min: 0.1, max: 1000, step: 0.1, defaults: 1 }
+    if (type === "station" || type === "ship") return { min: 0.05, max: 50, step: 0.05, defaults: 1.6 }
+    if (type === "star") return { min: 0.01, max: 1000, step: 0.01, defaults: 1 }
+    return { min: 1_000, max: 150_000, step: 1_000, defaults: 12_742 }
   }, [type])
   const temperatureRange = useMemo(() => {
-    if (type === "star") return { min: 2_000, max: 25_000, step: 1_000 }
-    return { min: -273, max: 300, step: 1 }
+    if (type === "star") return { min: 2_000, max: 25_000, step: 1_000, defaults: 5499 }
+    return { min: -273, max: 300, step: 1, defaults: 15 }
   }, [type])
 
   return (
@@ -273,7 +273,7 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
               {type !== "star" && <p className="text-sm text-muted-foreground inline ms-4">Earth = 15°C</p>}
               {type === "star" && <p className="text-sm text-muted-foreground inline ms-4">Sun = 5499°C</p>}
               <SliderWithInput
-                value={numOr(values.temperature, temperatureRange.min)}
+                value={numOr(values.temperature, temperatureRange.defaults)}
                 onChange={(v) => set("temperature", v)}
                 min={temperatureRange.min}
                 max={temperatureRange.max}
@@ -288,7 +288,7 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
               {type === "ship" && <p className="text-sm text-muted-foreground inline ms-4">Star Destroyer = 1.6 km</p>}
               {(type !== "star" && type !== "asteroid" && type !== "station" && type !== "ship") && <p className="text-sm text-muted-foreground inline ms-4">Earth = 12,742 km</p>}
               <SliderWithInput
-                value={numOr(values.diameter, diameterRange.min)}
+                value={numOr(values.diameter, diameterRange.defaults)}
                 onChange={v => set("diameter", v)}
                 min={diameterRange.min}
                 max={diameterRange.max}
@@ -302,7 +302,7 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
                 <Field label="Gravity (cm/s²)">
                   <p className="text-sm text-muted-foreground inline ms-4">Earth = 981 cm/s²</p>
                   <SliderWithInput
-                    value={numOr(values.gravity, 980)}
+                    value={numOr(values.gravity, 981)}
                     onChange={v => set("gravity", v)}
                     min={0}
                     max={4_000}
@@ -312,7 +312,7 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
                 <Field label="Pressure (millibars)">
                   <p className="text-sm text-muted-foreground inline ms-4">Earth = 1013 mb</p>
                   <SliderWithInput
-                    value={numOr(values.pressure, 1000)}
+                    value={numOr(values.pressure, 1013)}
                     onChange={v => set("pressure", v)}
                     min={0}
                     max={10_000}
