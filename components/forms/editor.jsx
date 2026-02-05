@@ -24,6 +24,8 @@ import {
   Menu,
   Trash2,
   X,
+  Book,
+  Drama,
 } from "lucide-react"
 import { SVG_BASE, getIconHTML, debounce } from "@/lib/utils"
 import AdvancedEditor from "@/components/forms/advEditor"
@@ -114,7 +116,13 @@ export default function EditorForm({
     }
   }, [popup, feature, mapName])
 
+  function foundryClick() {
+    window.parent.postMessage({type: "link", link: feature.properties.link, notify: `Link = ${feature.properties.link}`}, "*")
+  }
+
   const type = values.type
+
+  console.log("p", params.get("id"), "secret", params.get("secret"))
 
   return (
     <form
@@ -214,7 +222,6 @@ export default function EditorForm({
           )}
 
           {/* icon */}
-
           <TableRow>
             <TableCell className="font-medium">Icon</TableCell>
             <TableCell className="flex items-center justify-between">
@@ -257,6 +264,48 @@ export default function EditorForm({
               )}
             </TableCell>
           </TableRow>
+
+
+          {/* Foundry */}
+          {params.get("id") === "foundry" && (
+            <TableRow>
+              <TableCell className="font-medium">Foundry</TableCell>
+              <TableCell className="flex items-center justify-between">
+                {!feature.properties.link && (
+                  <Link editProp={editProp} feature={feature} />
+                )}
+
+                {feature.properties.link && (
+                  <>
+                    <Button variant="outline" size="icon" type="button" className="flex-7 h-[32px]" onClick={foundryClick}>
+                      {(feature.properties.link?.length === 29 && feature.properties.link?.includes("JournalEntry.")) && (
+                        <Book />
+                      )}
+                      {(feature.properties.link?.length === 63 && feature.properties.link?.includes(".JournalEntryPage.")) && (
+                        <StickyNote />
+                      )}
+                      {feature.properties.link?.includes("Macro.") && (
+                        <Code />
+                      )}
+                      {feature.properties.link?.includes("forien-quest-log.") && (
+                        <MessageCircleWarning />
+                      )}
+                      {feature.properties.link?.includes("Scene.") && (
+                        <Drama />
+                      )}
+                    </Button>
+                    <Trash2
+                      className="cursor-pointer text-gray-400 flex-1"
+                      size={22}
+                      onClick={() => setProp("link", "", { immediate: true })}
+                    />
+                  </>
+                )}
+
+                {/* <p>{feature.properties.link}{feature.properties.link}{feature.properties.link}</p>*/}
+              </TableCell>
+            </TableRow>
+          )}
 
           {/* faction */}
           <TableRow>
@@ -302,8 +351,6 @@ export default function EditorForm({
           See More
         </Button>
       </AdvancedEditor>
-
-      {params.get("secret") && <Link editProp={editProp} feature={feature} />}
     </form>
   )
 }
@@ -345,13 +392,13 @@ export const Link = ({ editProp, feature }) => {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          size="sm"
           onClick={() => setOpen(!open)}
-          className="cursor-pointer w-full h-[30px]"
-          variant="secondary"
+          size="icon"
+          variant="outline"
+          type="button"
+          className="flex-7 h-[32px]"
         >
-          <Chain className="mr-2" />
-          Link to Foundry
+          <Chain />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="flex flex-col">

@@ -763,5 +763,6 @@ const KNOWN_KEYS = new Set([
 
   // meta
   "FID",
-  "userCreated"
+  "userCreated",
+  "link",
 ])
