@@ -760,4 +760,8 @@ const KNOWN_KEYS = new Set([
   "pressure",
   "icePercent",
   "composition",
+
+  // meta
+  "FID",
+  "userCreated"
 ])

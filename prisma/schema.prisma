@@ -75,7 +75,7 @@ model User {
   stripeName       String?
   stripeEmail      String?
   premiumGrantedAt DateTime?
-  foundryKey       String?   @unique
+  foundryWorld     String?   @unique
 
   accounts  Account[]
   comments  Comment[]
