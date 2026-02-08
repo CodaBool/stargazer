@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
-    "@aws-sdk/client-s3": "^3.981.0",
+    "@aws-sdk/client-s3": "^3.985.0",
     "@hookform/resolvers": "^5.2.2",
     "@mapbox/mapbox-gl-draw": "^1.5.1",
     "@placemarkio/tokml": "^0.3.7",
@@ -57,7 +57,7 @@
     "sanitize-html": "^2.17.0",
     "seedrandom": "^3.0.5",
     "sonner": "^2.0.7",
-    "stripe": "^20.3.0",
+    "stripe": "^20.3.1",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.182.0",
@@ -70,7 +70,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
-    "dotenv": "^17.2.3",
+    "dotenv": "^17.2.4",
     "postcss": "^8.5.6",
     "prisma": "^7.3.0",
     "tailwindcss": "^4.1.18"

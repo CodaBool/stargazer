@@ -17,12 +17,12 @@ export default function SolarSystemDiagram({
   map,
   name,
   passedLocationClick,
-  d,
+  display,
 }) {
-  const [activeBody, setActiveBody] = useState(null);
-  const [moonBodies, setMoonBodies] = useState(null);
+  const [activeBody, setActiveBody] = useState()
+  const [moonBodies, setMoonBodies] = useState()
   const squareSize = Math.min(700, Math.min(width, height) * 0.9);
-  const closeDialog = (setter) => setter(null);
+  const closeDialog = (setter) => setter();
 
   function handleMouseOver(feature) {
     if (feature.properties.fake || !map || (!feature.me?.id && !feature.id)) return;
@@ -38,23 +38,11 @@ export default function SolarSystemDiagram({
     return body?.properties?.tint ? `drop-shadow(0 0 6px ${body?.properties?.tint})` : undefined;
   }
 
-  const bodies = group.filter((body) => {
-    if (d.id) {
-      // console.log("bodies", body)
-      if (body.me?.id === d.id) return false;
-    } else if (d.properties.id) {
-      if (body.properties.id === d.properties.id) return false;
-    }
-    return true;
-  })
-
-  // console.log("activeBody:", activeBody)
-
   return (
     <>
       <div className="w-full overflow-x-auto overflow-y-visible py-2">
         <div className="flex items-baseline h-full space-x-6 px-4 justify-evenly">
-          {bodies.map((body, index) => {
+          {group.map((body, index) => {
             const { properties, me } = body;
             const moons = Array.isArray(properties.moons) ? properties.moons : [];
             return (
@@ -69,7 +57,7 @@ export default function SolarSystemDiagram({
                           document.querySelector("#quest-textbox").textContent = properties.name
                           window.questLink = {id: me.id, properties, type: me.geometry.type}
                         }
-                        passedLocationClick(null, me, properties.fake ? { group, d } : {});
+                        passedLocationClick(null, me, properties.fake ? { group, d: display } : {});
                         return;
                       }
                       setActiveBody(body);

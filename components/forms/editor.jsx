@@ -122,8 +122,6 @@ export default function EditorForm({
 
   const type = values.type
 
-  console.log("p", params.get("id"), "secret", params.get("secret"))
-
   return (
     <form
       className="space-y-4 font-mono select-text editor-table mt-4"

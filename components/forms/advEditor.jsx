@@ -10,6 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Toggle } from "@/components/ui/toggle"
 import { Plus, X, Trash2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -87,6 +88,31 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
     return { min: -273, max: 300, step: 1, defaults: 15 }
   }, [type])
 
+  const tags = useMemo(() => {
+    const base = [
+      { key: "unofficial", label: "Unofficial" },
+      { key: "destroyed", label: "Destroyed" },
+      { key: "capital", label: "Capital" },
+      { key: "visible", label: "Visible" },
+      { key: "notes_visible", label: "Notes Visible" },
+    ]
+
+    if (!IS_GALAXY) return base
+
+    return [
+      ...base,
+      { key: "moon", label: "Moon" },
+      { key: "dwarf", label: "Dwarf" },
+      { key: "massive", label: "Massive" },
+      { key: "giant", label: "Giant" },
+      { key: "supermassive", label: "Supermassive" },
+      { key: "tidally_locked", label: "Tidally Locked" },
+      { key: "habitable", label: "Habitable" },
+      { key: "swamp", label: "Swamp" },
+      { key: "lava", label: "Lava" },
+    ]
+  }, [IS_GALAXY])
+
   return (
     <div className="space-y-6 text-sm">
       <Section>
@@ -94,16 +120,19 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
         <Comma label="Region" value={values.region} onChange={(v) => set("region", v, { immediate: true })} />
         <Comma label="People" value={values.people} onChange={(v) => set("people", v, { immediate: true })} />
 
-        <Field label="Image">{input(values.image, (v) => set("image", v))}</Field>
-        <Field label="Caption">{input(values.caption, (v) => set("caption", v))}</Field>
+        <Field label="Image URL">{input(values.image, (v) => set("image", v), "https://imgur.com/background.png")}</Field>
+        <Field label="Image Caption">{input(values.caption, (v) => set("caption", v))}</Field>
         <Field label="Seed">{input(values.seed, (v) => set("seed", v))}</Field>
         <Field label="Source">{input(values.source, (v) => set("source", v))}</Field>
 
-        <BoolRow label="Unofficial" value={!!values.unofficial} onChange={(v) => set("unofficial", v, { immediate: true })} />
-        <BoolRow label="Destroyed" value={!!values.destroyed} onChange={(v) => set("destroyed", v, { immediate: true })} />
-        <BoolRow label="Capital" value={!!values.capital} onChange={(v) => set("capital", v, { immediate: true })} />
-        <BoolRow label="Visible" value={!!values.visibility} onChange={(v) => set("visibility", v, { immediate: true })} />
-        <BoolRow label="Notes Visible" value={!!values.notesVisibility} onChange={(v) => set("notesVisibility", v, { immediate: true })} />
+        <Field label="Flags">
+          <TagTogglesRow
+            value={values.tags}
+            onChange={csv => set("tags", csv, { immediate: true })}
+            items={tags}
+          />
+        </Field>
+
       </Section>
 
       <Section title="Notes">
@@ -154,7 +183,7 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
       {IS_GALAXY && (
         <>
           <Section title="Planet Details">
-            {/* New fields */}
+
             <Field label="Pixels">
               {sliderNum(
                 numOr(values.pixels, 200),
@@ -264,7 +293,7 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
             {/* Convert previous number inputs to sliders */}
             <Field label="Model Size">
               <PlanetSizeSlider
-                value={numOr(values.planetSize, 2)}
+                value={numOr(values.planetSize, 3)}
                 onChange={(v) => set("planetSize", v)}
               />
             </Field>
@@ -377,7 +406,7 @@ function CustomFieldsRender({ values, setProp, debouncedRef, setValues, removeKe
 
   function addField() {
     const k = keyDraft.trim()
-    if (!k) return
+    if (!k || !valDraft) return
     if (KNOWN_KEYS.has(k)) return
     if ((values ?? {})[k] !== undefined) return
 
@@ -392,7 +421,14 @@ function CustomFieldsRender({ values, setProp, debouncedRef, setValues, removeKe
         <Label className="text-xs uppercase opacity-70">Custom Properties</Label>
         <div className="flex gap-2">
           <Input placeholder="key" value={keyDraft} onChange={(e) => setKeyDraft(e.target.value)} />
-          <Input placeholder="value" value={valDraft} onChange={(e) => setValDraft(e.target.value)} />
+          <Input placeholder="value" value={valDraft} onChange={(e) => setValDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault()
+                addField()
+              }
+            }}
+          />
           <Button type="button" size="icon" onClick={addField} title="Add field">
             <Plus className="h-4 w-4" />
           </Button>
@@ -458,15 +494,6 @@ function Field({ label, children }) {
   )
 }
 
-function BoolRow({ label, value, onChange }) {
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <Label className="w-40">{label}</Label>
-      <Checkbox checked={!!value} onCheckedChange={(v) => onChange(v === true)} />
-    </div>
-  )
-}
-
 function sliderNum(value, onChange, min = 0, max = 1, step = 0.1, isPercent = false, hideNumber = false) {
   const safe = clampNum(value, min, max)
   return (
@@ -477,8 +504,8 @@ function sliderNum(value, onChange, min = 0, max = 1, step = 0.1, isPercent = fa
   )
 }
 
-function input(value, onChange) {
-  return <Input value={value ?? ""} onChange={(e) => onChange(e.target.value)} />
+function input(value, onChange, placeholder = "") {
+  return <Input value={value ?? ""} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
 }
 
 function clampNum(v, min, max) {
@@ -489,16 +516,6 @@ function clampNum(v, min, max) {
 
 /* ------------------ comma tags ------------------ */
 
-function parseCsv(csv) {
-  if (!csv) return []
-  return csv
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean)
-}
-function toCsv(tags) {
-  return tags.join(", ")
-}
 function uniq(arr) {
   return [...new Set(arr)]
 }
@@ -568,6 +585,30 @@ function Comma({ label, value, onChange, placeholder = "", hideLabel = false }) 
   )
 }
 
+function TagTogglesRow({ value, onChange, items }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {items.map(({ key, label, icon: Icon }) => {
+        const pressed = hasCsvTag(value, key)
+        return (
+          <Toggle
+            key={key}
+            variant="outline"
+            pressed={pressed}
+            onPressedChange={(next) => onChange(toggleCsvTag(value, key, next))}
+            aria-label={label}
+            className="gap-2"
+          >
+            {Icon ? <Icon className="h-4 w-4" /> : null}
+            <span className="text-xs">{label}</span>
+          </Toggle>
+        )
+      })}
+    </div>
+  )
+}
+
+
 /* ------------------ colors ------------------ */
 
 const rgbaToObj = (rgba) => {
@@ -576,6 +617,30 @@ const rgbaToObj = (rgba) => {
   const m = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d.]+)?\)/)
   return m ? { r: +m[1], g: +m[2], b: +m[3], a: m[4] ? +m[4] : 1 } : { r: 255, g: 255, b: 255, a: 1 }
 }
+
+function parseCsv(v) {
+  if (!v) return []
+  return String(v)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
+function toCsv(arr) {
+  return arr.join(", ")
+}
+
+function toggleCsvTag(csv, tag, enabled) {
+  const tags = new Set(parseCsv(csv))
+  if (enabled) tags.add(tag)
+  else tags.delete(tag)
+  return toCsv([...tags])
+}
+
+function hasCsvTag(csv, tag) {
+  return parseCsv(csv).includes(tag)
+}
+
 
 const clamp = (n, min, max) => Math.min(max, Math.max(min, n))
 
@@ -720,11 +785,6 @@ const KNOWN_KEYS = new Set([
   "tint",
   "seed",
   "source",
-  "unofficial",
-  "destroyed",
-  "capital",
-  "visibility",
-  "notesVisibility",
 
   // common
   "name",
@@ -736,6 +796,7 @@ const KNOWN_KEYS = new Set([
   "faction",
   "locations",
   "description",
+  "tags",
 
   // galaxy-only extras
   "pixels",

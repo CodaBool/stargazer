@@ -8,5 +8,6 @@ junk.*
 /public/svg/foundry
 /public/svg/lucide
 .DS_Store
+.crushignore
 generated/
 backup.sql
