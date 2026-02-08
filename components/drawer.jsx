@@ -202,7 +202,7 @@ export default function DrawerComponent({
       ? display.starType.split(",").filter(Boolean).length
       : 0
 
-  console.log(display.tags)
+  console.log(display)
 
   return (
     <Drawer
@@ -294,13 +294,6 @@ export default function DrawerComponent({
                   <BadgeList list={display.people} label="People" />
 
                   <BadgeList list={display.region} label="Region" />
-
-                  {/* example text tag*/}
-                  {/* {display.unofficial && (
-                    <span className="text-gray-400 text-xs">
-                      Status: Unofficial canon
-                    </span>
-                  )}*/}
 
                   {display.link && (
                     <Button
@@ -625,14 +618,15 @@ const renderPercentBar = (value, label, color = "#38bdf8") => {
 function BadgeList({ list, variant = "secondary", label, align = "right" }) {
   if (!list) return
 
-
   const m =
     typeof list === "string"
       ? list
           .split(",")
           .map(value => value.trim())
           .filter(Boolean)
-      : []
+      : typeof list === "object" && Array.isArray(list)
+        ? list.filter(Boolean)
+        : []
 
 
   return (

@@ -22,6 +22,7 @@ import { debounce } from "@/lib/utils"
 import dynamic from "next/dynamic"
 import { Slider } from "../ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Rubik_80s_Fade } from "next/font/google"
 
 export default function AdvancedEditor({ children, IS_GALAXY, mapName, feature, editProp }) {
   return (
@@ -93,7 +94,7 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
       { key: "unofficial", label: "Unofficial" },
       { key: "destroyed", label: "Destroyed" },
       { key: "capital", label: "Capital" },
-      { key: "visible", label: "Visible" },
+      // { key: "visible", label: "Visible" },
       { key: "notes_visible", label: "Notes Visible" },
     ]
 
@@ -107,9 +108,13 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
       { key: "giant", label: "Giant" },
       { key: "supermassive", label: "Supermassive" },
       { key: "tidally_locked", label: "Tidally Locked" },
+      { key: "geologically_active", label: "Geologically Active" },
+      { key: "subsurface_ocean", label: "Subsurface Ocean" },
+      { key: "ammonia_ocean", label: "Ammonia Ocean" },
+      { key: "sulfuric_acid_ocean", label: "Sulfuric Acid Ocean" },
+      { key: "exoplanet", label: "Exoplanet" },
+      { key: "mountainous", label: "Mountainous" },
       { key: "habitable", label: "Habitable" },
-      { key: "swamp", label: "Swamp" },
-      { key: "lava", label: "Lava" },
     ]
   }, [IS_GALAXY])
 

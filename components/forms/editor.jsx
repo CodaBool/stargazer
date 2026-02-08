@@ -79,7 +79,7 @@ export default function EditorForm({
       newProperties[key] = newVal
     }
     const newFeature = { ...f, properties: newProperties }
-    console.log(newFeature.properties)
+    // console.log(newFeature.properties)
     draw.add(newFeature)
     setPopup(newFeature)
 
