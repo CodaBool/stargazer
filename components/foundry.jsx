@@ -1,9 +1,6 @@
 
 import { useEffect } from "react"
 import { useMap } from '@vis.gl/react-maplibre'
-import distance from '@turf/distance'
-import { point as turfPoint } from '@turf/helpers'
-import maplibregl from 'maplibre-gl'
 import { toast } from "sonner"
 import { getMaps } from "@/lib/utils"
 
@@ -169,10 +166,6 @@ export function Link({ mobile, name, params }) {
         return
       }
 
-      // TODO: capture config changes here too
-      // ??? RETURNING COMMENT: why would I though? Unless this is a reused component ???
-      // I'm definitely assuming things here about the meta uuid and id here
-      // if this is used in multiple places, this should be rewored likely
       fetch('/api/map', {
         method: 'PUT',
         headers: {

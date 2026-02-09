@@ -2,7 +2,7 @@ import db from "@/lib/db"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from '../auth/[...nextauth]/route'
 import { S3Client, PutObjectCommand, DeleteObjectsCommand, GetObjectCommand } from "@aws-sdk/client-s3"
-import { combineLayers, USER_LOCATION_ID_START } from "@/lib/utils"
+import { combineLayersDedup, USER_LOCATION_ID_START } from "@/lib/utils"
 const s3 = new S3Client({
   region: "auto",
   endpoint: `https://${process.env.CF_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -117,7 +117,7 @@ export async function PUT(req) {
       // if (!geojsonChange) throw "this map is already in sync"
       // updates.hash = newHash
 
-      r2Obj.geojson = combineLayers([r2Obj.geojson, body.geojson])
+      r2Obj.geojson = combineLayersDedup([r2Obj.geojson, body.geojson])
       r2Obj.maxId = maxId
     }
     if (body.config) {
