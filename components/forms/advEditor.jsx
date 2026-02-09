@@ -191,7 +191,7 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
 
             <Field label="Pixels">
               {sliderNum(
-                numOr(values.pixels, 200),
+                numOr(values.pixels, 800),
                 (v) => set("pixels", v),
                 50,
                 1000,

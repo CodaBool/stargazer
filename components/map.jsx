@@ -187,13 +187,12 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     })
 
     const myGroup = rawNearby
-      .filter(item => item.id !== clicked.id)
+      .filter(item => item.feature.id !== clicked.id)
       .map(item => ({
         groupCenter: [lng, lat],
         me: item.feature,
         ...item.feature,
       }))
-
 
     pan(clicked, myGroup)
     if (popup._container) popup.remove()
@@ -231,7 +230,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       })
 
       group = rawNearby
-        .filter(item => item.id !== d.id)
+        .filter(item => item.feature.id !== d.id)
         .map(item => ({
           groupCenter: coordinates,
           me: item.feature,

@@ -22,7 +22,6 @@ import {
   StickyNote,
 } from "lucide-react"
 import ThreejsPlanet, { availableThreejsModels } from "./threejsPlanet"
-import { claimThreeCanvas } from "./threeHostRegistry.js"
 import { Button } from "./ui/button.jsx"
 import { toast } from "sonner"
 import Link from "next/link.js"
@@ -91,7 +90,8 @@ export default function DrawerComponent({
       0.92,
     ]
 
-    if (!GENERATE_LOCATIONS || d.geometry?.type !== "Point") {
+    // If not a Point, just show real props + group (no fake system concept)
+    if (d.geometry?.type !== "Point" || !IS_GALAXY) {
       setUi({
         display: rawProps,
         local: myGroup || [],
@@ -101,6 +101,8 @@ export default function DrawerComponent({
       return
     }
 
+    // ✅ ALWAYS fill gaps on clicked + nearby reals,
+    // and only optionally generate fake neighbors based on GENERATE_LOCATIONS.
     const { bodies, selected } = generateSystemAtClick({
       lng: coordinates[0],
       lat: coordinates[1],
@@ -109,6 +111,9 @@ export default function DrawerComponent({
       clickedFeature: d,
       nearbyRealFeatures: myGroup,
       snapCellSizeDeg: SEARCH_SIZE * 5,
+
+      // ✅ NEW: fake points only when toggle is on
+      generateFakes: !!GENERATE_LOCATIONS,
     })
 
     const display = selected?.properties || rawProps
@@ -121,7 +126,7 @@ export default function DrawerComponent({
     ]
 
     setUi({ display, local: bodies, size, snaps })
-    setUi({ display, local: bodies, size, snaps })
+
   }, [
     d,
     coordinates?.[0],
@@ -202,7 +207,7 @@ export default function DrawerComponent({
       ? display.starType.split(",").filter(Boolean).length
       : 0
 
-  console.log(display)
+  // console.log(display)
 
   return (
     <Drawer
