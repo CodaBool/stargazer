@@ -174,7 +174,7 @@ export default function Home({ revalidate, cloudMaps, session, systems }) {
               P1 Start
             </Button>
           </DialogTrigger>
-          <DialogContent className="md:max-w-[610px] md:min-w-[620px] md:max-h-[430px] md:min-h-[430px]" scifi={true}>
+          <DialogContent className="md:max-w-[610px] md:min-w-[620px] md:max-h-[570px] md:min-h-[570px]" scifi={true}>
             <DialogDescription />
             <DialogTitle />
             <MainMenu cloudMaps={cloudMaps} revalidate={revalidate} session={session} hash={hashParts || []} systems={systems} />
@@ -251,12 +251,12 @@ export function MainMenu({ cloudMaps, session, revalidate, hash, systems }) {
       <Breadcrumb className="absolute top-8 left-8">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink className="text-xs md:text-base" onClick={() => { setSelectedSystem(null); setSelectedMap(null); }}>Systems</BreadcrumbLink>
+            <BreadcrumbLink className="text-xs md:text-sm" onClick={() => { setSelectedSystem(null); setSelectedMap(null); }}>Systems</BreadcrumbLink>
           </BreadcrumbItem>
           {selectedSystem && (
             <>
               <BreadcrumbSeparator />
-              <BreadcrumbItem className="text-xs md:text-base" >
+              <BreadcrumbItem className="text-xs md:text-sm" >
                 <BreadcrumbLink onClick={() => setSelectedMap(null)}>{selectedSystem}</BreadcrumbLink>
               </BreadcrumbItem>
             </>
@@ -264,7 +264,7 @@ export function MainMenu({ cloudMaps, session, revalidate, hash, systems }) {
           {selectedMap && (
             <>
               <BreadcrumbSeparator />
-              <BreadcrumbItem className="text-xs md:text-base" >
+              <BreadcrumbItem className="text-xs md:text-sm" >
                 <BreadcrumbPage>{selectedMap.name}</BreadcrumbPage>
               </BreadcrumbItem>
             </>
@@ -372,7 +372,7 @@ export function MainMenu({ cloudMaps, session, revalidate, hash, systems }) {
 
       {/* Systems view */}
       {!selectedSystem && (
-        <div className="flex flex-wrap gap-2 justify-evenly mt-8 max-h-[330px] overflow-auto">
+        <div className="flex flex-wrap gap-2 justify-evenly mt-8 max-h-[465px] overflow-auto">
           {systems.map((system) => (
             <div key={system}>
               {system === "custom"
@@ -406,6 +406,7 @@ export function MainMenu({ cloudMaps, session, revalidate, hash, systems }) {
               }
             </div>
           ))}
+          {/* {systems.length === 2 && <p className='mb-10 mt-2 text-center'>Looking for more maps? Checkout one of the <a href="https://github.com/CodaBool/stargazer/wiki/Forks" className='text-blue-300'>forks</a></p>}*/}
         </div>
       )}
 
