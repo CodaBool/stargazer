@@ -208,7 +208,6 @@ export default function DrawerComponent({
       : 0
 
   // console.log(display)
-
   return (
     <Drawer
       open={!!drawerContent}

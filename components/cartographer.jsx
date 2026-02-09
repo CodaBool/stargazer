@@ -27,7 +27,7 @@ export default function Cartographer({ name, data, uuid, remoteConfig, iconIndex
   const showEditor = params.get("editor") !== "0" && !mobile && !uuid && !locked && !params.get("preview")
 
   useEffect(() => {
-    if (name === "warhammer") window.alert("The Warhammer 40k map is still in an unfinished state. Follow on itch.io or GitHub for updates.")
+    if ((name === "warhammer" || name === "dnd") && process.env.NEXT_PUBLIC_URL !== "http://192.168.0.16:3000" && process.env.NEXT_PUBLIC_URL !== "http://localhost:3000") window.alert(`The ${name} map is still in an unfinished state. Follow on itch.io or GitHub for updates.`)
     hardwareCheck()
   }, [])
   useEffect(() => {
