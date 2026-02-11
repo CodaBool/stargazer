@@ -329,32 +329,12 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     if (params.get("img")) {
       wrapper.on('load', async ({ target: map }) => {
 
-        // hide labels since map notes will be created
-        const rawUserCreated = map.querySourceFeatures('source', {
+        const location = map.querySourceFeatures('source', {
           sourceLayer: "location",
-          filter: ['==', ['get', 'userCreated'], true]
+          filter: withUserFilters(['==', '$type', 'Point']),
         })
-        // Remove duplicates by id from the userCreated array
-        const userCreated = [];
-        const seenIds = new Set();
-        rawUserCreated.forEach(item => {
-          if (!seenIds.has(item.id)) {
-            userCreated.push(item);
-            seenIds.add(item.id);
-          }
-        });
-        // TODO: I changed it so you need to instead hook into the standard
-        // "text-opacity" instead of using a feature state thing. This will break
-        // this current feature but allow for better user customization
-        // the board of coding approved this message
-        //
-        // previous solution
-        // userCreated.forEach(({ id }) => {
-        //   map.setFeatureState(
-        //     { source: 'source', id },
-        //     { hideLabel: true },
-        //   )
-        // })
+
+        map.setPaintProperty("location", "text-opacity", 0)
 
         // wait for state change to happen
         map.once('idle', ({ target: map }) => {
@@ -366,30 +346,32 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
             turf.point([0, bottomBound])
           )
 
+          console.log("location", location)
+
           // all userMadeLocations should have an icon prop added which uses
-          userCreated.forEach(location => {
-            if (!location.properties.icon) {
-              const type = location.properties.type
-              location.properties.icon = `https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/svg/default/${type}.svg`;
+          location.forEach(({ properties }) => {
+            if (!properties.icon) {
+              properties.icon = `https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/svg/${name}/${properties.type}.svg`;
             }
           })
 
           // TODO: support more than Point features
-          const userMadeLocationsWithPixels = userCreated.filter(f => f.geometry.type === "Point").map(location => {
-            const point = map.project(new maplibregl.LngLat(location.geometry.coordinates[0], location.geometry.coordinates[1]))
+          const locationWithPixels = location.map(l => {
+            console.log("get pixel", l.geometry.coordinates)
+            const {y, x} = map.project(new maplibregl.LngLat(l.geometry.coordinates[0], l.geometry.coordinates[1]))
             return {
-              ...location,
+              ...l,
               pixelCoordinates: {
-                top: point.y,
-                left: point.x
+                top: y,
+                left: x
               }
             };
           })
-          console.log("generate", userMadeLocationsWithPixels, userCreated)
+          console.log("generate", locationWithPixels)
 
           window.parent.postMessage({
             type: 'featureData',
-            featureData: userMadeLocationsWithPixels,
+            featureData: locationWithPixels,
           }, '*')
 
           window.parent.postMessage({

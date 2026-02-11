@@ -331,7 +331,7 @@ export default function EditorForm({
         </TableBody>
       </Table>
 
-      <label className="block text-sm font-medium mb-1">description</label>
+      <label className="block text-sm font-medium mb-2 ms-1.75">Description</label>
       <Quill
         theme="bubble"
         value={values.description ?? ""}
