@@ -42,9 +42,8 @@ export default async function Page({ searchParams }) {
             <hr />
             <h1 className="text-2xl">Privacy Policy</h1>
             <p>This site does not use cookies or any tracking technologies.</p>
-            <p>Users may optionally upload map data (e.g., GeoJSON) and submit comments. This content is stored solely to support the public sharing and discussion features of the application. No personal identifiers, analytics, or third-party tracking are collected or used.</p>
+            <p>Users may upload map data and submit comments. This content is stored solely to support the public sharing and discussion features of the application. No analytics, or third-party tracking are collected or used.</p>
             <p>This site is not intended for use by individuals under the age of 13.</p>
-            <p>If you would like your uploaded data removed, please email proxy.htrwd@passmail.com</p>
 
             <hr />
             <h1 className="text-2xl">Terms of Use</h1>

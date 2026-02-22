@@ -163,7 +163,7 @@ export default function CreateLocation({ user }) {
                   Purchase Premium
                 </Button>
                 <p className="text-slate-400 text-sm">Premium is a one time purchase which allows for unlimited map uploads. As well as disables the 90 day auto-delete policy for map uploads.</p>
-                <p className="text-slate-400 mb-8 text-sm">If you own the Stargazer Foundry <a href="https://foundryvtt.com/packages/map" target="_blank" className="text-blue-400">module</a>, you can verify your purchase for a free premium upgrade. <Link href="/checkout/redeem" className="text-blue-400">See more here</Link>.</p>
+                <p className="text-slate-400 mb-8 text-sm">If you own the Stargazer Foundry <a href="https://foundryvtt.com/packages/map" target="_blank" className="text-blue-400">module</a>, you can verify your purchase for a free premium upgrade. <Link href="/checkout/redeem/help" className="text-blue-400">See more here</Link>.</p>
               </>
             )}
             <Button disabled={submitting} type="submit" variant="" className="w-full">

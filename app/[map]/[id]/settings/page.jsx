@@ -20,7 +20,8 @@ export default async function mapLobby({ params }) {
   const { map, id } = await params
   if (id.length === 36) {
     const session = await getServerSession(authOptions)
-    const user = session ? await db.user.findUnique({ where: { email: session.user.email } }) : null
+    if (!session) redirect('/?error=please%20login%20first')
+    const user = await db.user.findUnique({ where: { email: session?.user?.email } })
     if (!user) redirect('/?error=user%20not%20found')
     const cloud = await db.map.findUnique({
       where: {
