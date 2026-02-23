@@ -82,6 +82,7 @@ model User {
   locations Location[]
   maps      Map[]
   sessions  Session[]
+  featureVotes FeatureVote[]
 }
 
 model Account {
@@ -118,6 +119,16 @@ model VerificationToken {
   expires    DateTime
 
   @@id([identifier, token])
+}
+
+model FeatureVote {
+  userId    String
+  featureId Int
+
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, featureId])
+  @@index([featureId])
 }
 
 model caffine {

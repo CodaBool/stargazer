@@ -45,7 +45,7 @@ export default function Cartographer({ name, data, uuid, remoteConfig, iconIndex
       if (remoteConfig) {
         console.log("remote config, skip local map read")
         // screenshot or plain remote
-        let config = { ...CONFIG, ...remoteConfig }
+        let config = { ...CONFIG, ...remoteConfig, VIEW: { ...CONFIG.VIEW, ...remoteConfig.VIEW } }
         if (params.get('img') === "1") {
           config.VIEW.zoom = params.get("z")
           config.VIEW.longitude = params.get("lng")
@@ -129,7 +129,7 @@ export default function Cartographer({ name, data, uuid, remoteConfig, iconIndex
       } else {
         setCombined(null)
       }
-      setupMap({ ...CONFIG, ...map.config }, combined || data)
+      setupMap({ ...CONFIG, ...map.config, VIEW: { ...CONFIG.VIEW, ...map.config.VIEW } }, combined || data)
     })()
 
     // cleanup

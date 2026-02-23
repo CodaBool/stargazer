@@ -7,13 +7,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import {
   AlertDialog,
@@ -38,9 +31,9 @@ import { useWatch } from "react-hook-form"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Download, LoaderCircle, Settings, X } from "lucide-react"
+import { ArrowLeft, Download, LoaderCircle, Settings} from "lucide-react"
 import 'react-quill-new/dist/quill.bubble.css'
-import { combineAndDownload, combineLayers, getConsts, getMaps, hexToRgb, localGet, localSet, TITLE } from "@/lib/utils"
+import { combineAndDownload, combineLayers, getConsts, getMaps, localSet, TITLE } from "@/lib/utils"
 import randomName from '@scaleway/random-name'
 import Link from "next/link"
 import { Textarea } from "../ui/textarea"
@@ -178,6 +171,7 @@ export default function SharedSettings({
               rules={{
                 validate: v => {
                   if (!v) return
+                  if (v === BG_IMAGE) return
                   if (!v.includes("http")) return "Background image URL must contain 'http'";
                 }
               }}

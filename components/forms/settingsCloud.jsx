@@ -86,6 +86,11 @@ export default function MapSettings({ map, id, data, config }) {
       body.SEARCH_SIZE = Number(body.SEARCH_SIZE)
     }
 
+    // {
+    //   bgImage: [[-3, -2], [2.985, 2]],
+    //   bgImageOpacity: 0.5,
+    // },
+
 
     delete body.file
     delete body.name
