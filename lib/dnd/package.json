@@ -1,0 +1,31 @@
+{
+  "name": "dnd",
+  "scripts": {
+    "start": "node 3.normalize.js",
+    "bounds": "node 4.bounds.js",
+    "distort": "node 5.distort.js",
+    "remove": "node 7.remove.js",
+    "prune": "node 8.pruneSplitKeys.js",
+    "merge": "node 6.merge.js"
+  },
+  "type": "module",
+  "dependencies": {
+    "@elastic/spritezero": "^6.2.1",
+    "@mapbox/spritezero": "^8.0.3",
+    "@turf/clean-coords": "^7.3.4",
+    "@turf/dissolve": "^7.3.4",
+    "@turf/helpers": "^7.3.4",
+    "@turf/intersect": "^7.3.4",
+    "@turf/projection": "^7.3.4",
+    "@turf/rewind": "^7.3.4",
+    "@turf/square-grid": "^7.3.4",
+    "@turf/turf": "^7.3.4",
+    "@turf/unkink-polygon": "^7.3.4",
+    "fs-extra": "^11.3.3",
+    "jsdom": "^28.1.0",
+    "pg": "^8.18.0",
+    "topojson-client": "^3.1.0",
+    "topojson-server": "^3.0.1",
+    "vm": "^0.1.0"
+  }
+}

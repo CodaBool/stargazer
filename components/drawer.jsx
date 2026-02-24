@@ -217,9 +217,9 @@ export default function DrawerComponent({
     >
       <DrawerContent>
         <DrawerTitle />
-        <div className="w-full flex flex-col items-center justify-center text-xs lg:text-base">
+        <div className="w-full flex flex-col items-center justify-center text-xs lg:text-base select-text">
           {/* Canvas */}
-          <div className="flex items-center justify-center z-[-1]">
+          <div className="flex items-center justify-center z-10">
             {availableThreejsModels.includes(display.type) ? (
               <Suspense fallback={<div />}>
                 <ThreejsPlanet
@@ -264,11 +264,26 @@ export default function DrawerComponent({
           </div>
 
           {/* TOP – Coordinates */}
-          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 z-10 text-xs lg:text-sm text-gray-100">
+          <div
+
+            className="
+              absolute top-0 left-1/2 -translate-x-1/2 z-10
+              text-xs lg:text-sm
+              text-white
+            "
+            style={{
+              textShadow: `
+                0 0 3px black,
+                0 0 6px black,
+                1px 1px 0 black,
+                -1px -1px 0 black
+              `
+            }}
+          >
             <Crosshair
               size={mobile ? 14 : 20}
               onClick={recenter}
-              className="inline mr-2 mb-1 cursor-pointer opacity-60"
+              className="inline mr-2 mb-1 cursor-pointer bg-black/40 rounded-full border-white/80"
             />
             {coordinatesPretty}
           </div>
@@ -333,8 +348,17 @@ export default function DrawerComponent({
                 {typeof display.source === "string" &&
                   display.source.length > 0 && (
                     <div className="flex flex-col gap-1 text-xs">
-                      <span className="uppercase tracking-wide text-[0.65rem] text-gray-400">
-                        source
+                    <span className="uppercase tracking-wide text-[0.65rem]"
+                      style={{
+                        textShadow: `
+                          0 0 3px black,
+                          0 0 6px black,
+                          1px 1px 0 black,
+                          -1px -1px 0 black
+                        `
+                      }}
+                    >
+                      source
                       </span>
                       {isValidHttpUrl(display.source) ? (
                         <Link
@@ -347,7 +371,14 @@ export default function DrawerComponent({
                           <ExternalLink size={mobile ? 14 : 16} />
                         </Link>
                       ) : (
-                        <span>{display.source}</span>
+                        <span style={{
+                          textShadow: `
+                            0 0 3px black,
+                            0 0 6px black,
+                            1px 1px 0 black,
+                            -1px -1px 0 black
+                          `
+                        }}>{display.source}</span>
                       )}
                     </div>
                   )}
@@ -634,7 +665,14 @@ function BadgeList({ list, variant = "secondary", label, align = "right" }) {
 
   return (
     <div className={`flex flex-col gap-2 text-${align} text-sm`}>
-      <span className="uppercase tracking-wide text-[0.65rem] text-gray-400">
+      <span className="uppercase tracking-wide text-[0.65rem]" style={{
+        textShadow: `
+          0 0 3px black,
+          0 0 6px black,
+          1px 1px 0 black,
+          -1px -1px 0 black
+        `
+      }}>
         {label}
       </span>
       <div

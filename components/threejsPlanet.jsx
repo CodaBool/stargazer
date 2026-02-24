@@ -82,7 +82,6 @@ export const availableThreejsModels = [
   "lava_planet",
   "lava",
   "desert_planet",
-  "desert",
   "terrestrial",
   "ocean_planet",
   "ocean",
@@ -129,7 +128,6 @@ function generatePlanetByType(params) {
     case "lava":
       return createLavaPlanet(params);
     case "desert_planet":
-    case "desert":
       return createDryPlanet(
         undefined,
         params.colors,

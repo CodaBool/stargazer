@@ -24,12 +24,15 @@ let popup = new maplibregl.Popup({
   offset: 15
 })
 
-const mouseMove = (e, wrapper, IS_GALAXY, name, IGNORE_POLY, mobile, modeRef) => {
+const mouseMove = (e, wrapper, IS_GALAXY, name, IGNORE_POLY, mobile, modeRef, dragRef) => {
+  if (dragRef.current) return
+  if ((e.originalEvent?.buttons ?? 0) !== 0) return
   if (window.isMoving) {
     wrapper.panBy([offset.x - e.point.x, offset.y - e.point.y], {
       duration: 0,
     });
     window.offset = e.point;
+    return
   }
   // hover
   if (e.features.length > 0) {
@@ -83,21 +86,18 @@ const mouseMove = (e, wrapper, IS_GALAXY, name, IGNORE_POLY, mobile, modeRef) =>
 }
 
 const mouseLeave = (e, wrapper) => {
-  if (typeof hoveredStateId === "undefined") return
-  if (hoveredStateId !== null) {
+  if (typeof window.hoveredStateId === "undefined") return
+  if (window.hoveredStateId !== null) {
     wrapper.setFeatureState(
-      { source: 'source', id: window.hoveredStateId },
+      { source: "source", id: window.hoveredStateId },
       { hover: false }
-    );
+    )
   }
-  window.hoveredStateId = null;
+  window.hoveredStateId = null
 
-  window.currentFeatureCoordinates = undefined;
-  // wrapper.getCanvas().style.cursor = ''
-  const popupElement = document.querySelector('.maplibregl-popup');
-  if (popupElement) {
-    popupElement.classList.remove('fade-in');
-  }
+  window.currentFeatureCoordinates = undefined
+  const popupElement = document.querySelector(".maplibregl-popup")
+  if (popupElement) popupElement.classList.remove("fade-in")
   popup.remove()
 }
 
@@ -134,6 +134,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
   const mouseDownRef = useRef(null)
   const panMoveRef = useRef(null)
   const mouseUpRef = useRef(null)
+  const isDraggingRef = useRef(false)
   window.setDrawerContent = setDrawerContent
   const userFilters = [
       "all",
@@ -314,7 +315,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     window.localGet = getMaps
 
     // create Listeners
-    mouseMoveRef.current = e => mouseMove(e, wrapper, IS_GALAXY, name, IGNORE_POLY, mobile, modeRef)
+    mouseMoveRef.current = e => mouseMove(e, wrapper, IS_GALAXY, name, IGNORE_POLY, mobile, modeRef, isDraggingRef)
     mouseLeaveRef.current = e => mouseLeave(e, wrapper)
     territoryClickRef.current = e => territoryClick(e, wrapper, IGNORE_POLY, IS_GALAXY, name)
     locationClickRef.current = locationClick
@@ -416,6 +417,29 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
     // wrapper.on("mousemove", panMoveRef.current)
     // wrapper.on("mouseup", mouseUpRef.current)
+    //
+    const onDragStart = () => {
+      isDraggingRef.current = true
+
+      // clear hover highlight immediately so it doesn't "stick"
+      if (window.hoveredStateId != null) {
+        wrapper.setFeatureState({ source: "source", id: window.hoveredStateId }, { hover: false })
+        window.hoveredStateId = null
+      }
+
+      // kill any popup immediately
+      if (popup?._container) popup.remove()
+
+      // also reset coordinate cache so next non-drag hover can re-open
+      window.currentFeatureCoordinates = undefined
+    }
+
+    const onDragEnd = () => {
+      isDraggingRef.current = false
+    }
+
+    wrapper.on("dragstart", onDragStart)
+    wrapper.on("dragend", onDragEnd)
     wrapper.on("mousedown", mouseDownRef.current)
     wrapper.on("move", removePopupRef.current)
     wrapper.on("mousemove", "location", mouseMoveRef.current)
@@ -441,6 +465,9 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       // Remove all
       // wrapper.off("mousemove", panMoveRef.current)
       // wrapper.off("mouseup", mouseUpRef.current)
+
+      wrapper.on("dragstart", onDragStart)
+      wrapper.on("dragend", onDragEnd)
       wrapper.off("move", removePopupRef.current)
       wrapper.off("mousedown", mouseDownRef.current)
       wrapper.off("mousemove", "location", mouseMoveRef.current)

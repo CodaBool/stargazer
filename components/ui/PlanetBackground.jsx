@@ -15,15 +15,15 @@ const PLANET_TYPES = [
   'jovian',
   'asteroid',
   'star',
-  'lava',
-  'desert',
-  'ring',
+  'lava_planet',
+  'desert_planet',
+  'ringed_planet',
 ]
 const STAR_SCHEMES = ["blue", "orange", "red", "white", "yellow"];
 
 // BUG: ice has bugged box around it on mobile, just remove from pool
 if (!ismobile) {
-  PLANET_TYPES.push('ice')
+  PLANET_TYPES.push('ice_planet')
 }
 
 const randomIndex = Math.floor(Math.random() * PLANET_TYPES.length)
