@@ -8,6 +8,7 @@ import { Button } from "./ui/button";
 import { genLink, getIcon, SVG_BASE } from "@/lib/utils";
 import Link from "next/link";
 import { claimThreeCanvas } from "./threeHostRegistry.js";
+import { BadgeList } from "./drawer";
 
 export default function SolarSystemDiagram({
   group,
@@ -273,10 +274,12 @@ export default function SolarSystemDiagram({
                         {Array.isArray(p.moons) && (
                           <Badge variant="destructive">{p.moons.length} moons</Badge>
                         )}
-                        {typeof p.modifier === "string" && p.modifier && (
-                          <Badge variant="destructive">{p.modifier}</Badge>
-                        )}
-                        {p.isMoon && <Badge variant="destructive">Moon</Badge>}
+                        <BadgeList
+                          list={p.tags}
+                          variant="secondary"
+                          label="Tags"
+                          align="left"
+                        />
                       </div>
                     </div>
                   ) : (
@@ -328,10 +331,6 @@ export default function SolarSystemDiagram({
                           {p.moons.length} moon{p.moons.length === 1 ? "" : "s"}
                         </p>
                       )}
-                      {typeof p.modifier === "string" && p.modifier && (
-                        <p className="mt-2">{p.modifier}</p>
-                      )}
-                      {p.isMoon && <p className="mt-2">Moon</p>}
                     </div>
                   )}
                 </>

@@ -376,7 +376,6 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
 
             {type !== "star" && (
               <>
-                {/* <BoolRow label="Is Moon" value={!!values.isMoon} onChange={(v) => set("isMoon", v, { immediate: true })} />*/}
                 <Field label="Hours in a Day">
                   <SliderWithInput
                     value={numOr(values.hoursInDay, 24)}
@@ -722,7 +721,7 @@ function uniq(arr) {
   return [...new Set(arr)]
 }
 
-function Comma({
+export function Comma({
   label,
   value,
   onChange,
@@ -1036,8 +1035,6 @@ const KNOWN_KEYS = new Set([
   "planetSize",
   "temperature",
   "diameter",
-  "isMoon",
-  "modifier",
   "hoursInDay",
   "daysInYear",
   "gravity",

@@ -565,23 +565,6 @@ export default function DrawerComponent({
                 <dd>{display.daysInYear}</dd>
               </div>
             )}
-            {typeof display.modifier === "string" &&
-              display.modifier.length > 0 && (
-                <div>
-                  <dt className="text-gray-400 uppercase text-[0.6rem] tracking-wide">
-                    Modifier
-                  </dt>
-                  <dd>{display.modifier}</dd>
-                </div>
-              )}
-            {display.isMoon && (
-              <div>
-                <dt className="text-gray-400 uppercase text-[0.6rem] tracking-wide">
-                  Type
-                </dt>
-                <dd>Moon</dd>
-              </div>
-            )}
           </dl>
 
           {display.description && (
@@ -649,7 +632,7 @@ const renderPercentBar = (value, label, color = "#38bdf8") => {
     </div>
   )
 }
-function BadgeList({ list, variant = "secondary", label, align = "right" }) {
+export function BadgeList({ list, variant = "secondary", label, align = "right" }) {
   if (!list) return
 
   const m =

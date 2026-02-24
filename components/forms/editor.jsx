@@ -159,7 +159,7 @@ export default function EditorForm({
                 value={values.type ?? ""}
                 onValueChange={(val) => setProp("type", val, { immediate: true })}
               >
-                <SelectTrigger className="w-full cursor-pointer">
+                <SelectTrigger className="w-full cursor-pointer type-select-button">
                   <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>

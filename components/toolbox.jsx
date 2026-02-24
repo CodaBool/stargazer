@@ -358,9 +358,9 @@ export default function Toolbox({ map, pan, width, params, height, mobile, name,
       const searchbarFocused = document.querySelector('input[cmdk-input]') === document.activeElement;
       const advEditor = document.querySelector('.adv-editor-dialog')
       const focused = document.activeElement.closest(".editor-table") !== null
+      const typeSelectOpen = document.querySelector('.type-select-button').getAttribute("data-state") === "open"
 
-      // console.log("focused", focused)
-      if (searchbarFocused || focused || advEditor) return
+      if (searchbarFocused || focused || advEditor || typeSelectOpen) return
 
       if (event.code === "KeyC") {
         setMode(mode === "crosshair" ? null : "crosshair")

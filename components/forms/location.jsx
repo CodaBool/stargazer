@@ -153,27 +153,10 @@ export default function CreateLocation({ map }) {
                 <FormItem className="py-4">
                   <FormLabel>Faction (optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Raiders" {...field} className="font-mono" />
+                    <Input placeholder="Tunnel Snakes, Raiders" {...field} className="font-mono" />
                   </FormControl>
                   <FormDescription>
-                    Who has control over the location
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="city"
-              defaultValue=""
-              render={({ field }) => (
-                <FormItem className="py-4">
-                  <FormLabel>Cities (optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="City" {...field} className="font-mono" />
-                  </FormControl>
-                  <FormDescription>
-                    A list of cities at this location, if there are multiple use a comma to separate them.
+                    Who has influence in the location, use commas to separate multiple factions.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -203,88 +186,13 @@ export default function CreateLocation({ map }) {
               defaultValue=""
               render={({ field }) => (
                 <FormItem className="py-4">
-                  <FormLabel>Source of Information</FormLabel>
+                  <FormLabel>Source Material</FormLabel>
                   <FormControl>
                     <Input placeholder="Book pg. 404" {...field} className="font-mono" />
                   </FormControl>
                   <FormDescription>
-                    Name and page number for the source material this location is from
+                    Name and page number for the source material this location is from. Alternatively, it can be a URL to link to an external site.
                   </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="unofficial"
-              defaultValue={false}
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 py-2">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      className="cursor-pointer"
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>
-                      Unofficial
-                    </FormLabel>
-                    <FormDescription>
-                      Is this location from unofficial source material
-                    </FormDescription>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="destroyed"
-              defaultValue={false}
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 py-2">
-                  <FormControl>
-                    <Checkbox
-                      className="cursor-pointer"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>
-                      Destroyed
-                    </FormLabel>
-                    <FormDescription>
-                      Is this location destroyed
-                    </FormDescription>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="capital"
-              defaultValue={false}
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 py-2">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      className="cursor-pointer"
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>
-                      Capital
-                    </FormLabel>
-                    <FormDescription>
-                      Is this location a capital for its faction
-                    </FormDescription>
-                  </div>
                   <FormMessage />
                 </FormItem>
               )}
