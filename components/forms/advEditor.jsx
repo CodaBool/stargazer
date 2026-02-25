@@ -111,6 +111,7 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
     return { min: -273, max: 300, step: 1, defaults: 15 }
   }, [type])
 
+  // WARN: keep in sync with what I have in location.jsx form
   const tags = useMemo(() => {
     const base = [
       { key: "unofficial", label: "Unofficial" },

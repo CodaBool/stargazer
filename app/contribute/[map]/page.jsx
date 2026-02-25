@@ -25,7 +25,7 @@ import { CircleHelp, House, Plus } from "lucide-react"
 
 export default async function Contribute({ params, searchParams }) {
   const session = await getServerSession(authOptions)
-  const { p: openLocationForm, v: variant } = await searchParams
+  const { p: openLocationForm } = await searchParams
   const { map } = await params
   const authURL = `/login?back=/contribute/${map}&callback=/contribute/${map}?p=1`
 

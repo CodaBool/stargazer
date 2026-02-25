@@ -8,7 +8,9 @@ export default async function Page({ searchParams }) {
     redirect('/?error=could%20not%20find%20location')
   }
 
-  // TODO: this doesn't seem to supoort finding polygons
+  redirect(`/?error=feature%20still%20in%20development`)
+
+  // TODO: have this use the new location id system.
   const location = await db.location.findMany({
     where: {
       coordinates: `${x},${y}`,
@@ -18,11 +20,11 @@ export default async function Page({ searchParams }) {
   })
   if (location.length === 1) {
     redirect(`/contribute/${map}/${location[0].id}`, "push")
-    return (
-      <div className="flex items-center justify-center min-h-[80vh]">
-        <div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent text-indigo-900 rounded-full" />
-      </div>
-    )
+    // return (
+    //   <div className="flex items-center justify-center min-h-[80vh]">
+    //     <div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent text-indigo-900 rounded-full" />
+    //   </div>
+    // )
   } else {
     redirect(`/?error=feature%20not%20found`)
   }

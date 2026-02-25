@@ -3,13 +3,10 @@ import SharedSettings from "./sharedSettings"
 import { toast } from "sonner"
 import { useRouter } from 'next/navigation'
 import { useForm } from "react-hook-form"
-import { ArrowLeft, LoaderCircle, Settings, X } from "lucide-react"
-import { useEffect, useMemo, useState } from "react"
+import { useState } from "react"
 import 'react-quill-new/dist/quill.bubble.css'
 import { getConsts } from "@/lib/utils"
-import Link from "next/link"
 
-let preAlertData
 export default function MapSettings({ map, id, data, config }) {
   // https://github.com/zenoamaro/react-quill/issues/921
   const DEFAULTS = getConsts(map)
@@ -18,8 +15,6 @@ export default function MapSettings({ map, id, data, config }) {
   const [alert, setAlert] = useState()
   const router = useRouter()
   const form = useForm()
-
-  // console.log(config)
 
   async function submit(body, _, approved) {
     const newObj = {

@@ -19,27 +19,42 @@ model Comment {
 }
 
 model Location {
-  id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(80)
-  createdAt   DateTime  @default(now()) @db.Timestamp(6)
-  updatedAt   DateTime  @default(now()) @updatedAt
-  description String    @db.VarChar(3000)
-  city        String    @db.VarChar(100)
-  type        String    @db.VarChar(25)
-  geometry    String    @db.VarChar(25)
-  coordinates String    @db.VarChar(100)
-  faction     String    @db.VarChar(400)
-  source      String    @db.VarChar(100)
-  userId      String
-  published   Boolean   @default(false)
-  capital     Boolean   @default(false)
-  destroyed   Boolean   @default(false)
-  resolved    Boolean   @default(false)
-  unofficial  Boolean   @default(false)
-  alias       String?   @db.VarChar(150)
-  map         String
-  comments    Comment[]
-  user        User      @relation(fields: [userId], references: [id])
+  id               Int       @id @default(autoincrement())
+  name             String    @db.VarChar(80)
+  createdAt        DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt        DateTime  @default(now()) @updatedAt
+  description      String    @db.VarChar(3000)
+  type             String    @db.VarChar(25)
+  geometry         String    @db.VarChar(25)
+  coordinates      String    @db.VarChar(100)
+  locations        String?   @db.VarChar(400)
+  region           String?   @db.VarChar(200)
+  people           String?   @db.VarChar(200)
+  tags             String?   @db.VarChar(500)
+  composition      String?   @db.VarChar(200)
+  image            String?   @db.VarChar(400)
+  caption          String?   @db.VarChar(300)
+  baseColors       String?   @db.VarChar(100)
+  featureColors    String?   @db.VarChar(100)
+  layerColors      String?   @db.VarChar(100)
+  atmosphereColors String?   @db.VarChar(100)
+  faction          String?   @db.VarChar(400)
+  alias            String?   @db.VarChar(150)
+  temperature      String?   @db.VarChar(100)
+  diameter         String?   @db.VarChar(100)
+  gravity          String?   @db.VarChar(100)
+  pressure         String?   @db.VarChar(100)
+  hoursInDay       String?   @db.VarChar(100)
+  daysInYear       String?   @db.VarChar(100)
+  hydroPercent     String?   @db.VarChar(100)
+  icePercent       String?   @db.VarChar(100)
+  source           String    @db.VarChar(100)
+  userId           String
+  published        Boolean   @default(false)
+  resolved         Boolean   @default(false)
+  map              String
+  comments         Comment[]
+  user             User      @relation(fields: [userId], references: [id])
 }
 
 model Map {
@@ -77,11 +92,11 @@ model User {
   premiumGrantedAt DateTime?
   foundryWorld     String?   @unique
 
-  accounts  Account[]
-  comments  Comment[]
-  locations Location[]
-  maps      Map[]
-  sessions  Session[]
+  accounts     Account[]
+  comments     Comment[]
+  locations    Location[]
+  maps         Map[]
+  sessions     Session[]
   featureVotes FeatureVote[]
 }
 
@@ -125,7 +140,7 @@ model FeatureVote {
   userId    String
   featureId Int
 
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, featureId])
   @@index([featureId])
