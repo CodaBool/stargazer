@@ -358,7 +358,7 @@ export default function Toolbox({ map, pan, width, params, height, mobile, name,
       const searchbarFocused = document.querySelector('input[cmdk-input]') === document.activeElement;
       const advEditor = document.querySelector('.adv-editor-dialog')
       const focused = document.activeElement.closest(".editor-table") !== null
-      const typeSelectOpen = document.querySelector('.type-select-button').getAttribute("data-state") === "open"
+      const typeSelectOpen = document.querySelector('.type-select-button')?.getAttribute("data-state") === "open"
 
       if (searchbarFocused || focused || advEditor || typeSelectOpen) return
 
