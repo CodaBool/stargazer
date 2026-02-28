@@ -236,14 +236,15 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
     }
     let zoom = wrapper.getZoom()
+    const zoomStep = ((MAX_ZOOM - MIN_ZOOM) / 3)
     // duplicate of what's in drawer.jsx recenter
     if (d.geometry.type === "Point") {
       [lng, lat] = coordinates
 
+
       // force a zoom if panning to location by search
       if (fit) {
-        // console.log("DEBUG: point set zoom to ", (MAX_ZOOM - MIN_ZOOM) / 2, "from", wrapper.getZoom())
-        zoom = MAX_ZOOM - ((MAX_ZOOM - MIN_ZOOM) / (2 + Number(IS_GALAXY ? 1 : 0)))
+        zoom = MAX_ZOOM - zoomStep
       }
 
     } else {
@@ -262,18 +263,8 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       }
     }
 
-    // attempt to add some offset if zoomed out
-    if (zoom > ((MAX_ZOOM - MIN_ZOOM) / 2) && fit) {
-      const arbitraryNumber = 13
-      let zoomFactor = Math.pow(2, arbitraryNumber - wrapper.getZoom())
-      zoomFactor = Math.max(zoomFactor, 4)
-      const latDiff = (wrapper.getBounds().getNorth() - wrapper.getBounds().getSouth()) / zoomFactor
-      lat = coordinates[1] - latDiff / 2
-      // console.log('DEBUG: adding', latDiff / 2, " latitude compensation to zoom level")
-    }
-
     if (bounds) {
-      // console.log("DEBUG: pan using bounds", bounds)
+      console.log("DEBUG: pan using bounds", bounds, )
 
       wrapper.fitBounds([
         [bounds[0], bounds[1]], // bottom-left corner
@@ -283,7 +274,18 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
         padding: { top: 50, bottom: 50, left: 50, right: 50 },
       });
     } else {
-      wrapper.flyTo({ center: [lng, lat], duration: 700, zoom })
+
+
+      // set curve low if zoomed out with little room for animation
+      // https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/FlyToOptions/
+      wrapper.flyTo({
+        center: [lng, lat],
+        duration: 700, zoom,
+        curve: wrapper.getZoom() < (MIN_ZOOM + zoomStep / 2) ? 0.1 : 1.42,
+        padding: {
+          bottom: 110, // arbitrary px for drawer
+        },
+      })
 
       // Hacky solution since trying to offset for the drawer when zoomed out is hard
       // this will wait until more zoomed and closer to the target to then attempt
@@ -667,7 +669,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       {params.get("quest") && <Quest name={name} uuid={uuid} />}
       <Debug />
       {(!locked && params.get("tutorial") !== "0") && <Tutorial name={name} IS_GALAXY={IS_GALAXY} />}
-      {!locked && <Drawer {...drawerContent} passedLocationClick={locationClick} params={params} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} VIEW={VIEW} GENERATE_LOCATIONS={GENERATE_LOCATIONS} GRID_DENSITY={GRID_DENSITY || 1} COORD_OFFSET={COORD_OFFSET} SEARCH_SIZE={SEARCH_SIZE} mobile={mobile} width={width} height={height} />}
+      {!locked && <Drawer {...drawerContent} passedLocationClick={locationClick} params={params} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} VIEW={VIEW} GENERATE_LOCATIONS={GENERATE_LOCATIONS} GRID_DENSITY={GRID_DENSITY || 1} COORD_OFFSET={COORD_OFFSET} SEARCH_SIZE={SEARCH_SIZE} MIN_ZOOM={MIN_ZOOM} MAX_ZOOM={MAX_ZOOM} mobile={mobile} width={width} height={height} />}
       {params.get("toolbox") !== "0" && <Toolbox data={data} params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} pan={pan} isRemote={!!uuid} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} COORD_OFFSET={COORD_OFFSET} GRID_DENSITY={GRID_DENSITY} TRAVEL_RATE={Number(TRAVEL_RATE)} TRAVEL_RATE_UNIT={TRAVEL_RATE_UNIT} TRAVEL_TIME_UNIT={TRAVEL_TIME_UNIT} SHIP_CLASS={SHIP_CLASS} TIME_DILATION={TIME_DILATION} />}
       {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} mobile={mobile} />}
     </>

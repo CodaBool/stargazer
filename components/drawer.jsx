@@ -44,6 +44,8 @@ export default function DrawerComponent({
   passedLocationClick,
   params,
   GEO_EDIT,
+  MIN_ZOOM,
+  MAX_ZOOM,
   GRID_DENSITY,
   COORD_OFFSET,
   SEARCH_SIZE,
@@ -179,15 +181,14 @@ export default function DrawerComponent({
   function recenter() {
     if (!map || !coordinates || display?.fake) return
 
-    const arbitraryNumber = 9
-    let zoomFactor = Math.pow(2, arbitraryNumber - map.getZoom())
-    zoomFactor = Math.max(zoomFactor, 4)
-
-    const bounds = map.getBounds()
-    const latDiff = (bounds.getNorth() - bounds.getSouth()) / zoomFactor
-    const lat = coordinates[1] - latDiff / 2
-
-    map.flyTo({ center: [coordinates[0], lat], duration: 800 })
+    map.flyTo({
+      center: coordinates,
+      duration: 700,
+      curve: map.getZoom() < (MIN_ZOOM + ((MAX_ZOOM - MIN_ZOOM) / 3) / 2) ? 0.1 : 1.42,
+      padding: {
+        bottom: 110, // arbitrary px for drawer
+      },
+    })
 
     if (selectedId != null) {
       map.setFeatureState({ source: "source", id: selectedId }, { hover: true })
