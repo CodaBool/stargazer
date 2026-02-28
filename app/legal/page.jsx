@@ -17,7 +17,7 @@ export default async function Page({ searchParams }) {
 
   return (
     <div className='starfield'>
-      <Card className="mx-auto my-8 max-w-2xl">
+      <Card className="mx-auto my-2 max-w-2xl">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle><Gavel className='inline' />  Legal</CardTitle>
@@ -30,23 +30,29 @@ export default async function Page({ searchParams }) {
           <CardDescription>This project is created for entertainment purposes only</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="max-w-3xl space-y-6">
+          <div className="max-w-3xl space-y-6 text-[0.89em]">
+            <h1 className="text-2xl my-0">Lancer</h1>
+
             <p>{TITLE} is not an official Lancer product; it is a third party work, and is not affiliated with Massif Press. {TITLE} is published via the Lancer <a href="https://massifpress.com/legal" className="text-blue-300 hover:underline" target="_blank">Third Party License.</a></p>
+            <hr className='mb-3'/>
+
+            <h1 className="text-2xl my-0">License</h1>
+
             <p className="text-gray-200">All code written for {TITLE} is licensed under GNU General Public License v3.0 and is freely available from the project's <a href={REPO} className="text-blue-300 hover:underline" target="_blank">GitHub repository</a>.</p>
 
-            <hr />
-            <h1 className='text-2xl'>Credits</h1>
+            <hr className='mb-3'/>
+            <h1 className='text-2xl my-0'>Credits</h1>
             <p>Shaders for the planets were written by <a href="https://deep-fold.itch.io" className="text-blue-300 hover:underline" target="_blank">Deep Fold</a> and <a href="https://github.com/Timur310" className="text-blue-300 hover:underline" target="_blank">@Timur310</a></p>
             <p>The Lancer map would not have been possible without the work of <a href="https://janederscore.tumblr.com" className="text-blue-300 hover:underline" target="_blank">Janederscore</a>! Additional thank you to Starwall</p>
 
-            <hr />
-            <h1 className="text-2xl">Privacy Policy</h1>
+            <hr className='mb-3'/>
+            <h1 className="text-2xl my-0">Privacy Policy</h1>
             <p>This site does not use cookies or any tracking technologies.</p>
             <p>Users may upload map data and submit comments. This content is stored solely to support the public sharing and discussion features of the application. No analytics, or third-party tracking are collected or used.</p>
             <p>This site is not intended for use by individuals under the age of 13.</p>
 
-            <hr />
-            <h1 className="text-2xl">Terms of Use</h1>
+            <hr className='mb-3'/>
+            <h1 className="text-2xl my-0">Terms of Use</h1>
             <p>By using this site, you agree not to upload any content that is unlawful, harassing, infringing, or otherwise violates the rights of others.</p>
             <p>You retain ownership of your uploaded content but grant the site a non-exclusive license to display and share it as part of the public map archive.</p>
             <p>The site maintainer reserves the right to moderate or remove content at their discretion.</p>

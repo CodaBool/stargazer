@@ -283,7 +283,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
         duration: 700, zoom,
         curve: wrapper.getZoom() < (MIN_ZOOM + zoomStep / 2) ? 0.1 : 1.42,
         padding: {
-          bottom: 110, // arbitrary px for drawer
+          bottom: params.get("iframe") ? height / 2 : 110, // arbitrary px for drawer
         },
       })
 
@@ -356,7 +356,6 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
 
           // TODO: support more than Point features
           const locationWithPixels = location.map(l => {
-            console.log("get pixel", l.geometry.coordinates)
             const {y, x} = map.project(new maplibregl.LngLat(l.geometry.coordinates[0], l.geometry.coordinates[1]))
             return {
               ...l,
@@ -366,7 +365,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
               }
             };
           })
-          console.log("generate", locationWithPixels)
+          // console.log("generate", locationWithPixels)
 
           window.parent.postMessage({
             type: 'featureData',
@@ -396,7 +395,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       wrapper.getMap().setFilter("location", withUserFilters(['==', '$type', 'Point'], userFilters))
     }
 
-    if (name === "starwars" || name === "alien") {
+    if (gridHelpers(name).hasGrid(name)) {
       const { formatLabels } = gridHelpers(name, GRID_DENSITY || 1)
       new GeoGrid({
         map: wrapper.getMap(),
@@ -665,7 +664,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       {params.get("search") !== "0" && <SearchBar map={wrapper} name={name} data={data} pan={pan} mobile={mobile} UNIT={UNIT} STYLES={STYLES} SEARCH_SIZE={SEARCH_SIZE} />}
       {/* FOUNDRY */}
       {params.get("secret") && <Link width={width} height={height} mobile={mobile} name={name} params={params} />}
-      {params.get("calibrate") && <Calibrate width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} />}
+      {params.get("calibrate") && <Calibrate width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} GRID_DENSITY={GRID_DENSITY} />}
       {params.get("quest") && <Quest name={name} uuid={uuid} />}
       <Debug />
       {(!locked && params.get("tutorial") !== "0") && <Tutorial name={name} IS_GALAXY={IS_GALAXY} />}

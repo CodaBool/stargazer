@@ -3,11 +3,14 @@ import { useEffect } from "react"
 import { useMap } from '@vis.gl/react-maplibre'
 import { toast } from "sonner"
 import { getMaps } from "@/lib/utils"
+import { gridHelpers } from '@/lib/utils'
 
 let text, zText, crosshairX, crosshairY
 
-export function Calibrate({ width, height, mobile, name, IS_GALAXY }) {
+export function Calibrate({ width, height, mobile, name, IS_GALAXY, GRID_DENSITY }) {
   const { map } = useMap()
+  const GRID = (typeof GRID_DENSITY === "number" && GRID_DENSITY > 0) ? GRID_DENSITY : 1
+  const { hasGrid } = gridHelpers(name, GRID)
 
   useEffect(() => {
     if (!map) return
@@ -49,9 +52,9 @@ export function Calibrate({ width, height, mobile, name, IS_GALAXY }) {
     text.style.left = '50%';
     text.style.zIndex = 2;
     text.style.transform = 'translateX(-50%)';
-    text.style.top = mobile ? '70px' : '90px'
+    text.style.top = mobile ? '100px' : '150px'
     text.style.color = 'white'
-    text.style.opacity = 0.7
+    text.style.opacity = 1
     text.style.fontSize = mobile ? '1.5em' : '2.2em'
     text.style.pointerEvents = 'none'
     text.style.textAlign = 'center'
@@ -65,7 +68,7 @@ export function Calibrate({ width, height, mobile, name, IS_GALAXY }) {
     zText.style.transform = 'translateX(-50%)';
     zText.style.bottom = mobile ? '70px' : '90px'
     zText.style.color = 'white'
-    zText.style.opacity = 0.7
+    zText.style.opacity = 1
     zText.style.fontSize = mobile ? '1.5em' : '2.2em'
     zText.style.pointerEvents = 'none'
     zText.style.textAlign = 'center'
@@ -94,7 +97,9 @@ export function Calibrate({ width, height, mobile, name, IS_GALAXY }) {
     const updateCenterCoordinates = () => {
       const { lat, lng } = map.getCenter()
       if (IS_GALAXY) {
-        text.textContent = `Y: ${lat.toFixed(1)} | X: ${lng.toFixed(1)}`;
+        if (hasGrid(name)) {
+          text.textContent = `Y: ${lat.toFixed(3)} | X: ${lng.toFixed(3)}`;
+        }
       } else {
         text.textContent = `Lat: ${lat.toFixed(3)}° | Lng: ${lng.toFixed(3)}°`;
       }

@@ -333,8 +333,6 @@ export default function Toolbox({ map, pan, width, params, height, mobile, name,
       document.querySelectorAll('.crosshair').forEach(el => el.style.visibility = "visible")
       if (IS_GALAXY) {
         const sci = coordFromLngLat(lng, lat, 3); // -> { col, row, label, meta }
-        // console.log("I got this scifi grid coord, how does it look", sci.cell.label, [y, x])
-        // text.textContent = `Y: ${y} | X: ${x}`
         text.textContent = sci.cell.label
       } else {
         text.textContent = `Lat: ${(lat + offset[1]).toFixed(3)}° | Lng: ${(lng + offset[0]).toFixed(3)}°`;

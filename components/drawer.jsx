@@ -186,7 +186,7 @@ export default function DrawerComponent({
       duration: 700,
       curve: map.getZoom() < (MIN_ZOOM + ((MAX_ZOOM - MIN_ZOOM) / 3) / 2) ? 0.1 : 1.42,
       padding: {
-        bottom: 110, // arbitrary px for drawer
+        bottom: params.get("iframe") ? height / 2 : 110, // arbitrary px for drawer
       },
     })
 
