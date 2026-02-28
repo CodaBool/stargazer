@@ -329,7 +329,7 @@ export function MainMenu({ cloudMaps, session, revalidate, hash, systems }) {
             {localMaps &&
               <div className='flex flex-wrap justify-evenly max-h-[205px] overflow-auto'>
                 {Object.keys(localMaps).filter(i => i.split('-')[0] === selectedSystem).length === 0 &&
-                  <p>No local {selectedSystem} maps found. <Link href={`/${selectedSystem}?new=1`} className="text-blue-300">Create a new one.</Link></p>
+                  <p>No local {selectedSystem} maps found. <Link href={`/${selectedSystem}?new=1`} className="text-blue-300">Create a new one.</Link><LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></p>
                 }
                 {Object.entries(localMaps).map(([key, data]) => {
                   const [system, dateId] = key.split('-')
@@ -348,7 +348,7 @@ export function MainMenu({ cloudMaps, session, revalidate, hash, systems }) {
           </TabsContent>
           <TabsContent value="cloud" scifi={true}>
             {!session &&
-              <h3 className='text-gray-300'>Provide an <Link href={`/api/auth/signin?callbackUrl=${window?.location.toString() || ""}`} className='text-blue-300'>email address</Link> to publish a map <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
+              <h3 className='text-gray-300'>Please <Link href={`/api/auth/signin?callbackUrl=${window?.location.toString() || ""}`} className='text-blue-300'>login</Link> to publish a map <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
             }
             {(Object.values(cloudMaps || {}).filter(m => m.map === selectedSystem).length === 0) && session &&
               <p>No cloud {selectedSystem} maps found</p>

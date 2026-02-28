@@ -62,15 +62,15 @@ export default function IconSelector({ onSelect, mapName, children, iconIndex })
           </div>
 
           {/* Search + Tabs */}
-          <Tabs defaultValue="main" className="w-full">
+          <Tabs defaultValue="generic" className="w-full">
             <TabsList className="mb-2">
-              <TabsTrigger value="main">Main</TabsTrigger>
+              <TabsTrigger value="generic">Generic</TabsTrigger>
               <TabsTrigger value="map">{mapName}</TabsTrigger>
               <TabsTrigger value="url">URL</TabsTrigger>
             </TabsList>
 
 
-            <TabsContent value="main">
+            <TabsContent value="generic">
               <Input
                 value={search}
                 className="font-mono mb-3"
@@ -82,7 +82,7 @@ export default function IconSelector({ onSelect, mapName, children, iconIndex })
                   return renderIcon(icon, 'main')
                 })}
               </div>
-              <p className='text-sm mt-4 ml-2 text-muted-foreground'>Not all icons shown, use search to find an icon</p>
+              <p className='text-sm mt-4 ml-2 text-gray-400'>...3071 total icons available. Search to find an icon.</p>
             </TabsContent>
 
             <TabsContent value="map">
@@ -148,19 +148,26 @@ export default function IconSelector({ onSelect, mapName, children, iconIndex })
                     </li>
                   )}
                   <li>
-                    Some icons are from{' '}
+                    You can use remote icons. Search on{' '}
                     <a
                       href="https://www.freepik.com/search?format=search&type=icon"
                       target="_blank"
-                      rel="noreferrer"
                       className="text-blue-300 cursor-pointer"
                     >
                       Freepik
                     </a>
-                    , this can be a good resource for adding new icons.
+                    , or{' '}
+                    <a
+                      href="https://game-icons.net/"
+                      target="_blank"
+                      className="text-blue-300 cursor-pointer"
+                    >
+                      Game Icons
+                    </a>
+                    {' '}
                   </li>
                   <li>
-                    Sometimes icon's are named different than you'd guess. More robust search alogrithms are on the source websites. Try searching on {' '}
+                    More robust search alogrithms are on the source websites. Try searching on {' '}
                     <a
                       href="https://fontawesome.com/search"
                       target="_blank"
@@ -178,7 +185,7 @@ export default function IconSelector({ onSelect, mapName, children, iconIndex })
                     >
                       Lucide
                     </a>
-                    , to find its name and paste it into the search here.
+                    , to find its name and paste it into the search above.
                   </li>
                 </ul>
               </AccordionContent>

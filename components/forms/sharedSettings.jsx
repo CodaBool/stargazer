@@ -910,7 +910,18 @@ export default function SharedSettings({
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Upload a GeoJSON or TopoJSON file to fill the map with data. If uploading a topojson the layers must be named as follows: "location" for points, "territory" for polygons, "guide" for lines
+                    Upload a GeoJSON or TopoJSON file to fill the map with data. If uploading a topojson the layers must be named as follows: "location" for points, "territory" for polygons, "guide" for lines.
+
+                    <br />
+
+                    An important consideration is that the uploaded features must fit within your map's Bounds property. Generally this is just within a couple coordinates around lat/lng of 0,0.
+                    <br />
+
+                    See my published
+
+                    <a target="_blank" className="text-blue-300" href="https://github.com/CodaBool/stargazer/wiki/Feature-Properties"> feature documentation </a>
+
+                    for what properties matter on features.
                   </FormDescription>
                   {form.formState.errors.invalid &&
                     <>
