@@ -102,10 +102,6 @@ const mouseLeave = (e, wrapper) => {
 }
 
 const mouseDown = (e) => {
-  if (e.originalEvent.button === 2) {
-    window.isMoving = true;
-    window.offset = e.point;
-  }
 }
 
 // remove popup when moving
