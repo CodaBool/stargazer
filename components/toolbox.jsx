@@ -366,7 +366,7 @@ export default function Toolbox({ map, pan, width, params, height, mobile, name,
       } else if (event.code === "KeyZ") {
         setMode(mode === "measure" ? null : "measure")
         // if you allow remote maps to be edited live, then remove !isRemote
-      } else if ((event.code === "KeyP" || event.code === "KeyB") && !isRemote) {
+      } else if ((event.code === "KeyP" || event.code === "KeyB") && !isRemote && params.get("disallowPreview") !== "1") {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get("preview")) {
           router.push(`/${name}?id=${urlParams.get("id")}`)
