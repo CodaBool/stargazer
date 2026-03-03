@@ -15,6 +15,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { isMobile, useStore, getMaps, TITLE, REPO, USER } from "@/lib/utils"
 
 export default function Tutorial({ name }) {
