@@ -90,7 +90,7 @@ model User {
   stripeName       String?
   stripeEmail      String?
   premiumGrantedAt DateTime?
-  foundryWorld     String?   @unique
+  foundryWorld     String?
 
   accounts     Account[]
   comments     Comment[]
