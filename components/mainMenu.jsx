@@ -796,6 +796,8 @@ function deleteMapRemote(id, revalidate) {
 }
 
 function replaceRemoteMap(localMap, revalidate) {
+  window.alert("this feature unfortunately needs more time in the oven. Please upload as a new map until a future update.")
+  return
   console.log("sending", localMap)
   fetch('/api/map', {
     method: 'PUT',
