@@ -61,12 +61,12 @@ export default async function Page() {
 
 
               </li>
-              <Image src="/tutorial/secret.webp" className='m-auto my-2' width={861} height={149} alt="Secret Image" />
+              <Image unoptimized src="/tutorial/secret.webp" className='m-auto my-2' width={861} height={149} alt="Secret Image" />
 
               <li className="leading-relaxed">
                 Open your <span className="font-medium text-white">Map Manager</span> to Extra and press
                 <span className="font-medium text-white"> Free Stargazer Premium</span>
-                <Image src="/tutorial/tutorial_redeem.webp" className='m-auto my-2' width={996} height={446} alt="redeem Image" />
+                <Image unoptimized src="/tutorial/tutorial_redeem.webp" className='m-auto my-2' width={996} height={446} alt="redeem Image" />
 
               </li>
             </ol>

@@ -1,3 +1,4 @@
+"use client"
 import {
   Drawer,
   DrawerContent,
@@ -7,7 +8,7 @@ import {
 } from "@/components/ui/drawer"
 import { Suspense, useEffect, useMemo, useState } from "react"
 import { Badge } from "@/components/ui/badge.jsx"
-import { genLink, gridHelpers, svgBase } from "@/lib/utils.js"
+import { genLink, gridHelpers, sanitizeContent, svgBase } from "@/lib/utils.js"
 import { generateSystemAtClick } from "@/lib/fakeData.js"
 import { useMap } from "@vis.gl/react-maplibre"
 import SolarSystem from "./solarSystem.jsx"
@@ -675,42 +676,4 @@ export function BadgeList({ list, variant = "secondary", label, align = "right" 
       </div>
     </div>
   )
-}
-function sanitizeContent(html, sanitizeFunc) {
-  if (!html) return ""
-
-  return sanitizeFunc(html, {
-    // Start from defaults, then remove dangerous tags you forbade with DOMPurify
-    allowedTags: sanitizeFunc.defaults.allowedTags.filter(
-      tag => !["img", "svg", "math", "script", "table", "iframe"].includes(tag),
-    ),
-    // Allow normal attributes + link attributes
-    allowedAttributes: {
-      ...sanitizeFunc.defaults.allowedAttributes,
-      a: ["href", "name", "target", "rel"],
-    },
-    transformTags: {
-      a: (tagName, attribs) => {
-        const href = attribs.href || ""
-
-        // If not relative and not your trusted domain, wrap through /link
-        if (
-          href &&
-          !href.startsWith("/") &&
-          !href.startsWith("https://stargazer.vercel.app/")
-        ) {
-          const qs = new URLSearchParams({ url: href }).toString()
-          return {
-            tagName,
-            attribs: {
-              ...attribs,
-              href: `/link?${qs}`,
-            },
-          }
-        }
-
-        return { tagName, attribs }
-      },
-    },
-  })
 }

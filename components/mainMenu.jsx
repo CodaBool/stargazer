@@ -394,10 +394,10 @@ export function MainMenu({ cloudMaps, session, revalidate, hash, systems }) {
                     <StarsBackgroundSimple>
                       <Image
                         src={`/systems/${system}.webp`}
-                        unoptimized={system === "fallout"}
                         alt={system}
                         width={200}
                         height={200}
+                        unoptimized
                         className="object-cover w-full h-full hover-grow rounded-xl"
                       />
                     </StarsBackgroundSimple>

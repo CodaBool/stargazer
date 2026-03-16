@@ -27,7 +27,7 @@ export default async function Page({ searchParams }) {
       <a href="https://codabool.itch.io/terminal" className='my-4 text-2xl' target="_blank"><Terminal className='inline' /> Terminal</a>
       <a href="https://codabool.itch.io/maps-in-cyberspace" className='my-4 text-2xl' target="_blank"><Map className='inline' /> Maps in Cyberspace</a>
       <div style={{ position: 'absolute', bottom: 0, width: '100%', display: 'flex', justifyContent: 'center' }}>
-        <Image src="/pom.gif" unoptimized alt="the fantastic mr. purin" width={300} height={300} priority style={{ width: "auto", height: 'auto' }} />
+        <Image unoptimized src="/pom.gif" alt="the fantastic mr. purin" width={300} height={300} priority style={{ width: "auto", height: 'auto' }} />
       </div>
     </div>
   )

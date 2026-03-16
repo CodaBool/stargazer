@@ -1,6 +1,8 @@
 import db from "@/lib/db"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from '../auth/[...nextauth]/route'
+import sanitize from "sanitize-html"
+import { sanitizeContent } from "@/lib/utils"
 
 export async function POST(req) {
   try {
@@ -25,10 +27,11 @@ export async function POST(req) {
     let response, locationId
 
     if (body.table === "location") {
+      const description = sanitizeContent(body.description, sanitize)
       response = await db.location.create({
         data: {
           name: body.name,
-          description: body.description,
+          description,
           type: body.type,
           geometry: body.geometry,
           coordinates: body.coordinates,
@@ -64,10 +67,11 @@ export async function POST(req) {
 
       locationId = response.id
     } else if (body.table === "comment") {
+      const cleanContent = sanitizeContent(body.content, sanitize)
       response = await db.comment.create({
         data: {
           userId: user.id,
-          content: body.content,
+          content: cleanContent,
           locationId: Number(body.locationId),
           published,
         },
@@ -150,7 +154,7 @@ export async function POST(req) {
         `
       }
 
-      console.log("sending email with ")
+      console.log("sending contribution email")
 
       const email = await fetch(`https://email.codabool.workers.dev/?${urlParams}`, {
         body: html,

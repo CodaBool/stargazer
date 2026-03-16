@@ -21,8 +21,9 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import db from "@/lib/db"
 import { ArrowLeft, Star, CircleX, MapPin, Hexagon, Spline } from "lucide-react"
 import style from "../md.module.css"
-import sanitizeHtml from "sanitize-html"
+import sanitize from "sanitize-html"
 import { redirect } from "next/navigation"
+import { sanitizeContent } from "@/lib/utils"
 
 export default async function Location({ params, searchParams }) {
   const session = await getServerSession(authOptions)
@@ -68,7 +69,7 @@ export default async function Location({ params, searchParams }) {
   const adminId = adminArray.length === 1 ? adminArray[0] : null
 
   // sanitize location HTML
-  location.description = sanitizeContent(location.description)
+  location.description = sanitizeContent(location.description, sanitize)
 
   // sanitize comment HTML and set display names
   location.comments.forEach((comment) => {
@@ -78,7 +79,7 @@ export default async function Location({ params, searchParams }) {
       : commenter?.email
         ? commenter.email.split("@")[0]
         : "Unknown"
-    comment.content = sanitizeContent(comment.content)
+    comment.content = sanitizeContent(comment.content, sanitize)
   })
 
   // coordinate parsing for iframe
@@ -340,42 +341,6 @@ export default async function Location({ params, searchParams }) {
   )
 }
 
-
-function sanitizeContent(html) {
-  if (!html) return ""
-
-  return sanitizeHtml(html, {
-    allowedTags: sanitizeHtml.defaults.allowedTags.filter(
-      (tag) => !["img", "svg", "math", "script", "table", "iframe"].includes(tag),
-    ),
-    allowedAttributes: {
-      ...sanitizeHtml.defaults.allowedAttributes,
-      a: ["href", "name", "target", "rel"],
-    },
-    transformTags: {
-      a: (tagName, attribs) => {
-        const href = attribs.href || ""
-
-        if (
-          href &&
-          !href.startsWith("/") &&
-          !href.startsWith("https://stargazer.vercel.app/")
-        ) {
-          const qs = new URLSearchParams({ url: href }).toString()
-          return {
-            tagName,
-            attribs: {
-              ...attribs,
-              href: `/link?${qs}`,
-            },
-          }
-        }
-
-        return { tagName, attribs }
-      },
-    },
-  })
-}
 
 /* ------------------------- csv/tag helpers ------------------------- */
 
