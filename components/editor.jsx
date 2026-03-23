@@ -1,13 +1,21 @@
 import { useEffect, useState } from "react"
-import { Button } from './ui/button'
-import { useMap } from "@vis.gl/react-maplibre";
-import EditorForm from "./forms/editor";
-import randomName from "@scaleway/random-name";
-import { X } from "lucide-react";
-import { useDraw } from "./controls";
+import { Button } from "./ui/button"
+import { useMap } from "@vis.gl/react-maplibre"
+import EditorForm from "./forms/editor"
+import randomName from "@scaleway/random-name"
+import { X } from "lucide-react"
+import { useDraw } from "./controls"
 import { getMaps, localSet } from "@/lib/utils"
 
-export default function Editor({ mapName, params, TYPES, data, GEO_EDIT, iconIndex, IS_GALAXY }) {
+export default function Editor({
+  mapName,
+  params,
+  TYPES,
+  data,
+  GEO_EDIT,
+  iconIndex,
+  IS_GALAXY,
+}) {
   const { map } = useMap()
   const draw = useDraw(s => s.draw)
   const [popup, setPopup] = useState()
@@ -16,22 +24,26 @@ export default function Editor({ mapName, params, TYPES, data, GEO_EDIT, iconInd
     if (!draw.getSelected().features.length) return
     const f = draw.getSelected().features[0]
     if (GEO_EDIT) console.log(f.properties.name)
-    if (draw.getMode() !== 'simple_select' && draw.getMode() !== 'direct_select') return
+    if (
+      draw.getMode() !== "simple_select" &&
+      draw.getMode() !== "direct_select"
+    )
+      return
     const feature = draw.get(f.id) || f
     setPopup(feature)
   }
 
   useEffect(() => {
     if (!map || !draw) return
-    map.on('click', handleClick)
-    return () => map.off('click', handleClick)
+    map.on("click", handleClick)
+    return () => map.off("click", handleClick)
   }, [map, draw])
 
   useEffect(() => {
     if (!popup || !draw) return
     // duplicate of controls save function
     // const urlParams = new URLSearchParams(window.location.search);
-    const mapId = mapName + "-" + params.get('id')
+    const mapId = mapName + "-" + params.get("id")
 
     // dev mode
     let geojson
@@ -45,15 +57,16 @@ export default function Editor({ mapName, params, TYPES, data, GEO_EDIT, iconInd
     if (!geojson.features.length) return
     getMaps().then(maps => {
       localSet("maps", {
-        ...maps, [mapId]: {
+        ...maps,
+        [mapId]: {
           geojson,
-          name: maps[mapId]?.name || randomName('', ' '),
+          name: maps[mapId]?.name || randomName("", " "),
           updated: Date.now(),
-          id: Number(params.get('id')) || Date.now(),
+          id: Number(params.get("id")) || Date.now(),
           map: mapName,
           meta: maps[mapId]?.meta || {},
           config: maps[mapId]?.config || {},
-        }
+        },
       })
     })
   }, [popup, draw])
@@ -62,23 +75,37 @@ export default function Editor({ mapName, params, TYPES, data, GEO_EDIT, iconInd
     return (
       <div
         style={{
-          position: 'absolute',
-          left: '20px',
-          bottom: '20px',
-          background: 'black',
-          padding: '8px',
+          position: "absolute",
+          left: "20px",
+          bottom: "20px",
+          background: "black",
+          padding: "8px",
           zIndex: 10,
           maxWidth: "90vw",
-          transition: 'bottom 0.5s ease-in-out',
+          transition: "bottom 0.5s ease-in-out",
         }}
         className="editor-table border"
       >
-        <Button variant="ghost" className="right-0 top-2 z-10 w-4 h-4 cursor-pointer absolute" onClick={e => setPopup(null)}>
-          <X/>
+        <Button
+          variant="ghost"
+          className="right-0 top-2 z-10 w-4 h-4 cursor-pointer absolute"
+          onClick={e => setPopup(null)}
+        >
+          <X />
         </Button>
-        <EditorForm feature={popup} mapName={mapName} draw={draw} setPopup={setPopup} popup={popup} params={params} TYPES={TYPES} iconIndex={iconIndex} IS_GALAXY={IS_GALAXY} />
+        <EditorForm
+          feature={popup}
+          key={popup?.id}
+          mapName={mapName}
+          draw={draw}
+          setPopup={setPopup}
+          popup={popup}
+          params={params}
+          TYPES={TYPES}
+          iconIndex={iconIndex}
+          IS_GALAXY={IS_GALAXY}
+        />
       </div>
-    );
+    )
   }
-
 }

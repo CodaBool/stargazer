@@ -56,7 +56,8 @@ export default function EditorForm({
 }) {
   const Quill = useMemo(() => dynamic(() => import("react-quill-new"), { ssr: false }), [])
   const [iconHTML, setIconHTML] = useState(null)
-
+  const featureIdRef = useRef(feature?.id)
+  const debouncedRef = useRef(null)
   // local UI state
   const [values, setValues] = useState(() => feature?.properties ?? {})
   const [nameError, setNameError] = useState(false)
@@ -67,38 +68,50 @@ export default function EditorForm({
   useEffect(() => {
     setValues(feature?.properties ?? {})
     setNameError(false)
+    featureIdRef.current = feature?.id
   }, [feature?.id])
 
   function editProp(newVal, key) {
-    const f = draw.get(feature.id)
+    const activeId = featureIdRef.current
+    if (!activeId) return
+
+    const f = draw.get(activeId)
+    if (!f) return
+
     const newProperties = { ...f.properties }
+
     if (typeof newVal === "undefined") {
-      console.log("DELETE!", key)
       delete newProperties[key]
     } else {
       newProperties[key] = newVal
     }
+
     const newFeature = { ...f, properties: newProperties }
-    // console.log(newFeature.properties)
     draw.add(newFeature)
     setPopup(newFeature)
-
-    // console.log("saved", newFeature.properties)
 
     const unsaved = document.querySelector(".unsaved-text")
     if (unsaved) unsaved.style.visibility = "visible"
   }
 
-  // one debouncer for noisy fields (text + quill)
-  const debouncedRef = useRef(null)
-  if (!debouncedRef.current) {
-    debouncedRef.current = debounce((val, key) => editProp(val, key), 180)
-  }
+  useEffect(() => {
+    debouncedRef.current = debounce((val, key) => {
+      editProp(val, key)
+    }, 180)
+
+    return () => {
+      debouncedRef.current?.cancel?.()
+    }
+  }, [feature?.id, draw])
 
   const setProp = (key, val, { immediate = false } = {}) => {
     setValues((prev) => ({ ...prev, [key]: val }))
-    if (immediate) editProp(val, key)
-    else debouncedRef.current(val, key)
+
+    if (immediate) {
+      editProp(val, key)
+    } else {
+      debouncedRef.current?.(val, key)
+    }
   }
 
   function selectIcon(icon) {
