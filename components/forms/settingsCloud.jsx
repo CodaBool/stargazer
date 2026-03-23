@@ -135,8 +135,6 @@ export default function MapSettings({ map, id, data, config }) {
 
   return <SharedSettings
     isCloud={true}
-    config={config}
-
     form={form}
     submit={submit}
     submitting={submitting}
@@ -146,7 +144,7 @@ export default function MapSettings({ map, id, data, config }) {
     setAlert={setAlert}
     map={map}
     id={id}
-    data={data}
+    data={{ ...data, config } }
     {...DEFAULTS}
   />
 }

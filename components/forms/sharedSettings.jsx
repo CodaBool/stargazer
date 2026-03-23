@@ -31,19 +31,29 @@ import { useWatch } from "react-hook-form"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Download, LoaderCircle, Settings} from "lucide-react"
-import 'react-quill-new/dist/quill.bubble.css'
-import { combineAndDownload, combineLayers, getConsts, getMaps, localSet, TITLE } from "@/lib/utils"
-import randomName from '@scaleway/random-name'
+import { ArrowLeft, Download, LoaderCircle, Settings } from "lucide-react"
+import "react-quill-new/dist/quill.bubble.css"
+import {
+  combineAndDownload,
+  combineLayers,
+  getConsts,
+  getMaps,
+  localSet,
+  TITLE,
+} from "@/lib/utils"
+import randomName from "@scaleway/random-name"
 import Link from "next/link"
 import { Textarea } from "../ui/textarea"
 import { toast } from "sonner"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "../ui/collapsible"
 import { useMemo } from "react"
 
 export default function SharedSettings({
   isCloud,
-  config,
   form,
   submit,
   submitting,
@@ -73,17 +83,23 @@ export default function SharedSettings({
   TYPES,
 }) {
   const isGalaxy = useWatch({ control: form.control, name: "IS_GALAXY" })
-  const onBgImageChange = useMemo(() =>
+  const onBgImageChange = useMemo(
+    () =>
       makeBgImageOnChangeHandler({
         form,
         maxDen: 30, // search range for "small whole numbers"
         debounceMs: 600,
         getCurrentBounds: () => form.getValues("MAX_BOUNDS"),
       }),
-    [form]
+    [form],
   )
 
-  const realGalaxy = (((typeof isGalaxy === 'undefined' && (typeof data.config?.IS_GALAXY === 'boolean' ? data.config?.IS_GALAXY : IS_GALAXY)) || isGalaxy))
+  const realGalaxy =
+    (typeof isGalaxy === "undefined" &&
+      (typeof data.config?.IS_GALAXY === "boolean"
+        ? data.config?.IS_GALAXY
+        : IS_GALAXY)) ||
+    isGalaxy
 
   function defaults() {
     let mapName = map
@@ -96,13 +112,22 @@ export default function SharedSettings({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(submit)} className="space-y-8 md:container mx-auto my-8">
+      <form
+        onSubmit={form.handleSubmit(submit)}
+        className="space-y-8 md:container mx-auto my-8"
+      >
         <Card className="mx-auto max-w-2xl">
           <CardHeader className="pb-0">
             <div className="flex items-center justify-between">
-              <CardTitle><Settings className="inline mb-1" /> Settings {data.name}</CardTitle>
+              <CardTitle>
+                <Settings className="inline mb-1" /> Settings {data.name}
+              </CardTitle>
               <Link href={`/#${map}_${isCloud ? "cloud" : "local"}_${id}`}>
-                <Button type="button" variant="ghost" className="p-1 rounded-full w-12 h-12">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="p-1 rounded-full w-12 h-12"
+                >
                   <ArrowLeft style={{ width: "100%", height: "100%" }} />
                 </Button>
               </Link>
@@ -124,10 +149,14 @@ export default function SharedSettings({
                 <FormItem className="py-4">
                   <FormLabel>Map Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Name" {...field} className="font-mono" />
+                    <Input
+                      placeholder="Name"
+                      {...field}
+                      className="font-mono"
+                    />
                   </FormControl>
                   <FormMessage />
-                </FormItem >
+                </FormItem>
               )}
             />
 
@@ -137,29 +166,69 @@ export default function SharedSettings({
               rules={{
                 validate: v => {
                   const parts = v.split(",")
-                  if (parts.length !== 2) return "This must be two numbers separated by a comma 1"
-                  if (!parts.every(part => part.trim().length > 0 && !isNaN(part.trim()))) return "This must be two numbers separated by a comma 2"
-                  const lat = parseFloat(parts[0].trim());
-                  const lng = parseFloat(parts[1].trim());
-                  if (lat < -90 || lat > 90) return "The latitude must be between -90 and 90 degrees";
-                  if (lng < -180 || lng > 180) return "The longitude must be between -180 and 180 degrees";
-                }
+                  if (parts.length !== 2)
+                    return "This must be two numbers separated by a comma 1"
+                  if (
+                    !parts.every(
+                      part => part.trim().length > 0 && !isNaN(part.trim()),
+                    )
+                  )
+                    return "This must be two numbers separated by a comma 2"
+                  const lat = parseFloat(parts[0].trim())
+                  const lng = parseFloat(parts[1].trim())
+                  if (lat < -90 || lat > 90)
+                    return "The latitude must be between -90 and 90 degrees"
+                  if (lng < -180 || lng > 180)
+                    return "The longitude must be between -180 and 180 degrees"
+                },
               }}
-
-              defaultValue={typeof data.config?.VIEW?.latitude !== "undefined" ? [data.config?.VIEW?.latitude, data.config?.VIEW?.longitude].toString() : [VIEW.latitude, VIEW.longitude].toString()}
+              defaultValue={
+                typeof data.config?.VIEW?.latitude !== "undefined"
+                  ? [
+                      data.config?.VIEW?.latitude,
+                      data.config?.VIEW?.longitude,
+                    ].toString()
+                  : [VIEW.latitude, VIEW.longitude].toString()
+              }
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Starting Coordinates [lat, lng]</FormLabel>
                   <FormControl>
                     <div className="flex">
-                      <Input placeholder={[VIEW.latitude, VIEW.longitude].toString()} {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("CENTER", [defaults().VIEW.latitude, defaults().VIEW.longitude].toString())} className="ml-3">
+                      <Input
+                        placeholder={[VIEW.latitude, VIEW.longitude].toString()}
+                        {...field}
+                      />
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() =>
+                          form.setValue(
+                            "CENTER",
+                            [
+                              defaults().VIEW.latitude,
+                              defaults().VIEW.longitude,
+                            ].toString(),
+                          )
+                        }
+                        className="ml-3"
+                      >
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Controls the initial Lat (vertical) and Lng (horizontal) coordinate location when first viewing the map. Use a comma to separate the Number values. (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#center">source</a>)
+                    Controls the initial Lat (vertical) and Lng (horizontal)
+                    coordinate location when first viewing the map. Use a comma
+                    to separate the Number values. (
+                    <a
+                      target="_blank"
+                      className="text-blue-300"
+                      href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#center"
+                    >
+                      source
+                    </a>
+                    )
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -172,10 +241,17 @@ export default function SharedSettings({
                 validate: v => {
                   if (!v) return
                   if (v === BG_IMAGE) return
-                  if (!v.includes("http")) return "Background image URL must contain 'http'";
-                }
+                  if (!v.includes("http"))
+                    return "Background image URL must contain 'http'"
+                },
               }}
-              defaultValue={typeof data.config?.BG_IMAGE !== "undefined" ? data.config?.BG_IMAGE : (BG_IMAGE ? BG_IMAGE : "")}
+              defaultValue={
+                typeof data.config?.BG_IMAGE !== "undefined"
+                  ? data.config?.BG_IMAGE
+                  : BG_IMAGE
+                    ? BG_IMAGE
+                    : ""
+              }
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Background Image</FormLabel>
@@ -184,18 +260,25 @@ export default function SharedSettings({
                       <Input
                         placeholder="https://i.imgur.com/background.png"
                         {...field}
-                        onChange={(e) => {
+                        onChange={e => {
                           field.onChange(e)
                           onBgImageChange(e.target.value)
                         }}
                       />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("BG_IMAGE", BG_IMAGE)} className="ml-3">
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() => form.setValue("BG_IMAGE", BG_IMAGE)}
+                        className="ml-3"
+                      >
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Sets a background image for the map. Must be a remote URL. The map bounds will be adjusted to fit the image aspect ratio.
+                    Sets a background image for the map. Must be a remote URL.
+                    The map bounds will be adjusted to fit the image aspect
+                    ratio.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -207,24 +290,56 @@ export default function SharedSettings({
               rules={{
                 validate: v => {
                   if (v === "" || typeof v === "undefined") return true
-                  const parts = v.split(',')
-                  return parts.length === 4 && parts.every(part => part.trim().length > 0 && !isNaN(part.trim())) || "Value must be four numbers separated by commas"
-                }
+                  const parts = v.split(",")
+                  return (
+                    (parts.length === 4 &&
+                      parts.every(
+                        part => part.trim().length > 0 && !isNaN(part.trim()),
+                      )) ||
+                    "Value must be four numbers separated by commas"
+                  )
+                },
               }}
-              defaultValue={typeof data.config?.VIEW?.maxBounds !== "undefined" ? data.config?.VIEW?.maxBounds.toString() : VIEW.maxBounds?.toString()}
+              defaultValue={
+                typeof data.config?.VIEW?.maxBounds !== "undefined"
+                  ? data.config?.VIEW?.maxBounds.toString()
+                  : VIEW.maxBounds?.toString()
+              }
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Bounds</FormLabel>
                   <FormControl>
                     <div className="flex">
                       <Input placeholder="" {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("MAX_BOUNDS", defaults().VIEW.maxBounds?.toString())} className="ml-3">
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() =>
+                          form.setValue(
+                            "MAX_BOUNDS",
+                            defaults().VIEW.maxBounds?.toString(),
+                          )
+                        }
+                        className="ml-3"
+                      >
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Limits how far in any direction the map can be panned. Use this formatting "left, bottom, right, top" replacing each direction word with your chosen number. For Earth maps, this will be geographic coordinates: "lng (west), lat (south), lng (east), lat (north)" (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#maxbounds">source</a>)
+                    Limits how far in any direction the map can be panned. Use
+                    this formatting "left, bottom, right, top" replacing each
+                    direction word with your chosen number. For Earth maps, this
+                    will be geographic coordinates: "lng (west), lat (south),
+                    lng (east), lat (north)" (
+                    <a
+                      target="_blank"
+                      className="text-blue-300"
+                      href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#maxbounds"
+                    >
+                      source
+                    </a>
+                    )
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -234,63 +349,106 @@ export default function SharedSettings({
               control={form.control}
               rules={{ validate: v => !isNaN(v) || "Value must be a number" }}
               name="ZOOM"
-              defaultValue={typeof data.config?.VIEW?.zoom !== "undefined" ? data.config?.VIEW?.zoom : VIEW.zoom}
+              defaultValue={
+                typeof data.config?.VIEW?.zoom !== "undefined"
+                  ? data.config?.VIEW?.zoom
+                  : VIEW.zoom
+              }
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Starting Zoom</FormLabel>
-                  <p className="inline ml-5 text-gray-400 text-sm">{form.getValues("ZOOM")}</p>
+                  <p className="inline ml-5 text-gray-400 text-sm">
+                    {form.getValues("ZOOM")}
+                  </p>
                   <FormControl>
                     <div className="flex">
                       <Slider
                         value={[field.value]}
-                        onValueChange={(v) => field.onChange(v[0])}
+                        onValueChange={v => field.onChange(v[0])}
                         min={0}
                         max={24}
                         step={0.1}
                       />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("ZOOM", VIEW.zoom)} className="ml-3">
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() => form.setValue("ZOOM", VIEW.zoom)}
+                        className="ml-3"
+                      >
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Controls the initial zoom level when first viewing the map (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#zoom">source</a>)
+                    Controls the initial zoom level when first viewing the map (
+                    <a
+                      target="_blank"
+                      className="text-blue-300"
+                      href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#zoom"
+                    >
+                      source
+                    </a>
+                    )
                   </FormDescription>
                   <FormMessage />
-                </FormItem >
+                </FormItem>
               )}
             />
             <FormField
               control={form.control}
               rules={{
                 validate: v => {
-                  if (isNaN(v)) return "Value must be a number";
-                  if (v < 0 || v > 24) return "Value must be between 0 and 24 inclusively";
-                  return true;
-                }
+                  if (isNaN(v)) return "Value must be a number"
+                  if (v < 0 || v > 24)
+                    return "Value must be between 0 and 24 inclusively"
+                  return true
+                },
               }}
               name="MAX_ZOOM"
-              defaultValue={typeof data.config?.MAX_ZOOM !== "undefined" ? data.config?.MAX_ZOOM : MAX_ZOOM}
+              defaultValue={
+                typeof data.config?.MAX_ZOOM !== "undefined"
+                  ? data.config?.MAX_ZOOM
+                  : MAX_ZOOM
+              }
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Maximum Zoom</FormLabel>
-                  <p className="inline ml-5 text-gray-400 text-sm">{form.getValues("MAX_ZOOM")}</p>
+                  <p className="inline ml-5 text-gray-400 text-sm">
+                    {form.getValues("MAX_ZOOM")}
+                  </p>
                   <FormControl>
                     <div className="flex">
                       <Slider
                         value={[field.value]}
-                        onValueChange={(v) => field.onChange(v[0])}
+                        onValueChange={v => field.onChange(v[0])}
                         min={0}
                         max={24}
                         step={0.1}
                       />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("MAX_ZOOM", defaults().MAX_ZOOM)} className="ml-3">
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() =>
+                          form.setValue("MAX_ZOOM", defaults().MAX_ZOOM)
+                        }
+                        className="ml-3"
+                      >
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Limits how far in you can zoom. Higher values allow users to zoom in more closely. Lower values limit users view further away from the map. (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#maxzoom">source</a>)
+                    Limits how far in you can zoom. Higher values allow users to
+                    zoom in more closely. Lower values limit users view further
+                    away from the map. (
+                    <a
+                      target="_blank"
+                      className="text-blue-300"
+                      href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#maxzoom"
+                    >
+                      source
+                    </a>
+                    )
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -300,33 +458,57 @@ export default function SharedSettings({
               control={form.control}
               rules={{
                 validate: v => {
-                  if (isNaN(v)) return "Value must be a number";
-                  if (v < 0 || v > 24) return "Value must be between 0 and 24 inclusively";
-                  return true;
-                }
+                  if (isNaN(v)) return "Value must be a number"
+                  if (v < 0 || v > 24)
+                    return "Value must be between 0 and 24 inclusively"
+                  return true
+                },
               }}
               name="MIN_ZOOM"
-              defaultValue={typeof data.config?.MIN_ZOOM !== "undefined" ? data.config?.MIN_ZOOM : MIN_ZOOM}
+              defaultValue={
+                typeof data.config?.MIN_ZOOM !== "undefined"
+                  ? data.config?.MIN_ZOOM
+                  : MIN_ZOOM
+              }
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Minimum Zoom</FormLabel>
-                  <p className="inline ml-5 text-gray-400 text-sm">{form.getValues("MIN_ZOOM")}</p>
+                  <p className="inline ml-5 text-gray-400 text-sm">
+                    {form.getValues("MIN_ZOOM")}
+                  </p>
                   <FormControl>
                     <div className="flex">
                       <Slider
                         value={[field.value]}
-                        onValueChange={(v) => field.onChange(v[0])}
+                        onValueChange={v => field.onChange(v[0])}
                         min={0}
                         max={24}
                         step={0.1}
                       />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("MIN_ZOOM", defaults().MIN_ZOOM)} className="ml-3">
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() =>
+                          form.setValue("MIN_ZOOM", defaults().MIN_ZOOM)
+                        }
+                        className="ml-3"
+                      >
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Limits how far out you can zoom. Higher values limit users view closer to the map. Lower values allow users to zoom out further. (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#minzoom">source</a>)
+                    Limits how far out you can zoom. Higher values limit users
+                    view closer to the map. Lower values allow users to zoom out
+                    further. (
+                    <a
+                      target="_blank"
+                      className="text-blue-300"
+                      href="https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#minzoom"
+                    >
+                      source
+                    </a>
+                    )
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -336,155 +518,244 @@ export default function SharedSettings({
               control={form.control}
               rules={{
                 validate: v => {
-                  if (isNaN(v)) return "Value must be a number";
-                  if (v < 0 || v > 2) return "Value must be between 0 and 2 inclusively";
-                  return true;
-                }
+                  if (isNaN(v)) return "Value must be a number"
+                  if (v < 0 || v > 2)
+                    return "Value must be between 0 and 2 inclusively"
+                  return true
+                },
               }}
               name="SEARCH_SIZE"
-              defaultValue={typeof data.config?.SEARCH_SIZE !== "undefined" ? data.config?.SEARCH_SIZE : SEARCH_SIZE}
+              defaultValue={
+                typeof data.config?.SEARCH_SIZE !== "undefined"
+                  ? data.config?.SEARCH_SIZE
+                  : SEARCH_SIZE
+              }
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Search Size</FormLabel>
-                  <p className="inline ml-5 text-gray-400 text-sm">{form.getValues("SEARCH_SIZE")}</p>
+                  <p className="inline ml-5 text-gray-400 text-sm">
+                    {form.getValues("SEARCH_SIZE")}
+                  </p>
                   <FormControl>
                     <div className="flex">
                       <Slider
                         value={[field.value]}
-                        onValueChange={(v) => field.onChange(v[0])}
+                        onValueChange={v => field.onChange(v[0])}
                         min={0}
                         max={2}
                         step={0.001}
                       />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("SEARCH_SIZE", defaults().SEARCH_SIZE)} className="ml-3">
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() =>
+                          form.setValue("SEARCH_SIZE", defaults().SEARCH_SIZE)
+                        }
+                        className="ml-3"
+                      >
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Determines the distance to pull nearby locations from. Larger values will add more nearby locations to the bottom drawer when clicking on a location.
+                    Determines the distance to pull nearby locations from.
+                    Larger values will add more nearby locations to the bottom
+                    drawer when clicking on a location.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            {map === "custom" && <FormField
-              control={form.control}
-              name="IS_GALAXY"
-              defaultValue={typeof data.config?.IS_GALAXY === 'boolean' ? data.config?.IS_GALAXY : IS_GALAXY}
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 py-2">
-                  <FormLabel>Galaxy Map</FormLabel>
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      className="cursor-pointer"
-                      onCheckedChange={async e => {
-                        const maps = await getMaps()
-                        const currentMap = maps[`${map}-${id}`]
-                        const proceed = window.confirm(`This will permanently delete all data (${currentMap.geojson.features.length} features) for this custom map. Are you sure you want to continue?`)
+            {map === "custom" && (
+              <FormField
+                control={form.control}
+                name="IS_GALAXY"
+                defaultValue={
+                  typeof data.config?.IS_GALAXY === "boolean"
+                    ? data.config?.IS_GALAXY
+                    : IS_GALAXY
+                }
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 py-2">
+                    <FormLabel>Galaxy Map</FormLabel>
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        className="cursor-pointer"
+                        onCheckedChange={async e => {
+                          const maps = await getMaps()
+                          const currentMap = maps[`${map}-${id}`]
+                          const proceed = window.confirm(
+                            `This will permanently delete all data (${currentMap.geojson.features.length} features) for this custom map. Are you sure you want to continue?`,
+                          )
 
-                        if (proceed) {
-                          field.onChange(e)
-                          let mapName = "custom"
-                          if (!e) {
-                            // use Fallout's presets
-                            mapName = "fallout"
-                          }
-                          form.setValue("MAX_BOUNDS", getConsts(mapName).VIEW.maxBounds.flat().join(","));
-                          form.setValue("CENTER", `${getConsts(mapName).VIEW.latitude},${getConsts(mapName).VIEW.longitude}`)
-                          form.setValue("UNIT", getConsts(mapName).UNIT)
-                          form.setValue("TRAVEL_RATE_UNIT", getConsts(mapName).TRAVEL_RATE_UNIT)
-                          form.setValue("TRAVEL_RATE", getConsts(mapName).TRAVEL_RATE)
-                          form.setValue('STYLE', getConsts(mapName).STYLE)
-                          // TODO: add these as form options
-                          form.setValue('GENERATE_LOCATIONS', getConsts(mapName).GENERATE_LOCATIONS)
-                          form.setValue('SEARCH_SIZE', getConsts(mapName).SEARCH_SIZE)
-                          form.setValue('BG', getConsts(mapName).BG)
-                          form.setValue('MAX_ZOOM', getConsts(mapName).MAX_ZOOM)
-                          form.setValue('MIN_ZOOM', getConsts(mapName).MIN_ZOOM)
-                          form.setValue('MAIN_COLOR', getConsts(mapName).STYLES.MAIN_COLOR)
-                          form.setValue('HIGHLIGHT_COLOR', getConsts(mapName).STYLES.HIGHLIGHT_COLOR)
-                          form.setValue('DISTANCE_CONVERTER', getConsts(mapName).DISTANCE_CONVERTER)
-                          form.setValue('TYPES', JSON.stringify(getConsts(mapName).TYPES, null, 2))
-
-                          // delete all points on the map
-                          localSet("maps", {
-                            ...maps,
-                            [`${map}-${id}`]: {
-                              ...currentMap,
-                              updated: Date.now(),
-                              geojson: {
-                                type: "FeatureCollection",
-                                features: []
-                              },
-                            },
-                          })
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Determines whether the map is a galaxy or on Earth
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />}
-            {realGalaxy && <FormField
-              control={form.control}
-              name="GENERATE_LOCATIONS"
-              defaultValue={typeof data.config?.GENERATE_LOCATIONS === 'boolean' ? data.config?.GENERATE_LOCATIONS : GENERATE_LOCATIONS}
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 py-2">
-                  <FormLabel>Generate Fake Locations</FormLabel>
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      className="cursor-pointer"
-                      onCheckedChange={e => field.onChange(e)}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Fill the map with generated locations. Generated data is based on a combination of the real locations coordinates and name.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />}
-            {/* TODO: look into scale control maplibre */}
-            {map === "custom" &&
-              <>
-                {realGalaxy && <FormField
-                  control={form.control}
-                  name="TIME_DILATION"
-                  defaultValue={typeof data.config?.TIME_DILATION === 'boolean' ? data.config?.TIME_DILATION : TIME_DILATION}
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 py-2">
-                      <FormLabel>Time Dilation</FormLabel>
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          className="cursor-pointer"
-                          onCheckedChange={e => {
+                          if (proceed) {
                             field.onChange(e)
-                            if (e) {
-                              form.setValue("TRAVEL_RATE", getConsts("lancer").TRAVEL_RATE)
-                              form.setValue("TRAVEL_RATE_UNIT", getConsts("lancer").TRAVEL_RATE_UNIT)
-                            } else {
-                              form.setValue("TRAVEL_RATE", getConsts("").TRAVEL_RATE)
-                              form.setValue("TRAVEL_RATE_UNIT", getConsts("").TRAVEL_RATE_UNIT)
+                            let mapName = "custom"
+                            if (!e) {
+                              // use Fallout's presets
+                              mapName = "fallout"
                             }
-                          }}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        When measuring travel time, additionally calculate time from the perspective of a stationary observer.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                  />}
+                            form.setValue(
+                              "MAX_BOUNDS",
+                              getConsts(mapName)
+                                .VIEW.maxBounds.flat()
+                                .join(","),
+                            )
+                            form.setValue(
+                              "CENTER",
+                              `${getConsts(mapName).VIEW.latitude},${getConsts(mapName).VIEW.longitude}`,
+                            )
+                            form.setValue("UNIT", getConsts(mapName).UNIT)
+                            form.setValue(
+                              "TRAVEL_RATE_UNIT",
+                              getConsts(mapName).TRAVEL_RATE_UNIT,
+                            )
+                            form.setValue(
+                              "TRAVEL_RATE",
+                              getConsts(mapName).TRAVEL_RATE,
+                            )
+                            form.setValue("STYLE", getConsts(mapName).STYLE)
+                            // TODO: add these as form options
+                            form.setValue(
+                              "GENERATE_LOCATIONS",
+                              getConsts(mapName).GENERATE_LOCATIONS,
+                            )
+                            form.setValue(
+                              "SEARCH_SIZE",
+                              getConsts(mapName).SEARCH_SIZE,
+                            )
+                            form.setValue("BG", getConsts(mapName).BG)
+                            form.setValue(
+                              "MAX_ZOOM",
+                              getConsts(mapName).MAX_ZOOM,
+                            )
+                            form.setValue(
+                              "MIN_ZOOM",
+                              getConsts(mapName).MIN_ZOOM,
+                            )
+                            form.setValue(
+                              "MAIN_COLOR",
+                              getConsts(mapName).STYLES.MAIN_COLOR,
+                            )
+                            form.setValue(
+                              "HIGHLIGHT_COLOR",
+                              getConsts(mapName).STYLES.HIGHLIGHT_COLOR,
+                            )
+                            form.setValue(
+                              "DISTANCE_CONVERTER",
+                              getConsts(mapName).DISTANCE_CONVERTER,
+                            )
+                            form.setValue(
+                              "TYPES",
+                              JSON.stringify(getConsts(mapName).TYPES, null, 2),
+                            )
+
+                            // delete all points on the map
+                            localSet("maps", {
+                              ...maps,
+                              [`${map}-${id}`]: {
+                                ...currentMap,
+                                updated: Date.now(),
+                                geojson: {
+                                  type: "FeatureCollection",
+                                  features: [],
+                                },
+                              },
+                            })
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Determines whether the map is a galaxy or on Earth
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            {realGalaxy && (
+              <FormField
+                control={form.control}
+                name="GENERATE_LOCATIONS"
+                defaultValue={
+                  typeof data.config?.GENERATE_LOCATIONS === "boolean"
+                    ? data.config?.GENERATE_LOCATIONS
+                    : GENERATE_LOCATIONS
+                }
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 py-2">
+                    <FormLabel>Generate Fake Locations</FormLabel>
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        className="cursor-pointer"
+                        onCheckedChange={e => field.onChange(e)}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Fill the map with generated locations. Generated data is
+                      based on a combination of the real locations coordinates
+                      and name.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            {/* TODO: look into scale control maplibre */}
+            {map === "custom" && (
+              <>
+                {realGalaxy && (
+                  <FormField
+                    control={form.control}
+                    name="TIME_DILATION"
+                    defaultValue={
+                      typeof data.config?.TIME_DILATION === "boolean"
+                        ? data.config?.TIME_DILATION
+                        : TIME_DILATION
+                    }
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 py-2">
+                        <FormLabel>Time Dilation</FormLabel>
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            className="cursor-pointer"
+                            onCheckedChange={e => {
+                              field.onChange(e)
+                              if (e) {
+                                form.setValue(
+                                  "TRAVEL_RATE",
+                                  getConsts("lancer").TRAVEL_RATE,
+                                )
+                                form.setValue(
+                                  "TRAVEL_RATE_UNIT",
+                                  getConsts("lancer").TRAVEL_RATE_UNIT,
+                                )
+                              } else {
+                                form.setValue(
+                                  "TRAVEL_RATE",
+                                  getConsts("").TRAVEL_RATE,
+                                )
+                                form.setValue(
+                                  "TRAVEL_RATE_UNIT",
+                                  getConsts("").TRAVEL_RATE_UNIT,
+                                )
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          When measuring travel time, additionally calculate
+                          time from the perspective of a stationary observer.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
                 {!realGalaxy && (
                   <div className="flex space-x-2 py-2 justify-evenly">
                     <Button
@@ -492,10 +763,14 @@ export default function SharedSettings({
                       type="button"
                       className="w-1/2"
                       onClick={() => {
-                        form.setValue("DISTANCE_CONVERTER", 0.621371, { shouldDirty: true });
-                        form.setValue("UNIT", "miles", { shouldDirty: true });
-                        form.setValue("TRAVEL_RATE", 3, { shouldDirty: true });
-                        form.setValue("TRAVEL_RATE_UNIT", "mph", { shouldDirty: true });
+                        form.setValue("DISTANCE_CONVERTER", 0.621371, {
+                          shouldDirty: true,
+                        })
+                        form.setValue("UNIT", "miles", { shouldDirty: true })
+                        form.setValue("TRAVEL_RATE", 3, { shouldDirty: true })
+                        form.setValue("TRAVEL_RATE_UNIT", "mph", {
+                          shouldDirty: true,
+                        })
                       }}
                     >
                       Imperial Preset
@@ -505,10 +780,14 @@ export default function SharedSettings({
                       type="button"
                       className="w-1/2"
                       onClick={() => {
-                        form.setValue("DISTANCE_CONVERTER", 1, { shouldDirty: true });
-                        form.setValue("UNIT", "km", { shouldDirty: true });
-                        form.setValue("TRAVEL_RATE", 5, { shouldDirty: true });
-                        form.setValue("TRAVEL_RATE_UNIT", "kmph", { shouldDirty: true });
+                        form.setValue("DISTANCE_CONVERTER", 1, {
+                          shouldDirty: true,
+                        })
+                        form.setValue("UNIT", "km", { shouldDirty: true })
+                        form.setValue("TRAVEL_RATE", 5, { shouldDirty: true })
+                        form.setValue("TRAVEL_RATE_UNIT", "kmph", {
+                          shouldDirty: true,
+                        })
                       }}
                     >
                       Metric Preset
@@ -517,16 +796,36 @@ export default function SharedSettings({
                 )}
                 <FormField
                   control={form.control}
-                  rules={{ validate: v => !isNaN(v) || "Value must be a number" }}
+                  rules={{
+                    validate: v => !isNaN(v) || "Value must be a number",
+                  }}
                   name="DISTANCE_CONVERTER"
-                  defaultValue={data.config?.DISTANCE_CONVERTER ? data.config?.DISTANCE_CONVERTER : DISTANCE_CONVERTER}
+                  defaultValue={
+                    data.config?.DISTANCE_CONVERTER
+                      ? data.config?.DISTANCE_CONVERTER
+                      : DISTANCE_CONVERTER
+                  }
                   render={({ field }) => (
                     <FormItem className="py-4">
                       <FormLabel>Distance Scale Factor</FormLabel>
                       <FormControl>
                         <div className="flex">
-                          <Input placeholder={DISTANCE_CONVERTER} type="number" {...field} />
-                          <Button variant="outline" type="button" onClick={() => form.setValue("DISTANCE_CONVERTER", defaults().DISTANCE_CONVERTER)} className="ml-3">
+                          <Input
+                            placeholder={DISTANCE_CONVERTER}
+                            type="number"
+                            {...field}
+                          />
+                          <Button
+                            variant="outline"
+                            type="button"
+                            onClick={() =>
+                              form.setValue(
+                                "DISTANCE_CONVERTER",
+                                defaults().DISTANCE_CONVERTER,
+                              )
+                            }
+                            className="ml-3"
+                          >
                             Reset
                           </Button>
                         </div>
@@ -548,45 +847,77 @@ export default function SharedSettings({
                       <FormControl>
                         <div className="flex">
                           <Input placeholder={UNIT} {...field} />
-                          <Button variant="outline" type="button" onClick={() => form.setValue("UNIT", defaults().UNIT)} className="ml-3">
+                          <Button
+                            variant="outline"
+                            type="button"
+                            onClick={() =>
+                              form.setValue("UNIT", defaults().UNIT)
+                            }
+                            className="ml-3"
+                          >
                             Reset
                           </Button>
                         </div>
                       </FormControl>
                       <FormDescription>
-                        An arbitrary label for a unit of distance. This has no impact on the measurement itself.
+                        An arbitrary label for a unit of distance. This has no
+                        impact on the measurement itself.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <p className="text-center">distance * distance_scale_factor (distance_unit)</p>
-                {realGalaxy
-                  ? <p className="text-center">example: 2 ly</p>
-                  : <p className="text-center">example: 2 miles</p>
-                }
+                <p className="text-center">
+                  distance * distance_scale_factor (distance_unit)
+                </p>
+                {realGalaxy ? (
+                  <p className="text-center">example: 2 ly</p>
+                ) : (
+                  <p className="text-center">example: 2 miles</p>
+                )}
               </>
-            }
+            )}
 
             <FormField
               control={form.control}
               rules={{ validate: v => !isNaN(v) || "Value must be a number" }}
               name="TRAVEL_RATE"
-              defaultValue={data.config?.TRAVEL_RATE ? data.config?.TRAVEL_RATE : TRAVEL_RATE}
+              defaultValue={
+                data.config?.TRAVEL_RATE
+                  ? data.config?.TRAVEL_RATE
+                  : TRAVEL_RATE
+              }
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Travel Rate</FormLabel>
                   <FormControl>
                     <div className="flex">
-                      <Input placeholder={TRAVEL_RATE} type="number" {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("TRAVEL_RATE", defaults().TRAVEL_RATE)} className="ml-3">
+                      <Input
+                        placeholder={TRAVEL_RATE}
+                        type="number"
+                        {...field}
+                      />
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() =>
+                          form.setValue("TRAVEL_RATE", defaults().TRAVEL_RATE)
+                        }
+                        className="ml-3"
+                      >
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    The number by which the distance is divided to find the time to travel.
-                    {map === "alien" && <span className="font-bold"> ALIEN: this is your ship's FTL value</span>}
+                    The number by which the distance is divided to find the time
+                    to travel.
+                    {map === "alien" && (
+                      <span className="font-bold">
+                        {" "}
+                        ALIEN: this is your ship's FTL value
+                      </span>
+                    )}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -595,55 +926,87 @@ export default function SharedSettings({
             <FormField
               control={form.control}
               name="TRAVEL_RATE_UNIT"
-              defaultValue={data.config?.TRAVEL_RATE_UNIT ? data.config?.TRAVEL_RATE_UNIT : TRAVEL_RATE_UNIT}
+              defaultValue={
+                data.config?.TRAVEL_RATE_UNIT
+                  ? data.config?.TRAVEL_RATE_UNIT
+                  : TRAVEL_RATE_UNIT
+              }
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Travel Rate Unit</FormLabel>
                   <FormControl>
                     <div className="flex">
                       <Input placeholder={TRAVEL_RATE_UNIT} {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("TRAVEL_RATE_UNIT", defaults().TRAVEL_RATE_UNIT)} className="ml-3">
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() =>
+                          form.setValue(
+                            "TRAVEL_RATE_UNIT",
+                            defaults().TRAVEL_RATE_UNIT,
+                          )
+                        }
+                        className="ml-3"
+                      >
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Text to represent the units of your travel rate (e.g. mph, c). This has no impact on the measurement itself.
+                    Text to represent the units of your travel rate (e.g. mph,
+                    c). This has no impact on the measurement itself.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            {map === "starwars" &&
+            {map === "starwars" && (
               <FormField
                 control={form.control}
                 name="SHIP_CLASS"
-                defaultValue={data.config?.SHIP_CLASS ? data.config?.SHIP_CLASS : SHIP_CLASS}
+                defaultValue={
+                  data.config?.SHIP_CLASS ? data.config?.SHIP_CLASS : SHIP_CLASS
+                }
                 render={({ field }) => (
                   <FormItem className="py-4">
                     <FormLabel>Ship Class</FormLabel>
                     <FormControl>
                       <div className="flex">
                         <Input placeholder={SHIP_CLASS} {...field} />
-                        <Button variant="outline" type="button" onClick={() => form.setValue("SHIP_CLASS", SHIP_CLASS)} className="ml-3">
+                        <Button
+                          variant="outline"
+                          type="button"
+                          onClick={() =>
+                            form.setValue("SHIP_CLASS", SHIP_CLASS)
+                          }
+                          className="ml-3"
+                        >
                           Reset
                         </Button>
                       </div>
                     </FormControl>
                     <FormDescription>
-                      Text to label the class of your ship. This has no impact on the measurement itself.
+                      Text to label the class of your ship. This has no impact
+                      on the measurement itself.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            }
-            <p className="text-center">(distance / travel_rate) time_unit (travel_rate travel_rate_unit)</p>
+            )}
+            <p className="text-center">
+              (distance / travel_rate) time_unit (travel_rate travel_rate_unit)
+            </p>
 
-            {realGalaxy
-              ? <p className="text-center"><b>example:</b> 2 years (.995 c)</p>
-              : <p className="text-center"><b>example:</b> 2 hours (3 mph)</p>
-            }
+            {realGalaxy ? (
+              <p className="text-center">
+                <b>example:</b> 2 years (.995 c)
+              </p>
+            ) : (
+              <p className="text-center">
+                <b>example:</b> 2 hours (3 mph)
+              </p>
+            )}
 
             {/* {<FormField
               control={form.control}
@@ -678,13 +1041,25 @@ export default function SharedSettings({
                   <FormControl>
                     <div className="flex">
                       <Input placeholder={BG} {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("BG", defaults().BG)} className="ml-3">
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() => form.setValue("BG", defaults().BG)}
+                        className="ml-3"
+                      >
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    <a target="_blank" className="text-blue-300" href="https://developer.mozilla.org/en-US/docs/Web/CSS/gradient/radial-gradient">CSS color gradient</a> to use for the background
+                    <a
+                      target="_blank"
+                      className="text-blue-300"
+                      href="https://developer.mozilla.org/en-US/docs/Web/CSS/gradient/radial-gradient"
+                    >
+                      CSS color gradient
+                    </a>{" "}
+                    to use for the background
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -695,25 +1070,53 @@ export default function SharedSettings({
               name="MAIN_COLOR"
               rules={{
                 validate: v => {
-                  if (!v.includes('#')) return "Value must contain a #";
-                  if (v.length !== 7) return "Value must be 7 characters in length";
-                  return true;
-                }
+                  if (!v.includes("#")) return "Value must contain a #"
+                  if (v.length !== 7)
+                    return "Value must be 7 characters in length"
+                  return true
+                },
               }}
-              defaultValue={data.config?.STYLES?.MAIN_COLOR || STYLES.MAIN_COLOR}
+              defaultValue={
+                data.config?.STYLES?.MAIN_COLOR || STYLES.MAIN_COLOR
+              }
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Main Color</FormLabel>
                   <FormControl>
                     <div className="flex">
                       <Input placeholder={STYLES.MAIN_COLOR} {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("MAIN_COLOR", defaults().STYLES.MAIN_COLOR)} className="ml-3">
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() =>
+                          form.setValue(
+                            "MAIN_COLOR",
+                            defaults().STYLES.MAIN_COLOR,
+                          )
+                        }
+                        className="ml-3"
+                      >
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    <a target="_blank" className="text-blue-300" href="https://developer.mozilla.org/en-US/docs/Web/CSS/hex-color">Six-value CSS hex color</a> used in UI elements such as the search bar (<a target="_blank" className="text-blue-300" href="https://htmlcolorcodes.com/color-picker/">color picker</a>)
+                    <a
+                      target="_blank"
+                      className="text-blue-300"
+                      href="https://developer.mozilla.org/en-US/docs/Web/CSS/hex-color"
+                    >
+                      Six-value CSS hex color
+                    </a>{" "}
+                    used in UI elements such as the search bar (
+                    <a
+                      target="_blank"
+                      className="text-blue-300"
+                      href="https://htmlcolorcodes.com/color-picker/"
+                    >
+                      color picker
+                    </a>
+                    )
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -724,25 +1127,53 @@ export default function SharedSettings({
               name="HIGHLIGHT_COLOR"
               rules={{
                 validate: v => {
-                  if (!v.includes('#')) return "Value must contain a #";
-                  if (v.length !== 7) return "Value must be 7 characters in length";
-                  return true;
-                }
+                  if (!v.includes("#")) return "Value must contain a #"
+                  if (v.length !== 7)
+                    return "Value must be 7 characters in length"
+                  return true
+                },
               }}
-              defaultValue={data.config?.STYLES?.HIGHLIGHT_COLOR || STYLES.HIGHLIGHT_COLOR}
+              defaultValue={
+                data.config?.STYLES?.HIGHLIGHT_COLOR || STYLES.HIGHLIGHT_COLOR
+              }
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Highlight Color</FormLabel>
                   <FormControl>
                     <div className="flex">
                       <Input placeholder={STYLES.HIGHLIGHT_COLOR} {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("HIGHLIGHT_COLOR", defaults().STYLES.HIGHLIGHT_COLOR)} className="ml-3">
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() =>
+                          form.setValue(
+                            "HIGHLIGHT_COLOR",
+                            defaults().STYLES.HIGHLIGHT_COLOR,
+                          )
+                        }
+                        className="ml-3"
+                      >
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    <a target="_blank" className="text-blue-300" href="https://developer.mozilla.org/en-US/docs/Web/CSS/hex-color">Six-value CSS hex color</a> used when hovering a location (<a target="_blank" className="text-blue-300" href="https://htmlcolorcodes.com/color-picker/">color picker</a>)
+                    <a
+                      target="_blank"
+                      className="text-blue-300"
+                      href="https://developer.mozilla.org/en-US/docs/Web/CSS/hex-color"
+                    >
+                      Six-value CSS hex color
+                    </a>{" "}
+                    used when hovering a location (
+                    <a
+                      target="_blank"
+                      className="text-blue-300"
+                      href="https://htmlcolorcodes.com/color-picker/"
+                    >
+                      color picker
+                    </a>
+                    )
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -754,27 +1185,48 @@ export default function SharedSettings({
               rules={{
                 validate: v => {
                   try {
-                    JSON.parse(v);
-                    return true;
+                    JSON.parse(v)
+                    return true
                   } catch (e) {
-                    return "Value must be valid JSON";
+                    return "Value must be valid JSON"
                   }
-                }
+                },
               }}
-              defaultValue={data.config?.TYPES ? JSON.stringify(data.config.TYPES, null, 2) : JSON.stringify(TYPES, null, 2)}
+              defaultValue={
+                data.config?.TYPES
+                  ? JSON.stringify(data.config.TYPES, null, 2)
+                  : JSON.stringify(TYPES, null, 2)
+              }
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Available Feature Types</FormLabel>
                   <FormControl>
                     <div className="flex">
-                      <Textarea placeholder="{}" {...field} rows={11} readOnly disabled />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("TYPES", JSON.stringify(defaults().TYPES, null, 2))} className="ml-3">
+                      <Textarea
+                        placeholder="{}"
+                        {...field}
+                        rows={11}
+                        readOnly
+                        disabled
+                      />
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() =>
+                          form.setValue(
+                            "TYPES",
+                            JSON.stringify(defaults().TYPES, null, 2),
+                          )
+                        }
+                        className="ml-3"
+                      >
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Available types when creating a new feature. <b>Currently changing this is not allowed</b>
+                    Available types when creating a new feature.{" "}
+                    <b>Currently changing this is not allowed</b>
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -786,27 +1238,48 @@ export default function SharedSettings({
               rules={{
                 validate: v => {
                   try {
-                    JSON.parse(v);
-                    return true;
+                    JSON.parse(v)
+                    return true
                   } catch (e) {
-                    return "Value must be valid JSON";
+                    return "Value must be valid JSON"
                   }
-                }
+                },
               }}
-              defaultValue={data.config?.LAYOUT_OVERRIDE ? JSON.stringify(data.config.LAYOUT_OVERRIDE, null, 2) : "{}"}
+              defaultValue={
+                data.config?.LAYOUT_OVERRIDE
+                  ? JSON.stringify(data.config.LAYOUT_OVERRIDE, null, 2)
+                  : "{}"
+              }
               render={({ field }) => (
                 <FormItem className="py-4">
                   <FormLabel>Symbol/Location layout overrides</FormLabel>
                   <FormControl>
                     <div className="flex">
                       <Textarea placeholder="{}" {...field} />
-                      <Button variant="outline" type="button" onClick={() => form.setValue("LAYOUT_OVERRIDE", "{}")} className="ml-3">
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() => form.setValue("LAYOUT_OVERRIDE", "{}")}
+                        className="ml-3"
+                      >
                         Reset
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    <a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-style-spec/layers/#symbol">Maplibre symbol</a> layout overrides. e.g. {'{"icon-size": 1}'}. This only applies to the point location symbol layer. Meaning polygon or linestrings are not affected. Some maplibre symbol properties listed are Paint properties, such as <b>icon-color</b>. These cannot be overridden using this field, only Layout properties can.
+                    <a
+                      target="_blank"
+                      className="text-blue-300"
+                      href="https://maplibre.org/maplibre-style-spec/layers/#symbol"
+                    >
+                      Maplibre symbol
+                    </a>{" "}
+                    layout overrides. e.g. {'{"icon-size": 1}'}. This only
+                    applies to the point location symbol layer. Meaning polygon
+                    or linestrings are not affected. Some maplibre symbol
+                    properties listed are Paint properties, such as{" "}
+                    <b>icon-color</b>. These cannot be overridden using this
+                    field, only Layout properties can.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -823,107 +1296,147 @@ export default function SharedSettings({
                       <Input
                         type="file"
                         accept=".geojson,.topojson,.json"
-                        onChange={async (e) => {
+                        onChange={async e => {
                           const file = e.target.files[0]
                           if (file) {
-                            const content = await file.text();
+                            const content = await file.text()
                             try {
                               let fileData = JSON.parse(content)
 
                               // console.log("fileData", fileData)
-                              if (fileData.type === "FeatureCollection") { // geojson
-                                if (fileData.features?.length === 0 || !fileData.features) {
-                                  throw new Error("GeoJSON file has no feature data")
+                              if (fileData.type === "FeatureCollection") {
+                                // geojson
+                                if (
+                                  fileData.features?.length === 0 ||
+                                  !fileData.features
+                                ) {
+                                  throw new Error(
+                                    "GeoJSON file has no feature data",
+                                  )
                                 }
-                              } else if (fileData.type === "Topology") { // topojson
-                                const [convertedGeojson, type] = combineAndDownload("geojson", fileData, {})
+                              } else if (fileData.type === "Topology") {
+                                // topojson
+                                const [convertedGeojson, type] =
+                                  combineAndDownload("geojson", fileData, {})
                                 fileData = JSON.parse(convertedGeojson)
                                 if (fileData.features.length === 0) {
-                                  throw new Error("TopoJSON either has no data or it's layers are named incorrectly. Use 'territory' for polygons, 'location' for points, and 'guide' for lines")
+                                  throw new Error(
+                                    "TopoJSON either has no data or it's layers are named incorrectly. Use 'territory' for polygons, 'location' for points, and 'guide' for lines",
+                                  )
                                 }
                               } else {
-                                throw new Error("Invalid GeoJSON or TopoJSON file")
+                                throw new Error(
+                                  "Invalid GeoJSON or TopoJSON file",
+                                )
                               }
                               // console.log("loaded a file with", fileData.features.length, "features")
                               setPreAlert({
-                                points: fileData.features.filter(f => f.geometry.type === "Point").length,
-                                polygons: fileData.features.filter(f => f.geometry.type.includes("Poly")).length,
-                                lines: fileData.features.filter(f => f.geometry.type.includes("LineString")).length,
+                                points: fileData.features.filter(
+                                  f => f.geometry.type === "Point",
+                                ).length,
+                                polygons: fileData.features.filter(f =>
+                                  f.geometry.type.includes("Poly"),
+                                ).length,
+                                lines: fileData.features.filter(f =>
+                                  f.geometry.type.includes("LineString"),
+                                ).length,
                                 total: fileData.features.length,
                               })
 
                               // fill required data
                               let altered = 0
                               fileData.features.forEach(f => {
-
                                 // TYPES: {
                                 //   "polygon": ["sector", "cluster", "nebulae"],
                                 //   "point": ["station", "jovian", "moon", "terrestrial", "desert planet", "ocean planet", "barren planet", "ice planet", "asteroid", "lava planet", "ringed planet", "gate", "red dwarf", "orange star", "yellow star", "white dwarf", "red giant", "red supergiant", "blue giant", "blue supergiant", "red star", "blue star", "black hole", "wormhole", "exoplanet", "neutron star", "comet"],
                                 //   "linestring": ["guide", "hyperspace"],
                                 // },
 
-                                const availableTypes = TYPES[f.geometry.type.toLowerCase().trim()]
+                                const availableTypes =
+                                  TYPES[f.geometry.type.toLowerCase().trim()]
 
                                 if (!f.properties.name || !f.properties.type) {
                                   const proceed = window.confirm(
                                     `This data is missing a required 'name' or 'type' property\n\n` +
-                                    `${JSON.stringify(f.properties, null, 2)}\n\n` +
-                                    `Auto-fill missing required property values?\n\n` +
-                                    `• name (if missing) → random name\n` +
-                                    `• type (if missing) → "${availableTypes[0] || "placeholder"}"`
+                                      `${JSON.stringify(f.properties, null, 2)}\n\n` +
+                                      `Auto-fill missing required property values?\n\n` +
+                                      `• name (if missing) → random name\n` +
+                                      `• type (if missing) → "${availableTypes[0] || "placeholder"}"`,
                                   )
                                   if (!proceed) {
                                     throw new Error("Missing required property")
                                   }
                                   if (!f.properties.name) {
-                                    f.properties.name = randomName('', ' ')
+                                    f.properties.name = randomName("", " ")
                                     altered++
                                   }
                                   if (!f.properties.type) {
-                                    f.properties.type = availableTypes[0] || "placeholder"
+                                    f.properties.type =
+                                      availableTypes[0] || "placeholder"
                                     altered++
                                   }
                                 }
-
-
                               })
 
-                              if (altered) toast.success(`Added ${altered} required value${altered > 1 ? 's' : ''} to your uploaded map`);
-                              const combinedGeojson = combineLayers([fileData, data.geojson])
-                              form.setValue('file', combinedGeojson)
-                              form.clearErrors('invalid')
+                              if (altered)
+                                toast.success(
+                                  `Added ${altered} required value${altered > 1 ? "s" : ""} to your uploaded map`,
+                                )
+                              const combinedGeojson = combineLayers([
+                                fileData,
+                                data.geojson,
+                              ])
+                              form.setValue("file", combinedGeojson)
+                              form.clearErrors("invalid")
                             } catch (error) {
                               console.log(error)
                               if (error.name === "SyntaxError") {
                                 toast.warning(`Invalid JSON`)
                               } else {
-                                toast.warning(`${error.message}`);
+                                toast.warning(`${error.message}`)
                               }
-                              form.setError('invalid')
+                              form.setError("invalid")
                             }
                           }
                         }}
                       />
-                      <Button variant="outline" type="button" onClick={() => { form.resetField('file'); window.alert("file removed, UI may not reflect this change")}} className="ml-3">
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() => {
+                          form.resetField("file")
+                          window.alert(
+                            "file removed, UI may not reflect this change",
+                          )
+                        }}
+                        className="ml-3"
+                      >
                         Remove
                       </Button>
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Upload a GeoJSON or TopoJSON file to fill the map with data. If uploading a topojson the layers must be named as follows: "location" for points, "territory" for polygons, "guide" for lines.
-
+                    Upload a GeoJSON or TopoJSON file to fill the map with data.
+                    If uploading a topojson the layers must be named as follows:
+                    "location" for points, "territory" for polygons, "guide" for
+                    lines.
                     <br />
-
-                    An important consideration is that the uploaded features must fit within your map's Bounds property. Generally this is just within a couple coordinates around lat/lng of 0,0.
+                    An important consideration is that the uploaded features
+                    must fit within your map's Bounds property. Generally this
+                    is just within a couple coordinates around lat/lng of 0,0.
                     <br />
-
                     See my published
-
-                    <a target="_blank" className="text-blue-300" href="https://github.com/CodaBool/stargazer/wiki/Feature-Properties"> feature documentation </a>
-
+                    <a
+                      target="_blank"
+                      className="text-blue-300"
+                      href="https://github.com/CodaBool/stargazer/wiki/Feature-Properties"
+                    >
+                      {" "}
+                      feature documentation{" "}
+                    </a>
                     for what properties matter on features.
                   </FormDescription>
-                  {form.formState.errors.invalid &&
+                  {form.formState.errors.invalid && (
                     <>
                       <p className="text-sm text-red-500">Invalid map data</p>
                       <div className="py-2">
@@ -938,109 +1451,291 @@ export default function SharedSettings({
                           <CollapsibleContent className="mt-2 text-gray-400 select-text">
                             <p>Troubleshooting steps:</p>
                             <ul className="list-disc list-inside">
-                              <li>Ensure that each feature has both a <strong>name</strong> and <strong>type</strong> property. These are required.</li>
-                              <li>The current implementation of {TITLE} has a hardcoded set of types. Those can be seen above under <b>Available Feature Types</b>. Use a value from there depending on the feature geometry type.</li>
-                              <li>When uploading a topojson {TITLE} currently expects each geometry layer to be named exactly (must be lowercase) as shown below. Note that you do not have to include all 3 layers, but if they are present, they must follow this naming convention:</li>
+                              <li>
+                                Ensure that each feature has both a{" "}
+                                <strong>name</strong> and <strong>type</strong>{" "}
+                                property. These are required.
+                              </li>
+                              <li>
+                                The current implementation of {TITLE} has a
+                                hardcoded set of types. Those can be seen above
+                                under <b>Available Feature Types</b>. Use a
+                                value from there depending on the feature
+                                geometry type.
+                              </li>
+                              <li>
+                                When uploading a topojson {TITLE} currently
+                                expects each geometry layer to be named exactly
+                                (must be lowercase) as shown below. Note that
+                                you do not have to include all 3 layers, but if
+                                they are present, they must follow this naming
+                                convention:
+                              </li>
                               <ul className="list-disc list-inside ml-4">
-                                <li><strong>location:</strong> for points</li>
-                                <li><strong>territory:</strong> for polygons</li>
-                                <li><strong>guide:</strong> for lines</li>
-                            </ul>
-                            <br/>
-                              <li>There are two websites which make creating map data easy: <a href="https://geojson.io" target="_blank" className="text-blue-300">geojson.io</a> and <a href="https://mapshaper.org" target="_blank" className="text-blue-300">mapshaper.org</a>. Let's do a full exhaustive workflow example using mapshaper:</li>
+                                <li>
+                                  <strong>location:</strong> for points
+                                </li>
+                                <li>
+                                  <strong>territory:</strong> for polygons
+                                </li>
+                                <li>
+                                  <strong>guide:</strong> for lines
+                                </li>
+                              </ul>
+                              <br />
+                              <li>
+                                There are two websites which make creating map
+                                data easy:{" "}
+                                <a
+                                  href="https://geojson.io"
+                                  target="_blank"
+                                  className="text-blue-300"
+                                >
+                                  geojson.io
+                                </a>{" "}
+                                and{" "}
+                                <a
+                                  href="https://mapshaper.org"
+                                  target="_blank"
+                                  className="text-blue-300"
+                                >
+                                  mapshaper.org
+                                </a>
+                                . Let's do a full exhaustive workflow example
+                                using mapshaper:
+                              </li>
                               <ul className="list-decimal list-inside ml-4">
-                                <li>Download a full copy of {map}'s map data: you can do that from the <a href="/" target="_blank" className="text-blue-300">menu</a> by selecting the relevant system and clicking the <strong><Download className="inline" size={18} /> download</strong> button.</li>
-                                <li>Use <a href="https://mapshaper.org" target="_blank" className="text-blue-300">mapshaper.org</a> and upload your downloaded base map</li>
-                                <li>Open the layers popover by clicking at the top middle button</li>
-                                <li>In the popover, click on the top most eye symbol. This reveals all layers.</li>
-                                <li>Create a new layer by clicking on "Add empty layer". Or if you already have some data, use "Add files"</li>
-                                <li>Use mapshaper tools to add features and edit their properties. Remember, <b>name</b> and <b>type</b> are required on all features.</li>
-                                <li>Make sure each geometry type is on its own layer. See above naming conventions. Points, Polygons, Lines all each get their own layer.</li>
-                                <li>Once done, delete the original layers which were uploaded. They were there just to be used as a reference. We don't actually want that in the data we will be uploading.</li>
-                                <li>Now follow the above rule for layer naming convention. Meaning <b>location</b> for points, <b>territory</b> for polygons, and <b>guide</b> for lines.</li>
-                                <li>Use the <b>Export</b> button and export as topojson</li>
+                                <li>
+                                  Download a full copy of {map}'s map data: you
+                                  can do that from the{" "}
+                                  <a
+                                    href="/"
+                                    target="_blank"
+                                    className="text-blue-300"
+                                  >
+                                    menu
+                                  </a>{" "}
+                                  by selecting the relevant system and clicking
+                                  the{" "}
+                                  <strong>
+                                    <Download className="inline" size={18} />{" "}
+                                    download
+                                  </strong>{" "}
+                                  button.
+                                </li>
+                                <li>
+                                  Use{" "}
+                                  <a
+                                    href="https://mapshaper.org"
+                                    target="_blank"
+                                    className="text-blue-300"
+                                  >
+                                    mapshaper.org
+                                  </a>{" "}
+                                  and upload your downloaded base map
+                                </li>
+                                <li>
+                                  Open the layers popover by clicking at the top
+                                  middle button
+                                </li>
+                                <li>
+                                  In the popover, click on the top most eye
+                                  symbol. This reveals all layers.
+                                </li>
+                                <li>
+                                  Create a new layer by clicking on "Add empty
+                                  layer". Or if you already have some data, use
+                                  "Add files"
+                                </li>
+                                <li>
+                                  Use mapshaper tools to add features and edit
+                                  their properties. Remember, <b>name</b> and{" "}
+                                  <b>type</b> are required on all features.
+                                </li>
+                                <li>
+                                  Make sure each geometry type is on its own
+                                  layer. See above naming conventions. Points,
+                                  Polygons, Lines all each get their own layer.
+                                </li>
+                                <li>
+                                  Once done, delete the original layers which
+                                  were uploaded. They were there just to be used
+                                  as a reference. We don't actually want that in
+                                  the data we will be uploading.
+                                </li>
+                                <li>
+                                  Now follow the above rule for layer naming
+                                  convention. Meaning <b>location</b> for
+                                  points, <b>territory</b> for polygons, and{" "}
+                                  <b>guide</b> for lines.
+                                </li>
+                                <li>
+                                  Use the <b>Export</b> button and export as
+                                  topojson
+                                </li>
                                 <li>Upload your topojson to {TITLE}</li>
-                            </ul>
-                            <br/>
+                              </ul>
+                              <br />
                               <li>Additional tips:</li>
 
                               <ul className="list-disc list-inside ml-4">
-                                <li>in rare cases mapshaper will simplify your data. Use this option on export to disable that: <b>no-quantization precision=0.001</b></li>
-                                <li>Want to trace over an image? Use the background image field above and then download the added features from the main menu. </li>
-                                <li><b>npx mapshaper</b> CLI can be used to combine layers into one (but it's very picky on the properties on each feature)</li>
-                                <li><a href="https://findthatpostcode.uk/tools/merge-geojson" target="_blank" className="text-blue-300">combine two geojson files into one</a> (this tool is not picky)</li>
-                                <li>My maps are small and centered on coordinates 0,0 to minimize mercator projection distortion</li>
+                                <li>
+                                  in rare cases mapshaper will simplify your
+                                  data. Use this option on export to disable
+                                  that: <b>no-quantization precision=0.001</b>
+                                </li>
+                                <li>
+                                  Want to trace over an image? Use the
+                                  background image field above and then download
+                                  the added features from the main menu.{" "}
+                                </li>
+                                <li>
+                                  <b>npx mapshaper</b> CLI can be used to
+                                  combine layers into one (but it's very picky
+                                  on the properties on each feature)
+                                </li>
+                                <li>
+                                  <a
+                                    href="https://findthatpostcode.uk/tools/merge-geojson"
+                                    target="_blank"
+                                    className="text-blue-300"
+                                  >
+                                    combine two geojson files into one
+                                  </a>{" "}
+                                  (this tool is not picky)
+                                </li>
+                                <li>
+                                  My maps are small and centered on coordinates
+                                  0,0 to minimize mercator projection distortion
+                                </li>
                               </ul>
                             </ul>
                           </CollapsibleContent>
                         </Collapsible>
                       </div>
-                    </>}
+                    </>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
             />
-            {!realGalaxy && <FormField
-              control={form.control}
-              name="STYLE"
-              render={({ field }) => (
-                <FormItem className="py-4">
-                  <FormLabel>Maplibre Style</FormLabel>
-                  {config?.STYLE && <p className="text-orange-100">A style already exists for this map!</p>}
-                  <FormControl>
-                    <div className="flex">
-                      <Input
-                        type="file"
-                        accept=".json"
-                        onChange={async (e) => {
-                          const file = e.target.files[0]
-                          if (file) {
-                            const content = await file.text();
-                            try {
-                              let fileData = JSON.parse(content)
-                              form.setValue('STYLE', fileData)
-                              form.clearErrors('invalidStyle')
-                            } catch (error) {
-                              console.error(error)
-                              form.setError("invalidStyle")
+            {!realGalaxy && (
+              <FormField
+                control={form.control}
+                name="STYLE"
+                render={({ field }) => (
+                  <FormItem className="py-4">
+                    <FormLabel>Maplibre Style</FormLabel>
+                    {data.config?.STYLE && (
+                      <p className="text-orange-100">
+                        A style already exists for this map!
+                      </p>
+                    )}
+                    <FormControl>
+                      <div className="flex">
+                        <Input
+                          type="file"
+                          accept=".json"
+                          onChange={async e => {
+                            const file = e.target.files[0]
+                            if (file) {
+                              const content = await file.text()
+                              try {
+                                let fileData = JSON.parse(content)
+                                form.setValue("STYLE", fileData)
+                                form.clearErrors("invalidStyle")
+                              } catch (error) {
+                                console.error(error)
+                                form.setError("invalidStyle")
+                              }
                             }
-                          }
-                        }}
-                      />
-                      <Button variant="outline" type="button" onClick={() => { form.resetField('STYLE'); window.alert("Maplibre Style file removed, UI may not reflect this change")}} className="ml-3">
-                        Remove
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    A complex configuration for the real world visual appearance of the map. Must be a valid Maplibre style (<a target="_blank" className="text-blue-300" href="https://maplibre.org/maplibre-style-spec/">spec</a>). I recommend using <a target="_blank" className="text-blue-300" href="https://maplibre.org/maputnik">Maputnik</a> for creating and editing the style. You may find it easiest to download <a target="_blank" className="text-blue-300" href="https://github.com/CodaBool/stargazer/blob/main/lib/style.json">my style</a> to start from as a template.
-                  </FormDescription>
-                  {form.formState.errors.invalidStyle && <p className="text-sm text-red-500">Invalid format</p>}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            }
+                          }}
+                        />
+                        <Button
+                          variant="outline"
+                          type="button"
+                          onClick={() => {
+                            form.resetField("STYLE")
+                            window.alert(
+                              "Maplibre Style file removed, UI may not reflect this change",
+                            )
+                          }}
+                          className="ml-3"
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormDescription>
+                      A complex configuration for the real world visual
+                      appearance of the map. Must be a valid Maplibre style (
+                      <a
+                        target="_blank"
+                        className="text-blue-300"
+                        href="https://maplibre.org/maplibre-style-spec/"
+                      >
+                        spec
+                      </a>
+                      ). I recommend using{" "}
+                      <a
+                        target="_blank"
+                        className="text-blue-300"
+                        href="https://maplibre.org/maputnik"
+                      >
+                        Maputnik
+                      </a>{" "}
+                      for creating and editing the style. You may find it
+                      easiest to download{" "}
+                      <a
+                        target="_blank"
+                        className="text-blue-300"
+                        href="https://github.com/CodaBool/stargazer/blob/main/lib/style.json"
+                      >
+                        my style
+                      </a>{" "}
+                      to start from as a template.
+                    </FormDescription>
+                    {form.formState.errors.invalidStyle && (
+                      <p className="text-sm text-red-500">Invalid format</p>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           </CardContent>
           <CardFooter>
-            <Button disabled={submitting} type="submit" variant="outline" className="w-full cursor-pointer">
-              {submitting
-                ? <LoaderCircle className="animate-spin" />
-                : "Submit"
-              }
+            <Button
+              disabled={submitting}
+              type="submit"
+              variant="outline"
+              className="w-full cursor-pointer"
+            >
+              {submitting ? (
+                <LoaderCircle className="animate-spin" />
+              ) : (
+                "Submit"
+              )}
             </Button>
           </CardFooter>
         </Card>
-        <AlertDialog open={!!alert} onOpenChange={open => !open && setAlert(null)}>
+        <AlertDialog
+          open={!!alert}
+          onOpenChange={open => !open && setAlert(null)}
+        >
           <AlertDialogContent style={{ minWidth: "64vw" }}>
             <AlertDialogHeader>
-              <AlertDialogTitle>Adding {alert?.total} features!</AlertDialogTitle>
+              <AlertDialogTitle>
+                Adding {alert?.total} features!
+              </AlertDialogTitle>
               <AlertDialogDescription asChild>
                 <div>
-                  This change is difficult to undo. Creating a backup from the main menu first is recommended.
+                  This change is difficult to undo. Creating a backup from the
+                  main menu first is recommended.
                   <hr className="my-4" />
                   These are the features that will be added:
-                  <br/><br/>
+                  <br />
+                  <br />
                   <ul>
                     <li>Points: {alert?.points}</li>
                     <li>Polygons: {alert?.polygons}</li>
@@ -1050,86 +1745,98 @@ export default function SharedSettings({
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel className="cursor-pointer" onClick={() => setSubmitting(false)}>Cancel</AlertDialogCancel>
-              <AlertDialogAction className="cursor-pointer" onClick={() => submit(form.getValues(), null, true)}>
-                I've backed up {data.name} and want to the above {alert?.total} Features
+              <AlertDialogCancel
+                className="cursor-pointer"
+                onClick={() => setSubmitting(false)}
+              >
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                className="cursor-pointer"
+                onClick={() => submit(form.getValues(), null, true)}
+              >
+                I've backed up {data.name} and want to the above {alert?.total}{" "}
+                Features
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
       </form>
-    </Form >
+    </Form>
   )
 }
 
 /** Load an image and return its natural dimensions. */
 function probeImageDimensions(url, timeoutMs = 10000) {
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    let done = false;
+    const img = new Image()
+    let done = false
 
     const cleanup = () => {
-      done = true;
-      img.onload = null;
-      img.onerror = null;
-    };
+      done = true
+      img.onload = null
+      img.onerror = null
+    }
 
     const t = setTimeout(() => {
-      if (done) return;
-      cleanup();
-      reject(new Error("Image load timed out"));
-    }, timeoutMs);
+      if (done) return
+      cleanup()
+      reject(new Error("Image load timed out"))
+    }, timeoutMs)
 
     img.onload = () => {
-      clearTimeout(t);
-      if (done) return;
-      cleanup();
+      clearTimeout(t)
+      if (done) return
+      cleanup()
 
-      const w = img.naturalWidth || img.width;
-      const h = img.naturalHeight || img.height;
-      if (!w || !h) return reject(new Error("Loaded, but could not read dimensions"));
-      resolve({ width: w, height: h });
-    };
+      const w = img.naturalWidth || img.width
+      const h = img.naturalHeight || img.height
+      if (!w || !h)
+        return reject(new Error("Loaded, but could not read dimensions"))
+      resolve({ width: w, height: h })
+    }
 
     img.onerror = () => {
-      clearTimeout(t);
-      if (done) return;
-      cleanup();
-      reject(new Error("Failed to load image (not an image, bad URL, or blocked)"));
-    };
+      clearTimeout(t)
+      if (done) return
+      cleanup()
+      reject(
+        new Error("Failed to load image (not an image, bad URL, or blocked)"),
+      )
+    }
 
     // CORS does NOT prevent reading naturalWidth/naturalHeight if the image loads.
     // (CORS mainly affects reading pixel data via canvas.)
-    img.decoding = "async";
-    img.referrerPolicy = "no-referrer"; // optional; helps some hosts
-    img.src = url;
-  });
+    img.decoding = "async"
+    img.referrerPolicy = "no-referrer" // optional; helps some hosts
+    img.src = url
+  })
 }
 
 /** Find small whole-number ratio a:b closest to width/height. */
 function closestWholeRatio(width, height, maxDen = 30) {
-  const r = width / height;
-  let best = { a: 16, b: 9, err: Infinity }; // default fallback
+  const r = width / height
+  let best = { a: 16, b: 9, err: Infinity } // default fallback
 
   for (let b = 1; b <= maxDen; b++) {
-    const a = Math.max(1, Math.round(r * b));
-    const err = Math.abs(a / b - r);
+    const a = Math.max(1, Math.round(r * b))
+    const err = Math.abs(a / b - r)
 
     // Prefer smaller numbers when error ties
     if (
       err < best.err - 1e-12 ||
-      (Math.abs(err - best.err) < 1e-12 && (a + b) < (best.a + best.b))
+      (Math.abs(err - best.err) < 1e-12 && a + b < best.a + best.b)
     ) {
-      best = { a, b, err };
+      best = { a, b, err }
     }
   }
 
-  return { a: best.a, b: best.b };
+  return { a: best.a, b: best.b }
 }
 
 /** Build "-a, -b, a, b" bounds string */
 function boundsStringFromHalfExtents(a, b) {
-  return `${-a}, ${-b}, ${a}, ${b}`;
+  return `${-a}, ${-b}, ${a}, ${b}`
 }
 
 /**
@@ -1139,53 +1846,61 @@ function boundsStringFromHalfExtents(a, b) {
  * - computes aspect ratio and suggests smallest-ish whole-number maxBounds
  * - confirm before overwriting MAX_BOUNDS via form.setValue(...)
  */
-function makeBgImageOnChangeHandler({ form, getCurrentBounds, maxDen = 30, debounceMs = 600 }) {
-  let timer = null;
-  let lastValue = "";
+function makeBgImageOnChangeHandler({
+  form,
+  getCurrentBounds,
+  maxDen = 30,
+  debounceMs = 600,
+}) {
+  let timer = null
+  let lastValue = ""
 
   return function onBgImageChange(url) {
     // Basic guard
-    if (typeof url !== "string") return;
+    if (typeof url !== "string") return
 
     // Avoid spamming while typing
-    lastValue = url;
-    if (timer) clearTimeout(timer);
+    lastValue = url
+    if (timer) clearTimeout(timer)
 
     timer = setTimeout(async () => {
-      const v = lastValue.trim();
+      const v = lastValue.trim()
 
       // 1) must contain http
-      if (!v.includes("http")) return;
+      if (!v.includes("http")) return
 
       // Optional: if user keeps changing quickly, this prevents stale prompts
-      const myValue = v;
+      const myValue = v
 
       try {
         // 2) validate it's an image by loading it
-        const { width, height } = await probeImageDimensions(myValue);
+        const { width, height } = await probeImageDimensions(myValue)
 
         // 3) compute closest matching whole-number ratio (small-ish)
-        const { a, b } = closestWholeRatio(width, height, maxDen);
-        const suggested = boundsStringFromHalfExtents(a, b);
+        const { a, b } = closestWholeRatio(width, height, maxDen)
+        const suggested = boundsStringFromHalfExtents(a, b)
 
         // If user already has same value, do nothing
-        const current = String(getCurrentBounds?.() ?? "").trim();
-        if (current === suggested) return;
+        const current = String(getCurrentBounds?.() ?? "").trim()
+        if (current === suggested) return
 
         // 4) ask user
         const ok = window.confirm(
           `That image is ${width}px×${height}px (≈ ${(width / height).toFixed(4)})\n\n` +
-          `Suggested Bounds for this aspect ratio: ${suggested}\n\n` +
-          `Overwrite your current Bounds to: ${current ? current : ""}?`
-        );
+            `Suggested Bounds for this aspect ratio: ${suggested}\n\n` +
+            `Overwrite your current Bounds to: ${current ? current : ""}?`,
+        )
 
         if (ok) {
-          form.setValue("MAX_BOUNDS", suggested, { shouldDirty: true, shouldValidate: true });
+          form.setValue("MAX_BOUNDS", suggested, {
+            shouldDirty: true,
+            shouldValidate: true,
+          })
         }
       } catch (err) {
         // If you want, you can surface this in your UI instead of console
-        console.warn("BG image validation failed:", err?.message ?? err);
+        console.warn("BG image validation failed:", err?.message ?? err)
       }
-    }, debounceMs);
-  };
+    }, debounceMs)
+  }
 }
