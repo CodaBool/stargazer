@@ -157,6 +157,49 @@ export default function Controls({ name, params, setSize, TYPES, GEO_EDIT }) {
     return () => map.off("idle", moveAllDrawLayersToTop)
   }, [wrapper])
 
+  // make the cursor pointer when hovering features
+  // it's difficult to capture polygon events here
+  useEffect(() => {
+    if (!wrapper) return
+    const map = wrapper.getMap()
+    let cleanup = null
+    const bindDrawCursorListeners = () => {
+      const drawLayerIds = [
+        "gl-draw-point-point-inactive.cold",
+        "gl-draw-line-inactive.cold",
+      ]
+
+      const onEnter = (e) => {
+        map.getCanvas().style.cursor = "pointer"
+      }
+
+      const onLeave = () => {
+        map.getCanvas().style.cursor = ""
+      }
+
+      drawLayerIds.forEach((id) => {
+        if (!map.getLayer(id)) return
+        map.on("mouseenter", id, onEnter)
+        map.on("mouseleave", id, onLeave)
+      })
+
+      cleanup = () => {
+        drawLayerIds.forEach((id) => {
+          if (!map.getLayer(id)) return
+          map.off("mouseenter", id, onEnter)
+          map.off("mouseleave", id, onLeave)
+        })
+      }
+    }
+
+    map.on("idle", bindDrawCursorListeners)
+
+    return () => {
+      map.off("idle", bindDrawCursorListeners)
+      cleanup?.()
+    }
+  }, [wrapper, draw])
+
   useEffect(() => {
     if (!draw) return
     // hacky solution to prevent draw being used before initialization

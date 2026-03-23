@@ -583,6 +583,10 @@ export default function SharedSettings({
                         checked={field.value}
                         className="cursor-pointer"
                         onCheckedChange={async e => {
+                          if (isCloud) {
+                            window.alert("You can only change this setting on local maps")
+                            return
+                          }
                           const maps = await getMaps()
                           const currentMap = maps[`${map}-${id}`]
                           const proceed = window.confirm(
@@ -1226,7 +1230,7 @@ export default function SharedSettings({
                   </FormControl>
                   <FormDescription>
                     Available types when creating a new feature.{" "}
-                    <b>Currently changing this is not allowed</b>
+                    <b>Currently, changing this is not allowed</b>
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
