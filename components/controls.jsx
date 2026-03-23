@@ -42,7 +42,7 @@ import {
 // const combinedDrawStyles = [...drawStyles, ...pluginExtras]
 // mapbox-gl-draw-bezier-curve-mode
 
-// MapLibre compatibility: mapbox-gl-draw → maplibre classes
+// MapLibre compatibility: mapbox-gl-draw -> maplibre classes
 MapboxDraw.constants.classes.CANVAS        = 'maplibregl-canvas';
 MapboxDraw.constants.classes.CONTROL_BASE  = 'maplibregl-ctrl';
 MapboxDraw.constants.classes.CONTROL_PREFIX = 'maplibregl-ctrl-';

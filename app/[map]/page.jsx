@@ -95,7 +95,7 @@ export function generateIconIdList(mapName) {
   const mapIndex = [];
 
 
-  // ---------- main folders ----------
+  // main
   for (const folder of MAIN_SVG_FOLDERS) {
     const absDir = path.join(root, folder);
     if (!fs.existsSync(absDir)) continue;
@@ -111,7 +111,7 @@ export function generateIconIdList(mapName) {
     }
   }
 
-  // ---------- map-specific folder ----------
+  // map-specific
   const mapDir = path.join(root, `public/svg/${mapName}`);
 
   if (fs.existsSync(mapDir)) {

@@ -20,7 +20,7 @@ export async function GET(req) {
     const today0 = startOfUtcDay(now)
     const deleteBefore = addUtcDays(today0, -90)
 
-    // Notice rules:
+    // Notice timeline:
     // 30-day notice => deletion in 30 days => map age 60 days
     // 3-day notice  => deletion in 3 days  => map age 87 days
     //

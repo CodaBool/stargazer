@@ -1,4 +1,3 @@
-// app/(whatever)/vote/page.jsx
 import { ArrowLeft, Gavel, Vote } from "lucide-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
@@ -11,9 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { TITLE } from "@/lib/utils"
-
-// ✅ Adjust these imports to your project
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import db from "@/lib/db"
 import FeatureVoteClient from "./component.jsx"
