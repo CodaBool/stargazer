@@ -28,6 +28,7 @@ export default function Cartographer({ name, data, uuid, remoteConfig, iconIndex
 
   useEffect(() => {
     if ((name === "warhammer") && process.env.NEXT_PUBLIC_URL !== "http://192.168.0.16:3000" && process.env.NEXT_PUBLIC_URL !== "http://localhost:3000") window.alert(`The ${name} map is still in an unfinished state. Follow on itch.io or GitHub for updates.`)
+    if (name === "custom" && params.get("new") === "1") window.alert(`Welcome to the custom map editor! By default the map is set to a Galaxy Map. If you instead want to use a Earth Map. Go to settings in the menu.`)
     hardwareCheck()
   }, [])
   useEffect(() => {

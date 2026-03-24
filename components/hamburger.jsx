@@ -9,12 +9,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Heart, GitBranch, Pencil, User, Ruler, Menu, Crosshair, HeartHandshake, Eye, CircleHelp, House, Settings, Book } from "lucide-react"
-import { REPO, useMode, useStore } from "@/lib/utils"
+import { getMaps, REPO, useMode, useStore } from "@/lib/utils"
+import { toast } from 'sonner'
 
 export default function Hamburger({ name, params, map, mobile }) {
+  const router = useRouter()
   const { mode, setMode } = useMode()
   const { setTutorial, setCredits, setFilters, filters } = useStore()
+
+  const handleClick = async (e) => {
+    e.preventDefault()
+    const maps = await getMaps()
+    if (!maps[`${name}-${params.get("id")}`]) {
+      toast.warning("You must add a location before you can access settings")
+      return
+    }
+    router.push(`/${name}/${params.get("id")}/settings`)
+  }
 
   function geoGridWorkaround() {
     if (document.querySelector(".geogrid")) {
@@ -112,11 +125,15 @@ export default function Hamburger({ name, params, map, mobile }) {
               </DropdownMenuItem>
             </Link>
             {(!mobile && params.get("id")) &&
-              <Link href={`/${name}/${params.get("id")}/settings`}>
-                <DropdownMenuItem className="cursor-pointer">
-                  <Settings className="ml-[.6em] inline" /> <span className="ml-[5px]">Settings</span>
-                </DropdownMenuItem>
-              </Link>
+              // <Link href={`/${name}/${params.get("id")}/settings`} >
+              //   <DropdownMenuItem className="cursor-pointer">
+              //     <Settings className="ml-[.6em] inline" /> <span className="ml-[5px]">Settings</span>
+              //   </DropdownMenuItem>
+              // </Link>
+              <DropdownMenuItem onClick={handleClick} className="cursor-pointer">
+                <Settings className="ml-[.6em] inline" />
+                <span className="ml-[5px]">Settings</span>
+              </DropdownMenuItem>
             }
             {(!params.get("preview") && !mobile && params.get("id")) &&
               <Link href={`/${name}?id=${params.get("id")}&preview=1`} onClick={geoGridWorkaround}>
