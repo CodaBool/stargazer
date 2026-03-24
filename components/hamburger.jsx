@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
-import { Heart, Github, Pencil, User, Ruler, Menu, Crosshair, HeartHandshake, Eye, CircleHelp, House, Settings, Book } from "lucide-react"
+import { Heart, GitBranch, Pencil, User, Ruler, Menu, Crosshair, HeartHandshake, Eye, CircleHelp, House, Settings, Book } from "lucide-react"
 import { REPO, useMode, useStore } from "@/lib/utils"
 
 export default function Hamburger({ name, params, map, mobile }) {
@@ -64,7 +64,7 @@ export default function Hamburger({ name, params, map, mobile }) {
             {REPO &&
               <Link href={REPO + "/issues"} target="_blank">
                 <DropdownMenuItem >
-                  <Github className="ml-[.6em]" /> <span className="ml-[5px]">GitHub</span>
+                  <GitBranch className="ml-[.6em]" /> <span className="ml-[5px]">GitHub</span>
                 </DropdownMenuItem>
               </Link>
             }

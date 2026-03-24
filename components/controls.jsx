@@ -178,18 +178,10 @@ export default function Controls({ name, params, setSize, TYPES, GEO_EDIT }) {
       }
 
       drawLayerIds.forEach((id) => {
-        if (!map.getLayer(id)) return
+        if (!map?.getLayer(id)) return
         map.on("mouseenter", id, onEnter)
         map.on("mouseleave", id, onLeave)
       })
-
-      cleanup = () => {
-        drawLayerIds.forEach((id) => {
-          if (!map.getLayer(id)) return
-          map.off("mouseenter", id, onEnter)
-          map.off("mouseleave", id, onLeave)
-        })
-      }
     }
 
     map.on("idle", bindDrawCursorListeners)

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, memo } from "react";
 import {
-  Clock,
+  Timer,
   Group,
   Scene,
   PerspectiveCamera,
@@ -185,7 +185,7 @@ function ThreejsPlanet({
     let camera = null;
     let planetGroup = null;
     let starGroup = null;
-    let clock = null;
+    let timer = null;
 
     let animationId = null;
     let running = false;
@@ -230,7 +230,8 @@ function ThreejsPlanet({
       camera = new PerspectiveCamera(75, computedW / computedH, 0.1, 2000);
       camera.position.z = 4 - (planetSize ?? 3)
 
-      clock = new Clock();
+      timer = new Timer()
+      timer.connect(document)
       planetGroup = new Group();
 
       const planet = generatePlanetByType({
@@ -318,6 +319,8 @@ function ThreejsPlanet({
 
         animationId = requestAnimationFrame(animate);
 
+        timer.update();
+
         if (warpDistance && camera) {
           if (!cameraStartTime) cameraStartTime = performance.now();
           const damping = 0.1;
@@ -325,14 +328,14 @@ function ThreejsPlanet({
           camera.position.z = currentZ;
         }
 
-        if (planetGroup && clock) {
+        if (planetGroup && timer) {
           planetGroup.children.forEach(p => {
             p.children.forEach(layer => {
               if (!layer.material || !("uniforms" in layer.material)) return;
               const u = layer.material.uniforms;
               if (!u?.time || !u?.time_speed) return;
 
-              const elapsed = clock.getElapsedTime() % 10000;
+              const elapsed = timer.getElapsed() % 10000;
               u.time.value = elapsed;
 
               if (holding && notLava) {
@@ -362,9 +365,9 @@ function ThreejsPlanet({
           planetGroup.rotation.z += 0.0002;
         }
 
-        if (type === "gate" && planetGroup && clock) {
+        if (type === "gate" && planetGroup && timer) {
           planetGroup.children.forEach(child => {
-            if (child.userData.animate) child.userData.animate(clock.getElapsedTime());
+            if (child.userData.animate) child.userData.animate(timer.getElapsed());
           });
         }
 
@@ -447,6 +450,7 @@ function ThreejsPlanet({
         genRef.current++;
         off?.();
         stop();
+        timer?.dispose();
 
         if (handleMouseDown) window.removeEventListener("pointerdown", handleMouseDown);
         if (handleMouseUp) {

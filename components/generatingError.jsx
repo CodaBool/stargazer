@@ -1,6 +1,6 @@
 export const dynamic = 'force-static'
 import { USER, REPO } from '@/lib/utils'
-import { ArrowLeft, Clock, Clock12, Github, Mail, MessageCircle } from 'lucide-react'
+import { ArrowLeft, Clock, Clock12, GitBranch, Mail, MessageCircle } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -35,7 +35,7 @@ export default function NotFoundPage({ map, error, mapdId }) {
               <span className='w-full text-sm'><MessageCircle className='mr-2 inline' />search for and DM <span className="mx-1 font-bold">{USER}</span> in FoundryVTT Discord</span>
             </a>
             <a href={REPO ? REPO + "/issues" : ""} target="_blank" className='flex items-center text-black w-full'>
-              <Github className='mr-2' /> open an issue
+              <GitBranch className='mr-2' /> open an issue
             </a>
           </div>
         </div>
@@ -84,7 +84,7 @@ export default function NotFoundPage({ map, error, mapdId }) {
               <span className='w-full text-sm'><MessageCircle className='mr-2 inline' />search for and DM <span className="mx-1 font-bold">{USER}</span> in FoundryVTT Discord</span>
             </a>
             <a href={REPO ? REPO + "/issues" : ""} target="_blank" className='flex items-center text-black w-full'>
-              <Github className='mr-2' /> open an issue
+              <GitBranch className='mr-2' /> open an issue
             </a>
           </div>
         </div>
@@ -137,7 +137,7 @@ export default function NotFoundPage({ map, error, mapdId }) {
             <span className='w-full text-sm'><MessageCircle className='mr-2 inline' />search for and DM <span className="mx-1 font-bold">{USER}</span> in FoundryVTT Discord</span>
           </a>
           <a href={REPO ? REPO + "/issues" : ""} target="_blank" className='flex items-center text-black w-full'>
-            <Github className='mr-2' /> open an issue
+            <GitBranch className='mr-2' /> open an issue
           </a>
         </div>
       </div>
