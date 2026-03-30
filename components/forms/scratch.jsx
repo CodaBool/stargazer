@@ -156,11 +156,17 @@ export default function Scratch({ styleIndex }) {
       return
     }
 
+    if (body.stylePreset === "satellite" && body.mapType === "earth") {
+      const confirmed = window.confirm("The satellite style uses raster images which are not hosted by Stargazer. They could be prone to breaking. Accept risk and continue?")
+      if (!confirmed) return
+    }
+
     setSubmitting(true)
 
     try {
       let defaults
       if (body.mapType === "earth") {
+
         // use Fallout's presets
         defaults = getConsts("fallout")
         if (body.earthUnits === "metric") {
@@ -176,6 +182,9 @@ export default function Scratch({ styleIndex }) {
         }
 
         defaults.STYLE = styleMap[body.stylePreset]
+
+
+
 
 
       } else if (body.mapType === "space") {
@@ -762,6 +771,8 @@ function getStyleOptions(styleIndex) {
     let description = ""
     if (style === "liberty") {
       description = "has 3D terrain data"
+    } else if (style === "watercolor") {
+      description = "no labels"
     }
     return {
       value: style,

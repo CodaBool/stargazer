@@ -1689,15 +1689,15 @@ export default function SharedSettings({
                         Maputnik
                       </a>{" "}
                       for creating and editing the style. You may find it
-                      easiest to download{" "}
+                      easiest to download one of {" "}
                       <a
                         target="_blank"
                         className="text-blue-300"
-                        href="https://github.com/CodaBool/stargazer/blob/main/lib/style.json"
+                        href="https://github.com/CodaBool/stargazer/tree/main/lib/maplibreStyles"
                       >
-                        my style
+                        my styles
                       </a>{" "}
-                      to start from as a template.
+                      to start from as a template. As there are many things to consider, like fonts, glyphs, raster tiles and vector tiles.
                     </FormDescription>
                     {form.formState.errors.invalidStyle && (
                       <p className="text-sm text-red-500">Invalid format</p>

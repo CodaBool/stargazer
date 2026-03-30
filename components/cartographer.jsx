@@ -6,7 +6,6 @@ import Map from '@vis.gl/react-maplibre'
 import Controls from './controls.jsx'
 import Editor from './editor'
 import { useSearchParams } from 'next/navigation'
-import watercolorStyle from "@/lib/maplibreStyles/watercolor.json"
 
 import RBush from 'rbush'
 // allows for local editing
@@ -139,7 +138,7 @@ export default function Cartographer({ name, data, uuid, remoteConfig, iconIndex
   }, [params])
 
   function setupMap(config, data) {
-    if (config.STYLE?.sprite !== "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/sprite/watercolor/sprite" && config.STYLE?.sprite !== "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/sprite/toner/sprite" && config.STYLE?.sprite) {
+    if (config.STYLE?.sprite !== "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/sprite/watercolor/combined" && config.STYLE?.sprite !== "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/sprite/toner/combined" && config.STYLE?.sprite) {
       config.STYLE.sprite = `https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/sprite/${name}/spritesheet`
     }
     setConfig(config)
@@ -166,8 +165,6 @@ export default function Cartographer({ name, data, uuid, remoteConfig, iconIndex
       </div>
     )
   }
-
-  console.log(config.STYLE)
 
   return (
     <>
