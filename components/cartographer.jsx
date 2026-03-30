@@ -29,6 +29,8 @@ export default function Cartographer({ name, data, uuid, remoteConfig, iconIndex
 
   useEffect(() => {
     if ((name === "warhammer") && process.env.NEXT_PUBLIC_URL !== "http://192.168.0.16:3000" && process.env.NEXT_PUBLIC_URL !== "http://localhost:3000") window.alert(`The ${name} map is still in an unfinished state. Follow on itch.io or GitHub for updates.`)
+    if ((name === "coc") && process.env.NEXT_PUBLIC_URL !== "http://192.168.0.16:3000" && process.env.NEXT_PUBLIC_URL !== "http://localhost:3000") window.alert(`The ${name} map is still in an unfinished state. Follow on itch.io or GitHub for updates.`)
+    if ((name === "deltagreen") && process.env.NEXT_PUBLIC_URL !== "http://192.168.0.16:3000" && process.env.NEXT_PUBLIC_URL !== "http://localhost:3000") window.alert(`The ${name} map is still in an unfinished state. Follow on itch.io or GitHub for updates.`)
     hardwareCheck()
   }, [])
   useEffect(() => {
