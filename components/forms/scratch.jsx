@@ -14,6 +14,7 @@ import positronStyle from "@/lib/maplibreStyles/positron.json"
 import satelliteStyle from "@/lib/maplibreStyles/satellite.json"
 import tonerStyle from "@/lib/maplibreStyles/toner.json"
 import vintageStyle from "@/lib/maplibreStyles/vintage.json"
+import watercolorStyle from "@/lib/maplibreStyles/watercolor.json"
 import { ArrowLeft, LoaderCircle, WandSparkles, Earth, Sparkle, Pencil } from "lucide-react"
 import StarsBackgroundSimple from "@/components/ui/starbackgroundSimple"
 import { toast } from "sonner"
@@ -60,6 +61,7 @@ const styleMap = {
   "positron": positronStyle,
   "satellite": satelliteStyle,
   "toner": tonerStyle,
+  "watercolor": watercolorStyle,
   "vintage": vintageStyle,
 }
 

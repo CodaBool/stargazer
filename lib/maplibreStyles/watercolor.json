@@ -1,0 +1,562 @@
+{
+  "version": 8,
+  "name": "Watercolor",
+  "metadata": {
+    "the original name is Aquarelle": true
+  },
+  "sources": {
+    "land": {
+      "url": "https://tiles.basemaps.cartocdn.com/vector/carto.streets/v1/tiles.json",
+      "type": "vector"
+    }
+  },
+  "sprite": "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/sprite/watercolor/combined",
+  "glyphs": "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "Background",
+      "type": "background",
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "background-color": "hsl(46, 65%, 91%)",
+        "background-opacity": 1
+      }
+    },
+    {
+      "id": "Land",
+      "type": "fill",
+      "source": "land",
+      "source-layer": "landuse",
+      "filter": ["all", ["==", "class", "land"], ["==", "$type", "Polygon"]],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-color": "hsl(46, 65%, 91%)",
+        "fill-opacity": ["interpolate", ["linear"], ["zoom"], 0, 1, 7, 0.8],
+        "fill-pattern": "yellow"
+      }
+    },
+    {
+      "id": "Residential",
+      "type": "fill",
+      "source": "land",
+      "source-layer": "landuse",
+      "minzoom": 4,
+      "maxzoom": 13,
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-color": "hsl(60, 24%, 81%)",
+        "fill-opacity": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          4,
+          0.5,
+          9,
+          0.4,
+          13,
+          0.2
+        ],
+        "fill-pattern": "red"
+      }
+    },
+    {
+      "id": "Glacier",
+      "type": "fill",
+      "source": "land",
+      "source-layer": "landuse",
+      "minzoom": 0,
+      "maxzoom": 22,
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": "hsl(0, 0%, 100%)",
+        "fill-opacity": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          0,
+          0.9,
+          7,
+          0.6,
+          16,
+          0.5
+        ],
+        "fill-pattern": "white"
+      }
+    },
+    {
+      "id": "Forest",
+      "type": "fill",
+      "source": "land",
+      "source-layer": "landuse",
+      "minzoom": 0,
+      "maxzoom": 8,
+      "filter": ["==", ["geometry-type"], "Polygon"],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": "hsl(91, 40%, 70%)", "fill-pattern": "green"}
+    },
+    {
+      "id": "Sand",
+      "type": "fill",
+      "source": "land",
+      "source-layer": "landuse",
+      "minzoom": 7,
+      "maxzoom": 22,
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": "hsl(54, 100%, 76%)",
+        "fill-opacity": 0.15
+      }
+    },
+    {
+      "id": "Grass",
+      "type": "fill",
+      "source": "land",
+      "source-layer": "landuse",
+      "minzoom": 8,
+      "maxzoom": 22,
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": "hsl(89, 40%, 78%)",
+        "fill-opacity": 0.4,
+        "fill-pattern": "green"
+      }
+    },
+    {
+      "id": "Wood",
+      "type": "fill",
+      "source": "land",
+      "source-layer": "landuse",
+      "minzoom": 0,
+      "maxzoom": 22,
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": "hsl(91, 40%, 70%)",
+        "fill-opacity": 1,
+        "fill-pattern": "green"
+      }
+    },
+    {
+      "id": "Airport area",
+      "type": "fill",
+      "source": "land",
+      "source-layer": "aeroway",
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0.5, 16, 0.8],
+        "fill-pattern": "purple"
+      }
+    },
+    {
+      "id": "Water outline",
+      "type": "line",
+      "source": "land",
+      "source-layer": "water",
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": 4,
+        "line-color": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          0,
+          "hsla(195, 0%, 100%, 0.6)",
+          22,
+          "hsla(195, 0%, 100%, 0.8)"
+        ],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 13, 6, 18, 16]
+      }
+    },
+    {
+      "id": "Water",
+      "type": "fill",
+      "source": "land",
+      "source-layer": "water",
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": "hsl(205, 57%, 80%)",
+        "fill-pattern": "blue"
+      }
+    },
+    {
+      "id": "River",
+      "type": "line",
+      "source": "land",
+      "source-layer": "waterway",
+      "minzoom": 3,
+      "maxzoom": 22,
+      "filter": [
+        "all",
+        ["==", ["geometry-type"], "LineString"],
+        [
+          "any",
+          ["==", ["get", "intermittent"], false],
+          ["!", ["has", "intermittent"]]
+        ]
+      ],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": ["interpolate", ["linear"], ["zoom"], 3, 2, 18, 4],
+        "line-color": "hsl(205,56%,73%)",
+        "line-opacity": 1,
+        "line-pattern": "blue",
+        "line-width": [
+          "interpolate",
+          ["exponential", 1],
+          ["zoom"],
+          3,
+          2,
+          12,
+          4,
+          18,
+          9,
+          22,
+          12
+        ]
+      }
+    },
+    {
+      "id": "River intermittent",
+      "type": "line",
+      "source": "land",
+      "source-layer": "waterway",
+      "minzoom": 3,
+      "maxzoom": 22,
+      "filter": ["==", "intermittent", true],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": ["interpolate", ["linear"], ["zoom"], 3, 2, 18, 4],
+        "line-color": "hsl(205,56%,73%)",
+        "line-opacity": 0.75,
+        "line-pattern": "blue",
+        "line-width": [
+          "interpolate",
+          ["exponential", 1],
+          ["zoom"],
+          3,
+          2,
+          12,
+          3,
+          18,
+          8,
+          22,
+          10
+        ]
+      }
+    },
+    {
+      "id": "Bridge",
+      "type": "fill",
+      "source": "land",
+      "source-layer": "transportation",
+      "filter": ["==", ["geometry-type"], "Polygon"],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": "hsl(49, 26%, 88%)", "fill-pattern": "yellow"}
+    },
+    {
+      "id": "Road network",
+      "type": "line",
+      "source": "land",
+      "source-layer": "transportation",
+      "minzoom": 7,
+      "maxzoom": 22,
+      "filter": [
+        "all",
+        ["==", ["geometry-type"], "LineString"],
+        [
+          "any",
+          ["==", ["get", "construction"], false],
+          ["!", ["has", "construction"]]
+        ]
+      ],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 100%)",
+        "line-opacity": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          7,
+          0.25,
+          14,
+          0.5,
+          22,
+          1
+        ],
+        "line-pattern": [
+          "match",
+          ["get", "class"],
+          ["motorway"],
+          "red",
+          "white"
+        ],
+        "line-width": [
+          "interpolate",
+          ["linear", 2],
+          ["zoom"],
+          4,
+          1,
+          5,
+          1.5,
+          6,
+          4,
+          10,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway"],
+            ["match", ["get", "brunnel"], ["bridge"], 0, 5],
+            ["trunk"],
+            3,
+            2
+          ],
+          12,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway"],
+            ["match", ["get", "ramp"], 1, 2, 8],
+            ["trunk"],
+            4,
+            ["primary"],
+            5,
+            ["secondary", "tertiary"],
+            4,
+            ["minor"],
+            2,
+            ["pier", "service", "track"],
+            1,
+            1
+          ],
+          14,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway"],
+            ["match", ["get", "ramp"], 1, 10, 12],
+            ["trunk"],
+            6,
+            ["primary"],
+            10,
+            ["secondary"],
+            8,
+            ["tertiary"],
+            6,
+            ["minor"],
+            4,
+            ["pier", "service", "track"],
+            2,
+            4
+          ],
+          16,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway", "trunk", "primary"],
+            16,
+            ["secondary"],
+            14,
+            ["tertiary"],
+            12,
+            ["minor"],
+            8,
+            ["pier", "service", "track"],
+            4,
+            8
+          ],
+          20,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway", "trunk", "primary"],
+            56,
+            ["secondary"],
+            48,
+            ["tertiary"],
+            40,
+            ["minor", "service", "track", "pier"],
+            32,
+            32
+          ]
+        ]
+      }
+    },
+    {
+      "id": "Path",
+      "type": "line",
+      "source": "land",
+      "source-layer": "transportation",
+      "minzoom": 14,
+      "maxzoom": 22,
+      "filter": ["==", ["geometry-type"], "LineString"],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": 1,
+        "line-color": "hsla(0, 0%, 100%, 0.6)",
+        "line-opacity": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          14,
+          0.25,
+          22,
+          0.6
+        ],
+        "line-pattern": "white",
+        "line-width": [
+          "interpolate",
+          ["exponential", 1.55],
+          ["zoom"],
+          13,
+          3,
+          16,
+          5,
+          18,
+          8,
+          20,
+          16
+        ]
+      }
+    },
+    {
+      "id": "Aviation line",
+      "type": "line",
+      "source": "land",
+      "source-layer": "aeroway",
+      "minzoom": 10,
+      "filter": [
+        "all",
+        ["==", ["geometry-type"], "LineString"],
+        ["match", ["get", "class"], ["runway", "taxiway"], true, false]
+      ],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": 1,
+        "line-color": "hsl(0, 0%, 100%)",
+        "line-opacity": 1,
+        "line-pattern": "yellow",
+        "line-width": [
+          "interpolate",
+          ["linear", 2],
+          ["zoom"],
+          10,
+          ["match", ["get", "class"], ["runway"], 3, ["taxiway"], 2, 0],
+          14,
+          ["match", ["get", "class"], ["runway"], 12, ["taxiway"], 4, 0],
+          16,
+          ["match", ["get", "class"], ["runway"], 40, ["taxiway"], 12, 0]
+        ]
+      }
+    },
+    {
+      "id": "Railway",
+      "type": "line",
+      "source": "land",
+      "source-layer": "transportation",
+      "minzoom": 10,
+      "maxzoom": 22,
+      "filter": [
+        "all",
+        ["==", ["geometry-type"], "LineString"],
+        [
+          "all",
+          [
+            "match",
+            ["get", "class"],
+            [
+              "funicular",
+              "light_rail",
+              "miniature",
+              "monorail",
+              "narrow_gauge",
+              "preserved",
+              "rail",
+              "turntable"
+            ],
+            true,
+            ["!", ["has", "class"]]
+          ],
+          [
+            "any",
+            ["==", ["get", "construction"], false],
+            ["!", ["has", "construction"]]
+          ]
+        ]
+      ],
+      "layout": {
+        "line-cap": "butt",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": 2,
+        "line-color": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          10,
+          "hsla(0, 0%, 85%, 0.1)",
+          22,
+          "hsla(0, 0%, 85%, 0.45)"
+        ],
+        "line-opacity": ["case", ["==", ["get", "brunnel"], "tunnel"], 0.5, 1],
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          10,
+          2,
+          16,
+          8,
+          22,
+          22
+        ]
+      }
+    },
+    {
+      "id": "Building",
+      "type": "fill",
+      "source": "land",
+      "source-layer": "building",
+      "minzoom": 13,
+      "maxzoom": 22,
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": {
+          "stops": [[13, "hsl(48,25%,73%)"], [16, "hsl(47,32%,77%)"]]
+        },
+        "fill-opacity": 1,
+        "fill-pattern": "red"
+      }
+    }
+  ]
+}
