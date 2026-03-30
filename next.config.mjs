@@ -20,6 +20,7 @@ const nextConfig = {
       },
     ]
   },
+  allowedDevOrigins: ['192.168.0.16', '127.0.0.1', 'localhost'],
   reactStrictMode: false,
   // experimental: {
   //   // outputFileTracingRoot: path.join(__dirname),

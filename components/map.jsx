@@ -4,7 +4,7 @@ import { useMap, Layer, Source, Popup } from '@vis.gl/react-maplibre'
 import { GeoGrid } from 'geogrid-maplibre-gl'
 import { useEffect, useRef, useState } from 'react'
 import { createPopupHTML, localSet, getMaps, useMode, getPaint, gridHelpers, boundsToCoord, useStore, withUserFilters, hasFilterClause } from "@/lib/utils.js"
-import { ZoomIn, ZoomOut } from "lucide-react"
+import { ZoomIn, ZoomOut, Compass } from "lucide-react"
 import SearchBar from './searchbar'
 import * as turf from '@turf/turf'
 import Hamburger from './hamburger'
@@ -660,6 +660,11 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       {params.get("zoom") !== "0" && <div className="absolute mt-28 ml-11 mr-[.3em] cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" style={{ transition: 'bottom 0.5s ease-in-out' }}>
         <ZoomIn size={34} onClick={() => wrapper.zoomIn()} className='m-2 hover:stroke-blue-200' />
         <ZoomOut size={34} onClick={() => wrapper.zoomOut()} className='m-2 mt-4 hover:stroke-blue-200' />
+        <Compass
+          size={34}
+          className="m-2 mt-4 hover:stroke-blue-200"
+          onClick={() => wrapper.easeTo({ pitch: 0, bearing: 0, duration: 300 })}
+        />
       </div>}
       {params.get("search") !== "0" && <SearchBar map={wrapper} name={name} data={data} pan={pan} mobile={mobile} UNIT={UNIT} STYLES={STYLES} SEARCH_SIZE={SEARCH_SIZE} />}
       {/* FOUNDRY */}

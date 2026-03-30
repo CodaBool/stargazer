@@ -1,6 +1,6 @@
 {
   "version": 8,
-  "name": "Dark Matter",
+  "name": "apocalypse",
   "sources": {
     "carto": {
       "type": "vector",
@@ -1930,13 +1930,7 @@
             [4, 18]
           ]
         },
-        "text-font": [
-          "Montserrat Medium Italic",
-          "Open Sans Italic",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+        "text-font": [ "Noto Sans Regular" ],
         "text-line-height": 1.2,
         "text-padding": 2,
         "text-allow-overlap": false,
@@ -2817,13 +2811,7 @@
             [18, 11]
           ]
         },
-        "text-font": [
-          "Montserrat Regular",
-          "Open Sans Regular",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ]
+        "text-font": [ "Noto Sans Regular" ]
       },
       "paint": {
         "text-halo-color": "transparent",
@@ -2831,7 +2819,5 @@
         "text-halo-width": 0.75
       }
     }
-  ],
-  "id": "voyager",
-  "owner": "Carto"
+  ]
 }

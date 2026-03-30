@@ -245,6 +245,8 @@ export function MainMenu({ cloudMaps, session, revalidate, hash, systems }) {
     setSelectedSystem(system)
   }
 
+  const newHref = selectedSystem === "custom" ? "/scratch" : `/${selectedSystem}/?new=1`
+
   return (
     <div className="" style={{ fontFamily: '"Press Start 2P", monospace' }}>
       {/* Breadcrumb */}
@@ -276,7 +278,7 @@ export function MainMenu({ cloudMaps, session, revalidate, hash, systems }) {
       {selectedSystem && !selectedMap && (
         <div className="absolute top-4 right-6">
           {tab === "local" &&
-            <Link href={`/${selectedSystem}/?new=1`} className='mr-4'>
+            <Link href={newHref} className='mr-4'>
               <Button variant="scifi" title="Create a new map" className="p-3"><Plus /></Button>
             </Link>
           }
@@ -329,7 +331,7 @@ export function MainMenu({ cloudMaps, session, revalidate, hash, systems }) {
             {localMaps &&
               <div className='flex flex-wrap justify-evenly max-h-[205px] overflow-auto'>
                 {Object.keys(localMaps).filter(i => i.split('-')[0] === selectedSystem).length === 0 &&
-                  <p>No local {selectedSystem} maps found. <Link href={`/${selectedSystem}?new=1`} className="text-blue-300">Create a new one.</Link><LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></p>
+                  <p>No local {selectedSystem} maps found. <Link href={newHref} className="text-blue-300">Create a new one.</Link><LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></p>
                 }
                 {Object.entries(localMaps).map(([key, data]) => {
                   const [system, dateId] = key.split('-')

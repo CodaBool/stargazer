@@ -1,0 +1,2005 @@
+{
+  "version": 8,
+  "name": "Vintage",
+  "metadata": {
+    "how did i get this style?, well i scraped from https://www.maptiler.com/showcase/vintage by searching for style.json?key in the network tab and copying the json response, then replaced the source with a free cartocdn.com vector tile": "confirmedBasedAndTrue",
+    "maputnik:renderer": "mlgljs"
+  },
+  "sources": {
+    "maptiler_planet": {
+      "url": "https://tiles.basemaps.cartocdn.com/vector/carto.streets/v1/tiles.json",
+      "type": "vector"
+    }
+  },
+  "sprite": "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/svg/spritesheet",
+  "glyphs": "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "Background",
+      "type": "background",
+      "layout": {},
+      "paint": {"background-color": "hsl(43, 97%, 88%)"}
+    },
+    {
+      "id": "Background pattern",
+      "type": "background",
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "background-color": "hsl(43, 97%, 88%)",
+        "background-opacity": 0.05,
+        "background-pattern": "pattern"
+      }
+    },
+    {
+      "id": "Glacier",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landcover",
+      "filter": ["==", "subclass", "glacier"],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": "hsla(42, 100%, 96%, 0.8)", "fill-opacity": 0.9}
+    },
+    {
+      "id": "Forest",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landuse",
+      "filter": ["all"],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": " hsl(75, 30%, 72%)", "fill-opacity": 1}
+    },
+    {
+      "id": "Cemetery",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landuse",
+      "filter": ["==", "class", "cemetery"],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": "hsl(43, 97%, 88%)", "fill-antialias": false}
+    },
+    {
+      "id": "Rail",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landuse",
+      "filter": ["==", "class", "railway"],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-color": "hsla(43, 97%, 88%, 0.5)",
+        "fill-antialias": false
+      }
+    },
+    {
+      "id": "School",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landuse",
+      "filter": [
+        "in",
+        "class",
+        "college",
+        "kindergarten",
+        "school",
+        "university"
+      ],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-color": "hsl(43, 30%, 70%)",
+        "fill-opacity": 0.3,
+        "fill-antialias": false
+      }
+    },
+    {
+      "id": "Hospital",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landuse",
+      "filter": ["==", "class", "hospital"],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": "hsl(43, 29%, 70%)", "fill-antialias": false}
+    },
+    {
+      "id": "Industrial",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landuse",
+      "filter": ["in", "class", "garages", "hospital", "industrial"],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-color": "hsla(43, 97%, 88%, 0.35)",
+        "fill-antialias": false
+      }
+    },
+    {
+      "id": "Commercial",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landuse",
+      "filter": ["==", "class", "commercial"],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-color": "hsla(43, 97%, 88%, 0.35)",
+        "fill-antialias": false
+      }
+    },
+    {
+      "id": "Other",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landuse",
+      "filter": [
+        "any",
+        ["!has", "class"],
+        [
+          "in",
+          "class",
+          "bus_station",
+          "library",
+          "military",
+          "neighbourhood",
+          "pitch",
+          "playground",
+          "quarter",
+          "retail",
+          "stadium",
+          "suburb",
+          "theme_park",
+          "track",
+          "zoo"
+        ]
+      ],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": "hsl(43, 97%, 88%)", "fill-antialias": false}
+    },
+    {
+      "id": "Wood",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landuse",
+      "minzoom": 8,
+      "filter": ["==", "class", "wood"],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-color": "hsla(75, 30%, 72%, 0.5)",
+        "fill-opacity": {"stops": [[7, 0.7], [12, 1]]},
+        "fill-antialias": true
+      }
+    },
+    {
+      "id": "Grass",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landuse",
+      "minzoom": 8,
+      "filter": ["==", "class", "grass"],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-color": "hsla(75, 30%, 72%, 0.15)",
+        "fill-opacity": {"stops": [[7, 0.7], [12, 1]]},
+        "fill-antialias": true
+      }
+    },
+    {
+      "id": "Residential",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landuse",
+      "filter": ["in", "class", "neighbourhood", "residential", "suburb"],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": "hsl(43, 97%, 88%)"}
+    },
+    {
+      "id": "River",
+      "type": "line",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "waterway",
+      "filter": ["any", ["!has", "brunnel"], ["==", "brunnel", "bridge"]],
+      "layout": {"line-cap": "round", "visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(146, 13%, 65%)",
+        "line-width": {"base": 1.2, "stops": [[10, 0.8], [20, 6]]}
+      }
+    },
+    {
+      "id": "Water intermittent",
+      "type": "fill",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "water",
+      "filter": ["==", "intermittent", 1],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-color": "hsl(146, 13%, 65%)",
+        "fill-opacity": 0.7,
+        "fill-antialias": true
+      }
+    },
+    {
+      "id": "Water",
+      "type": "fill",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "water",
+      "filter": ["any", ["!has", "intermittent"], ["==", "intermittent", 0]],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-color": "hsl(146, 13%, 65%)",
+        "fill-opacity": 1,
+        "fill-antialias": true
+      }
+    },
+    {
+      "id": "Water pattern",
+      "type": "fill",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "water",
+      "filter": ["any", ["!has", "intermittent"], ["==", "intermittent", 0]],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-color": "hsl(146, 13%, 65%)",
+        "fill-opacity": 0.05,
+        "fill-pattern": "pattern",
+        "fill-antialias": true
+      }
+    },
+    {
+      "id": "Tunnel outline",
+      "type": "line",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 4,
+      "filter": [
+        "all",
+        ["==", "brunnel", "tunnel"],
+        [
+          "any",
+          ["!has", "class"],
+          [
+            "in",
+            "class",
+            "bus_guideway",
+            "busway",
+            "courtyard",
+            "minor",
+            "motorway",
+            "path_construction",
+            "primary",
+            "raceway",
+            "raceway_construction",
+            "secondary",
+            "service",
+            "storage_tank",
+            "tertiary",
+            "track",
+            "trunk"
+          ]
+        ]
+      ],
+      "layout": {
+        "line-cap": "butt",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": [
+          "match",
+          ["get", "class"],
+          ["motorway", "trunk", "primary"],
+          "hsl(37, 66%, 22%)",
+          "hsl(37, 35%, 59%)"
+        ],
+        "line-width": [
+          "interpolate",
+          ["linear", 2],
+          ["zoom"],
+          6,
+          0,
+          7,
+          0.5,
+          10,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway"],
+            ["match", ["get", "ramp"], 1, 0, 2.5],
+            ["trunk", "primary"],
+            2,
+            0
+          ],
+          12,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway"],
+            ["match", ["get", "ramp"], 1, 2, 6],
+            ["trunk", "primary"],
+            3,
+            ["secondary", "tertiary"],
+            2,
+            ["minor", "service", "track"],
+            1,
+            0.5
+          ],
+          14,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway"],
+            ["match", ["get", "ramp"], 1, 5, 8],
+            ["trunk"],
+            4,
+            ["primary"],
+            6,
+            ["secondary"],
+            6,
+            ["tertiary"],
+            4,
+            ["minor", "service", "track"],
+            3,
+            3
+          ],
+          16,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway", "trunk", "primary"],
+            10,
+            ["secondary"],
+            8,
+            ["tertiary"],
+            8,
+            ["minor", "service", "track"],
+            4,
+            4
+          ],
+          20,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway", "trunk", "primary"],
+            26,
+            ["secondary"],
+            26,
+            ["tertiary"],
+            26,
+            ["minor", "service", "track"],
+            18,
+            18
+          ]
+        ],
+        "line-dasharray": [0.5, 0.25]
+      }
+    },
+    {
+      "id": "Railway tunnel",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "filter": ["all", ["==", "brunnel", "tunnel"], ["==", "class", "rail"]],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(0,0%,73%)",
+        "line-width": {"base": 1.4, "stops": [[14, 0.4], [15, 0.75], [20, 2]]},
+        "line-dasharray": [2, 1]
+      }
+    },
+    {
+      "id": "Tunnel",
+      "type": "line",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 4,
+      "filter": [
+        "all",
+        ["==", "brunnel", "tunnel"],
+        [
+          "any",
+          ["!has", "class"],
+          [
+            "in",
+            "class",
+            "bus_guideway",
+            "busway",
+            "courtyard",
+            "minor",
+            "motorway",
+            "path_construction",
+            "primary",
+            "raceway",
+            "raceway_construction",
+            "secondary",
+            "service",
+            "storage_tank",
+            "tertiary",
+            "track",
+            "trunk"
+          ]
+        ]
+      ],
+      "layout": {
+        "line-cap": "butt",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": [
+          "match",
+          ["get", "class"],
+          "motorway",
+          "hsl(37, 66%, 72%)",
+          ["trunk", "primary"],
+          "hsl(32, 46%, 78%)",
+          "#E1C9AD"
+        ],
+        "line-width": [
+          "interpolate",
+          ["linear", 2],
+          ["zoom"],
+          5,
+          0,
+          6,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway"],
+            ["match", ["get", "brunnel"], ["bridge"], 0, 1],
+            ["trunk", "primary"],
+            0,
+            0
+          ],
+          10,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway"],
+            ["match", ["get", "ramp"], 1, 0, 2.5],
+            ["trunk", "primary"],
+            1.5,
+            1
+          ],
+          12,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway"],
+            ["match", ["get", "ramp"], 1, 1, 4],
+            ["trunk"],
+            2.5,
+            ["primary"],
+            2.5,
+            ["secondary", "tertiary"],
+            1.5,
+            ["minor", "service", "track"],
+            1,
+            1
+          ],
+          14,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway"],
+            ["match", ["get", "ramp"], 1, 5, 6],
+            ["trunk"],
+            3,
+            ["primary"],
+            5,
+            ["secondary"],
+            4,
+            ["tertiary"],
+            3,
+            ["minor", "service", "track"],
+            2,
+            2
+          ],
+          16,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway", "trunk", "primary"],
+            8,
+            ["secondary"],
+            7,
+            ["tertiary"],
+            6,
+            ["minor", "service", "track"],
+            4,
+            4
+          ],
+          20,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway", "trunk", "primary"],
+            24,
+            ["secondary"],
+            24,
+            ["tertiary"],
+            24,
+            ["minor", "service", "track"],
+            16,
+            16
+          ]
+        ],
+        "line-opacity": 1
+      }
+    },
+    {
+      "id": "Runway",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "aeroway",
+      "minzoom": 12,
+      "filter": ["all", ["in", "class", "runway"]],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": "hsl(43, 29%, 70%)", "fill-opacity": 1}
+    },
+    {
+      "id": "Aeroway",
+      "type": "line",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "aeroway",
+      "minzoom": 12,
+      "filter": ["all", ["==", "$type", "LineString"]],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(43, 29%, 70%)",
+        "line-width": [
+          "interpolate",
+          ["linear", 1],
+          ["zoom"],
+          11,
+          ["match", ["get", "class"], ["runway"], 3, 0.5],
+          20,
+          ["match", ["get", "class"], ["runway"], 16, 6]
+        ]
+      }
+    },
+    {
+      "id": "Helipad",
+      "type": "fill",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "aeroway",
+      "minzoom": 12,
+      "filter": ["all", ["in", "class", "helipad"]],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": "hsl(43, 29%, 70%)", "fill-opacity": 1}
+    },
+    {
+      "id": "Pier",
+      "type": "fill",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "filter": ["all", ["==", "$type", "Polygon"], ["==", "class", "pier"]],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": "hsl(40, 78%, 86%)", "fill-antialias": true}
+    },
+    {
+      "id": "Pier road",
+      "type": "line",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "filter": ["all", ["==", "$type", "LineString"], ["in", "class", "pier"]],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(40, 78%, 86%)",
+        "line-width": {"base": 1.2, "stops": [[15, 1], [17, 4]]}
+      }
+    },
+    {
+      "id": "Bridge",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "filter": [
+        "all",
+        ["==", "$type", "Polygon"],
+        ["in", "brunnel", "bridge"]
+      ],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-color": "hsl(42, 78%, 86%)",
+        "fill-opacity": 0.5,
+        "fill-antialias": false
+      }
+    },
+    {
+      "id": "Minor road outline",
+      "type": "line",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 14,
+      "maxzoom": 22,
+      "filter": [
+        "all",
+        ["any", ["!has", "brunnel"], ["in", "brunnel", "bridge", "ford"]],
+        [
+          "in",
+          "class",
+          "bus_guideway",
+          "busway",
+          "courtyard",
+          "minor",
+          "raceway",
+          "service",
+          "storage_tank",
+          "track"
+        ]
+      ],
+      "layout": {
+        "line-cap": "butt",
+        "line-join": "round",
+        "visibility": "visible",
+        "line-round-limit": 1.05
+      },
+      "paint": {
+        "line-color": "hsl(37, 35%, 59%)",
+        "line-width": [
+          "interpolate",
+          ["linear", 2],
+          ["zoom"],
+          6,
+          0,
+          7,
+          0.5,
+          10,
+          1,
+          12,
+          2,
+          14,
+          4,
+          16,
+          5,
+          20,
+          18
+        ],
+        "line-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0, 15, 1],
+        "line-gap-width": 0
+      }
+    },
+    {
+      "id": "Major road outline",
+      "type": "line",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 14,
+      "maxzoom": 22,
+      "filter": [
+        "all",
+        ["any", ["!has", "brunnel"], ["in", "brunnel", "bridge", "ford"]],
+        ["in", "class", "primary", "secondary", "tertiary", "trunk"]
+      ],
+      "layout": {
+        "line-cap": "butt",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(37, 66%, 22%)",
+        "line-width": [
+          "interpolate",
+          ["linear", 2],
+          ["zoom"],
+          6,
+          0,
+          7,
+          0.5,
+          10,
+          2.5,
+          12,
+          3,
+          14,
+          5,
+          16,
+          9,
+          20,
+          26
+        ],
+        "line-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0, 15, 1]
+      }
+    },
+    {
+      "id": "Highway outline",
+      "type": "line",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 14,
+      "maxzoom": 22,
+      "filter": [
+        "all",
+        ["any", ["!has", "brunnel"], ["in", "brunnel", "bridge", "ford"]],
+        ["==", "class", "motorway"],
+        ["!has", "ramp"]
+      ],
+      "layout": {
+        "line-cap": "butt",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(37, 66%, 22%)",
+        "line-width": [
+          "interpolate",
+          ["linear", 2],
+          ["zoom"],
+          6,
+          0,
+          7,
+          0.5,
+          10,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway"],
+            ["match", ["get", "ramp"], 1, 0, 2.5],
+            1
+          ],
+          12,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway"],
+            ["match", ["get", "ramp"], 1, 2, 6],
+            1
+          ],
+          14,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway"],
+            ["match", ["get", "ramp"], 1, 5, 8],
+            2
+          ],
+          16,
+          ["match", ["get", "class"], ["motorway"], 10, 4],
+          20,
+          ["match", ["get", "class"], ["motorway"], 26, 16]
+        ],
+        "line-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0, 15, 1]
+      }
+    },
+    {
+      "id": "Minor road",
+      "type": "line",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 10,
+      "maxzoom": 22,
+      "filter": [
+        "all",
+        ["any", ["!has", "brunnel"], ["in", "brunnel", "bridge", "ford"]],
+        [
+          "in",
+          "class",
+          "bus_guideway",
+          "busway",
+          "courtyard",
+          "minor",
+          "raceway",
+          "service",
+          "storage_tank",
+          "track"
+        ]
+      ],
+      "layout": {
+        "line-cap": "butt",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": [
+          "match",
+          ["get", "brunnel"],
+          "tunnel",
+          "hsla(0, 60%, 87%, 0.15)",
+          "#E1C9AD"
+        ],
+        "line-width": [
+          "interpolate",
+          ["linear", 2],
+          ["zoom"],
+          10,
+          1,
+          12,
+          1.5,
+          14,
+          2,
+          16,
+          4,
+          20,
+          16
+        ]
+      }
+    },
+    {
+      "id": "Major road",
+      "type": "line",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 4,
+      "filter": [
+        "all",
+        ["any", ["!has", "brunnel"], ["in", "brunnel", "bridge", "ford"]],
+        ["in", "class", "primary", "secondary", "tertiary", "trunk"]
+      ],
+      "layout": {
+        "line-cap": "butt",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(37, 66%, 75%)",
+        "line-width": [
+          "interpolate",
+          ["linear", 2],
+          ["zoom"],
+          5,
+          0.5,
+          6,
+          0.75,
+          10,
+          1.5,
+          12,
+          2.5,
+          14,
+          4,
+          16,
+          8,
+          20,
+          24
+        ]
+      }
+    },
+    {
+      "id": "Highway",
+      "type": "line",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 4,
+      "filter": [
+        "all",
+        ["any", ["!has", "brunnel"], ["in", "brunnel", "bridge", "ford"]],
+        ["==", "class", "motorway"]
+      ],
+      "layout": {
+        "line-cap": "butt",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(37, 66%, 72%)",
+        "line-width": [
+          "interpolate",
+          ["linear", 2],
+          ["zoom"],
+          5,
+          0.5,
+          6,
+          1,
+          10,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway"],
+            ["match", ["get", "ramp"], 1, 0, 2.5],
+            1
+          ],
+          12,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway"],
+            ["match", ["get", "ramp"], 1, 1, 4],
+            1
+          ],
+          14,
+          [
+            "match",
+            ["get", "class"],
+            ["motorway"],
+            ["match", ["get", "ramp"], 1, 5, 6],
+            2
+          ],
+          16,
+          ["match", ["get", "class"], ["motorway"], 8, 4],
+          20,
+          ["match", ["get", "class"], ["motorway"], 24, 16]
+        ],
+        "line-opacity": 1
+      }
+    },
+    {
+      "id": "Bridge path outline",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "filter": ["all", ["==", "brunnel", "bridge"], ["==", "class", "path"]],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(43, 71%, 91%)",
+        "line-width": {"base": 1.2, "stops": [[15, 1.2], [20, 18]]}
+      }
+    },
+    {
+      "id": "Path",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "filter": [
+        "all",
+        ["any", ["!has", "brunnel"], ["in", "brunnel", "bridge", "ford"]],
+        ["==", "class", "path"]
+      ],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(37, 66%, 72%)",
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          14,
+          0.8,
+          16,
+          1,
+          20,
+          3.4
+        ],
+        "line-dasharray": {"stops": [[14, [1, 0.75]], [18, [1, 0.5]]]}
+      }
+    },
+    {
+      "id": "Transit",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "filter": [
+        "all",
+        ["==", "class", "transit"],
+        ["any", ["!has", "brunnel"], ["in", "brunnel", "bridge", "ford"]]
+      ],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "line-color": "hsla(39, 15%, 54%, 0.7)",
+        "line-width": {"base": 1.4, "stops": [[14, 0.4], [20, 1]]}
+      }
+    },
+    {
+      "id": "Transit hatching",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "filter": [
+        "all",
+        ["==", "$type", "LineString"],
+        ["==", "class", "transit"],
+        ["!in", "brunnel", "tunnel"]
+      ],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "line-color": "hsla(39, 15%, 54%, 0.7)",
+        "line-width": {"base": 1.4, "stops": [[14.5, 0], [15, 2], [20, 6]]},
+        "line-dasharray": [0.2, 8]
+      }
+    },
+    {
+      "id": "Railway",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "filter": ["all", ["==", "$type", "LineString"], ["==", "class", "rail"]],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(39, 15%, 54%)",
+        "line-width": {"base": 1.4, "stops": [[14, 0.4], [15, 0.75], [20, 2]]},
+        "line-opacity": ["match", ["get", "service"], "yard", 0.5, 1]
+      }
+    },
+    {
+      "id": "Railway hatching",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "filter": ["all", ["==", "$type", "LineString"], ["==", "class", "rail"]],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(39, 15%, 54%)",
+        "line-width": {"base": 1.4, "stops": [[14.5, 0], [15, 3], [20, 8]]},
+        "line-opacity": ["match", ["get", "service"], "yard", 0.5, 1],
+        "line-dasharray": [0.2, 8]
+      }
+    },
+    {
+      "id": "Building",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "building",
+      "layout": {},
+      "paint": {
+        "fill-color": "hsl(15, 73%, 78%)",
+        "fill-opacity": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          13,
+          0,
+          13.5,
+          0.6,
+          15,
+          0.8,
+          16,
+          1
+        ],
+        "fill-antialias": true,
+        "fill-outline-color": "hsl(10, 23%, 42%)"
+      }
+    },
+    {
+      "id": "Other border",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "boundary",
+      "minzoom": 3,
+      "maxzoom": 13,
+      "filter": ["in", "admin_level", 3, 4, 5, 6, 7, 8, 9, 10],
+      "layout": {"line-join": "round", "visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(15, 73%, 75%)",
+        "line-width": {
+          "base": 1.4,
+          "stops": [[4, 0.4], [5, 1], [12, 1.2], [16, 1.6]]
+        },
+        "line-dasharray": [3, 1, 1, 1]
+      }
+    },
+    {
+      "id": "Disputed border",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "boundary",
+      "filter": [
+        "all",
+        ["<=", "admin_level", 2],
+        ["==", "$type", "LineString"],
+        ["==", "disputed", 1]
+      ],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(15, 73%, 75%)",
+        "line-width": {
+          "base": 1,
+          "stops": [[0, 0.6], [4, 1], [5, 1.4], [12, 6]]
+        },
+        "line-dasharray": [1, 3]
+      }
+    },
+    {
+      "id": "Country border",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "boundary",
+      "filter": [
+        "all",
+        ["==", "admin_level", 2],
+        ["==", "disputed", 0],
+        ["==", "maritime", 0]
+      ],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(15, 73%, 75%)",
+        "line-width": {
+          "base": 1,
+          "stops": [[0, 0.6], [4, 1], [5, 1.4], [12, 6]]
+        }
+      }
+    },
+    {
+      "id": "River labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "waterway",
+      "minzoom": 13,
+      "filter": ["all", ["==", "$type", "LineString"], ["has", "name"]],
+      "layout": {
+        "text-font": ["Merriweather Light Italic", "Noto Sans Italic"],
+        "text-size": [
+          "interpolate",
+          ["exponential", 1],
+          ["zoom"],
+          13,
+          14,
+          16,
+          16
+        ],
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "visibility": "visible",
+        "symbol-spacing": 500,
+        "text-max-width": 5,
+        "symbol-placement": "line",
+        "text-letter-spacing": 0.1,
+        "text-rotation-alignment": "map"
+      },
+      "paint": {
+        "icon-color": "hsl(148, 13%, 25%)",
+        "text-color": "hsl(148, 13%, 25%)",
+        "text-halo-blur": 1,
+        "icon-halo-color": "hsla(43, 71%, 92%, 0)",
+        "text-halo-color": "hsla(43, 71%, 92%, 0)",
+        "text-halo-width": 1.5,
+        "text-opacity": 1,
+        "icon-opacity": 1
+      }
+    },
+    {
+      "id": "Lakeline labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "water_name",
+      "filter": ["==", "$type", "LineString"],
+      "layout": {
+        "text-font": ["Merriweather Light Italic", "Noto Sans Italic"],
+        "text-size": 14,
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "visibility": "visible",
+        "symbol-spacing": 350,
+        "text-max-width": 5,
+        "symbol-placement": "line",
+        "text-letter-spacing": 0.1,
+        "text-rotation-alignment": "map"
+      },
+      "paint": {
+        "icon-color": "hsl(148, 13%, 25%)",
+        "text-color": "hsl(148, 13%, 25%)",
+        "icon-halo-color": "hsla(146, 13%, 65%, 0.7)",
+        "text-halo-color": "hsla(146, 13%, 65%, 0.7)",
+        "text-halo-width": 1.5,
+        "text-opacity": 1,
+        "icon-opacity": 1
+      }
+    },
+    {
+      "id": "Ocean labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "water_name",
+      "minzoom": 0,
+      "maxzoom": 4,
+      "filter": ["all", ["==", "class", "ocean"], ["has", "name"]],
+      "layout": {
+        "text-font": ["Merriweather Italic", "Noto Sans Italic"],
+        "text-size": ["interpolate", ["linear", 1], ["zoom"], 1, 13, 3, 16],
+        "text-field": "{name:en}",
+        "visibility": "visible",
+        "symbol-spacing": 350,
+        "text-max-width": 5,
+        "symbol-placement": "point",
+        "text-letter-spacing": 0.1,
+        "text-rotation-alignment": "map"
+      },
+      "paint": {
+        "icon-color": "hsl(148, 12%, 30%)",
+        "text-color": "hsl(148, 12%, 30%)",
+        "icon-opacity": 1,
+        "text-opacity": 1,
+        "text-halo-blur": 1,
+        "icon-halo-color": "hsla(146, 13%, 65%, 0.7)",
+        "text-halo-color": "hsla(146, 13%, 65%, 0.7)",
+        "text-halo-width": 1.2
+      }
+    },
+    {
+      "id": "Sea labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "water_name",
+      "minzoom": 3,
+      "maxzoom": 22,
+      "filter": ["all", ["==", "class", "sea"], ["has", "name"]],
+      "layout": {
+        "text-font": ["Merriweather Italic", "Noto Sans Italic"],
+        "text-size": [
+          "interpolate",
+          ["linear", 1],
+          ["zoom"],
+          1,
+          10,
+          3,
+          14,
+          9,
+          18,
+          14,
+          20
+        ],
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "visibility": "visible",
+        "symbol-spacing": 350,
+        "text-max-width": 5,
+        "symbol-placement": "point",
+        "text-letter-spacing": 0.1,
+        "text-rotation-alignment": "map"
+      },
+      "paint": {
+        "icon-color": "hsl(148, 13%, 40%)",
+        "text-color": "hsl(148, 13%, 40%)",
+        "icon-opacity": 1,
+        "text-opacity": 1,
+        "text-halo-blur": 1,
+        "icon-halo-color": "hsla(146, 13%, 65%, 0.7)",
+        "text-halo-color": "hsla(146, 13%, 65%, 0.7)",
+        "text-halo-width": 1.2
+      }
+    },
+    {
+      "id": "Lake labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "water_name",
+      "minzoom": 3,
+      "maxzoom": 22,
+      "filter": ["all", ["==", "class", "lake"], ["has", "name"]],
+      "layout": {
+        "text-font": ["Merriweather Italic", "Noto Sans Italic"],
+        "text-size": [
+          "interpolate",
+          ["linear", 1],
+          ["zoom"],
+          1,
+          10,
+          3,
+          14,
+          9,
+          18,
+          14,
+          14
+        ],
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "visibility": "visible",
+        "symbol-spacing": 350,
+        "text-max-width": 5,
+        "symbol-placement": "point",
+        "text-letter-spacing": 0.1,
+        "text-rotation-alignment": "map"
+      },
+      "paint": {
+        "icon-color": "hsl(148, 13%, 25%)",
+        "text-color": "hsl(148, 13%, 25%)",
+        "icon-opacity": 1,
+        "text-opacity": 1,
+        "text-halo-blur": 1,
+        "icon-halo-color": "hsla(43, 71%, 92%, 0.7)",
+        "text-halo-color": "hsla(43, 71%, 92%, 0.7)",
+        "text-halo-width": 1.2
+      }
+    },
+    {
+      "id": "Road labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "transportation_name",
+      "minzoom": 15,
+      "filter": [
+        "all",
+        ["==", "$type", "LineString"],
+        [
+          "in",
+          "class",
+          "path",
+          "minor",
+          "service",
+          "track",
+          "primary",
+          "secondary",
+          "tertiary",
+          "trunk"
+        ]
+      ],
+      "layout": {
+        "text-font": ["Merriweather Regular", "Noto Sans Regular"],
+        "text-size": {"base": 1, "stops": [[13, 12], [14, 13]]},
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "visibility": "visible",
+        "text-transform": "none",
+        "symbol-placement": "line",
+        "text-letter-spacing": 0.4,
+        "text-rotation-alignment": "map"
+      },
+      "paint": {
+        "icon-color": "hsl(30, 17%, 40%)",
+        "text-color": "hsl(30, 17%, 40%)",
+        "icon-halo-color": "hsla(43, 97%, 88%, 0.8)",
+        "icon-halo-width": 1,
+        "text-halo-color": "hsla(43, 97%, 88%, 0.8)",
+        "text-halo-width": 1,
+        "text-opacity": 1,
+        "icon-opacity": 1
+      }
+    },
+    {
+      "id": "Airport labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "aerodrome_label",
+      "minzoom": 10,
+      "filter": ["all", ["has", "iata"]],
+      "layout": {
+        "text-font": [
+          "step",
+          ["zoom"],
+          ["literal", ["Merriweather Italic", "Noto Sans Italic"]],
+          10,
+          ["literal", ["Merriweather Light Italic", "Noto Sans Italic"]],
+          16,
+          ["literal", ["Merriweather Italic", "Noto Sans Italic"]]
+        ],
+        "text-size": {"stops": [[11, 12], [16, 14]]},
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "visibility": "visible",
+        "text-anchor": "top",
+        "text-offset": [0, 0.6],
+        "text-padding": 2,
+        "text-optional": true,
+        "text-max-width": 9,
+        "text-letter-spacing": 0.1
+      },
+      "paint": {
+        "icon-color": "hsl(9, 23%, 12%)",
+        "text-color": "hsl(9, 23%, 12%)",
+        "text-halo-blur": 1,
+        "icon-halo-color": "hsla(43, 71%, 92%, 0.8)",
+        "text-halo-color": "hsla(43, 71%, 92%, 0.8)",
+        "text-halo-width": 1.5,
+        "text-opacity": 1,
+        "icon-opacity": 1
+      }
+    },
+    {
+      "id": "Amenity",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 12,
+      "maxzoom": 22,
+      "filter": [
+        "in",
+        "class",
+        "bank",
+        "cemetery",
+        "library",
+        "park",
+        "post",
+        "town_hall"
+      ],
+      "layout": {
+        "text-font": [
+          "step",
+          ["zoom"],
+          ["literal", ["Merriweather Light Italic", "Noto Sans Italic"]],
+          14,
+          ["literal", ["Merriweather Light Italic", "Noto Sans Italic"]],
+          16,
+          ["literal", ["Merriweather Italic", "Noto Sans Italic"]]
+        ],
+        "text-size": 12,
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "visibility": "visible",
+        "text-anchor": "top",
+        "text-offset": [0, 0.6],
+        "text-padding": 2,
+        "text-max-width": 9,
+        "text-letter-spacing": 0.1
+      },
+      "paint": {
+        "text-color": "hsl(9, 23%, 12%)",
+        "icon-opacity": 1,
+        "text-opacity": 1,
+        "text-halo-blur": 0.5,
+        "icon-halo-color": "hsla(43, 97%, 88%, 0.8)",
+        "text-halo-color": "hsla(43, 97%, 88%, 0.8)",
+        "text-halo-width": 1
+      }
+    },
+    {
+      "id": "Culture",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 12,
+      "maxzoom": 22,
+      "filter": [
+        "in",
+        "class",
+        "art_gallery",
+        "artwork ",
+        "cinema",
+        "museum",
+        "music",
+        "opera",
+        "theatre"
+      ],
+      "layout": {
+        "text-font": [
+          "step",
+          ["zoom"],
+          ["literal", ["Merriweather Light Italic", "Noto Sans Italic"]],
+          14,
+          ["literal", ["Merriweather Light Italic", "Noto Sans Italic"]],
+          16,
+          ["literal", ["Merriweather Italic", "Noto Sans Italic"]]
+        ],
+        "text-size": 12,
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "visibility": "visible",
+        "text-anchor": "top",
+        "text-offset": [0, 0.6],
+        "text-padding": 2,
+        "text-max-width": 9,
+        "text-letter-spacing": 0.1
+      },
+      "paint": {
+        "text-color": "hsl(9, 23%, 12%)",
+        "icon-opacity": 1,
+        "text-opacity": 1,
+        "text-halo-blur": 0.5,
+        "icon-halo-color": "hsla(43, 97%, 88%, 0.8)",
+        "text-halo-color": "hsla(43, 97%, 88%, 0.8)",
+        "text-halo-width": 1
+      }
+    },
+    {
+      "id": "Tourism",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 12,
+      "maxzoom": 22,
+      "filter": [
+        "in",
+        "class",
+        "attraction",
+        "campsite",
+        "castle",
+        "entrance",
+        "lodging",
+        "information",
+        "monument",
+        "place_of_worship",
+        "reservoir",
+        "theme_park",
+        "zoo"
+      ],
+      "layout": {
+        "text-font": [
+          "step",
+          ["zoom"],
+          ["literal", ["Merriweather Light Italic", "Noto Sans Italic"]],
+          14,
+          ["literal", ["Merriweather Light Italic", "Noto Sans Italic"]],
+          16,
+          ["literal", ["Merriweather Italic", "Noto Sans Italic"]]
+        ],
+        "text-size": 12,
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "visibility": "visible",
+        "text-anchor": "top",
+        "text-offset": [0, 0.6],
+        "text-padding": 2,
+        "text-max-width": 9,
+        "text-letter-spacing": 0.1
+      },
+      "paint": {
+        "icon-color": "hsl(9, 23%, 12%)",
+        "text-color": "hsl(9, 23%, 12%)",
+        "icon-opacity": 1,
+        "text-opacity": 1,
+        "text-halo-blur": 0.5,
+        "icon-halo-color": "hsla(43, 97%, 88%, 0.8)",
+        "text-halo-color": "hsla(43, 97%, 88%, 0.8)",
+        "text-halo-width": 1
+      }
+    },
+    {
+      "id": "Education",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 12,
+      "maxzoom": 22,
+      "filter": ["in", "class", "college", "school"],
+      "layout": {
+        "text-font": [
+          "step",
+          ["zoom"],
+          ["literal", ["Merriweather Light Italic", "Noto Sans Italic"]],
+          14,
+          ["literal", ["Merriweather Light Italic", "Noto Sans Italic"]],
+          16,
+          ["literal", ["Merriweather Italic", "Noto Sans Italic"]]
+        ],
+        "text-size": 12,
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "visibility": "visible",
+        "text-anchor": "top",
+        "text-offset": [0, 0.6],
+        "text-padding": 2,
+        "text-max-width": 9,
+        "text-letter-spacing": 0.1
+      },
+      "paint": {
+        "text-color": "hsl(9, 23%, 12%)",
+        "icon-opacity": 1,
+        "text-opacity": 1,
+        "text-halo-blur": 0.5,
+        "icon-halo-color": "hsla(43, 97%, 88%, 0.8)",
+        "text-halo-color": "hsla(43, 97%, 88%, 0.8)",
+        "text-halo-width": 1
+      }
+    },
+    {
+      "id": "Healthcare",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 12,
+      "maxzoom": 22,
+      "filter": ["in", "class", "dentist", "doctors", "hospital", "pharmacy"],
+      "layout": {
+        "text-font": [
+          "step",
+          ["zoom"],
+          ["literal", ["Merriweather Light Italic", "Noto Sans Italic"]],
+          14,
+          ["literal", ["Merriweather Light Italic", "Noto Sans Italic"]],
+          16,
+          ["literal", ["Merriweather Italic", "Noto Sans Italic"]]
+        ],
+        "text-size": 12,
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "visibility": "visible",
+        "text-anchor": "top",
+        "text-offset": [0, 0.6],
+        "text-padding": 2,
+        "text-max-width": 9,
+        "text-letter-spacing": 0.1
+      },
+      "paint": {
+        "icon-color": "hsl(9, 23%, 12%)",
+        "text-color": "hsl(9, 23%, 12%)",
+        "icon-opacity": 1,
+        "text-opacity": 1,
+        "text-halo-blur": 0.5,
+        "icon-halo-color": "hsla(43, 97%, 88%, 0.8)",
+        "text-halo-color": "hsla(43, 97%, 88%, 0.8)",
+        "text-halo-width": 1
+      }
+    },
+    {
+      "id": "Station",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 13,
+      "filter": [
+        "all",
+        ["==", "class", "railway"],
+        ["==", "subclass", "station"],
+        ["has", "name"]
+      ],
+      "layout": {
+        "text-font": [
+          "step",
+          ["zoom"],
+          ["literal", ["Merriweather Light Italic", "Noto Sans Italic"]],
+          14,
+          ["literal", ["Merriweather Light Italic", "Noto Sans Italic"]],
+          16,
+          ["literal", ["Merriweather Italic", "Noto Sans Italic"]]
+        ],
+        "text-size": 12,
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "visibility": "visible",
+        "text-anchor": "top",
+        "text-offset": [0, 0.6],
+        "text-padding": 2,
+        "icon-optional": false,
+        "text-optional": true,
+        "text-max-width": 9,
+        "icon-allow-overlap": false,
+        "text-allow-overlap": false,
+        "text-letter-spacing": 0.1,
+        "icon-ignore-placement": false,
+        "text-ignore-placement": false
+      },
+      "paint": {
+        "icon-color": "hsl(9, 23%, 12%)",
+        "text-color": "hsl(9, 23%, 12%)",
+        "text-halo-blur": 0.5,
+        "icon-halo-color": "hsl(43, 97%, 88%)",
+        "text-halo-color": "hsl(43, 97%, 88%)",
+        "text-halo-width": 1,
+        "text-opacity": 1,
+        "icon-opacity": 1
+      }
+    },
+    {
+      "id": "Place labels",
+      "type": "symbol",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "minzoom": 12,
+      "maxzoom": 22,
+      "filter": [
+        "any",
+        ["!has", "class"],
+        [
+          "in",
+          "class",
+          "hamlet",
+          "isolated_dwelling",
+          "neighbourhood",
+          "quarter",
+          "suburb"
+        ]
+      ],
+      "layout": {
+        "icon-size": {"stops": [[6, 0.5], [8.9, 0.8], [9, 0]]},
+        "text-font": ["Merriweather Italic", "Noto Sans Italic"],
+        "text-size": [
+          "interpolate",
+          ["linear", 1],
+          ["zoom"],
+          3,
+          11,
+          10,
+          12,
+          16,
+          14
+        ],
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "visibility": "visible",
+        "text-anchor": "bottom",
+        "text-offset": [0, 0],
+        "text-padding": 2,
+        "icon-optional": false,
+        "text-max-width": 8,
+        "text-transform": [
+          "match",
+          ["get", "class"],
+          ["suburb", "neighborhood", "neighbourhood", "quarter"],
+          "uppercase",
+          "none"
+        ],
+        "icon-allow-overlap": true,
+        "text-letter-spacing": 0.3
+      },
+      "paint": {
+        "icon-color": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          0,
+          "hsl(30, 17%, 40%)",
+          15,
+          "hsl(30, 17%, 20%)"
+        ],
+        "text-color": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          0,
+          "hsl(30, 17%, 40%)",
+          15,
+          "hsl(30, 17%, 20%)"
+        ],
+        "icon-opacity": 1,
+        "text-opacity": 1,
+        "icon-halo-color": "hsl(43, 71%, 92%)",
+        "icon-halo-width": 1,
+        "text-halo-color": "hsl(43, 71%, 92%)",
+        "text-halo-width": 1
+      }
+    },
+    {
+      "id": "Village labels",
+      "type": "symbol",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "minzoom": 4,
+      "filter": ["==", "class", "village"],
+      "layout": {
+        "icon-size": {"stops": [[6, 0.5], [8.9, 0.8], [9, 0]]},
+        "text-font": ["Merriweather Light", "Noto Sans Regular"],
+        "text-size": [
+          "interpolate",
+          ["linear", 1],
+          ["zoom"],
+          3,
+          11,
+          10,
+          12,
+          16,
+          19
+        ],
+        "text-field": "{name}",
+        "visibility": "visible",
+        "text-anchor": "bottom",
+        "text-offset": [0, 0],
+        "text-padding": 2,
+        "icon-optional": false,
+        "text-max-width": 8,
+        "text-transform": "none",
+        "icon-allow-overlap": true,
+        "text-letter-spacing": 0
+      },
+      "paint": {
+        "icon-color": "hsl(31, 18%, 30%)",
+        "text-color": "hsl(31, 18%, 30%)",
+        "icon-opacity": 1,
+        "text-opacity": 1,
+        "icon-halo-color": "hsl(43, 71%, 92%)",
+        "icon-halo-width": 1,
+        "text-halo-color": "hsl(43, 71%, 92%)",
+        "text-halo-width": 1
+      }
+    },
+    {
+      "id": "Town labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "minzoom": 4,
+      "maxzoom": 16,
+      "filter": ["==", "class", "town"],
+      "layout": {
+        "text-font": ["Merriweather Regular", "Noto Sans Regular"],
+        "text-size": {"base": 1.2, "stops": [[10, 12], [15, 22]]},
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "visibility": "visible",
+        "text-max-width": 8
+      },
+      "paint": {
+        "icon-color": "hsl(10, 23%, 32%)",
+        "text-color": "hsl(10, 23%, 32%)",
+        "icon-halo-color": "hsla(43, 71%, 92%, 0.8)",
+        "text-halo-color": "hsla(43, 71%, 92%, 0.8)",
+        "text-halo-width": 1.2,
+        "text-opacity": 1,
+        "icon-opacity": 1
+      }
+    },
+    {
+      "id": "Island labels",
+      "type": "symbol",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "minzoom": 9,
+      "maxzoom": 22,
+      "filter": ["==", "class", "island"],
+      "layout": {
+        "icon-size": {"stops": [[6, 0.5], [8.9, 0.8], [9, 0]]},
+        "text-font": ["Merriweather Regular", "Noto Sans Regular"],
+        "text-size": [
+          "interpolate",
+          ["linear", 1],
+          ["zoom"],
+          3,
+          11,
+          10,
+          8,
+          16,
+          11
+        ],
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "visibility": "visible",
+        "text-anchor": "bottom",
+        "text-offset": [0, 0],
+        "text-padding": 2,
+        "icon-optional": false,
+        "text-max-width": 6,
+        "text-transform": "uppercase",
+        "icon-allow-overlap": true,
+        "text-letter-spacing": 0.1
+      },
+      "paint": {
+        "icon-color": "hsl(31, 18%, 30%)",
+        "text-color": "hsl(31, 18%, 30%)",
+        "icon-opacity": 1,
+        "text-opacity": 1,
+        "icon-halo-color": "hsl(43, 71%, 92%)",
+        "text-halo-color": "hsl(43, 71%, 92%)",
+        "text-halo-width": 1.2
+      }
+    },
+    {
+      "id": "City labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "minzoom": 4,
+      "maxzoom": 16,
+      "filter": ["all", ["!=", "capital", 2], ["==", "class", "city"]],
+      "layout": {
+        "icon-size": {"stops": [[6, 0.4], [12, 0.5]]},
+        "text-font": ["Merriweather Bold", "Noto Sans Bold"],
+        "text-size": {"base": 1.2, "stops": [[7, 13], [11, 23]]},
+        "icon-image": "circle",
+        "text-field": "{name:en}",
+        "visibility": "visible",
+        "text-anchor": "left",
+        "text-offset": [0.4, 0],
+        "text-justify": "left",
+        "text-max-width": 8,
+        "text-letter-spacing": 0.2
+      },
+      "paint": {
+        "icon-color": "#64453F",
+        "text-color": "hsl(10, 23%, 32%)",
+        "icon-opacity": 1,
+        "text-halo-color": "hsla(43, 71%, 92%, 0.8)",
+        "text-halo-width": 1.2,
+        "text-opacity": 1
+      }
+    },
+    {
+      "id": "State labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "minzoom": 3,
+      "maxzoom": 9,
+      "filter": [
+        "all",
+        ["in", "class", "state", "province"],
+        ["<=", "rank", 6]
+      ],
+      "layout": {
+        "text-font": ["Merriweather Italic", "Noto Sans Italic"],
+        "text-size": {"base": 1.2, "stops": [[3, 8], [5, 10]]},
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "visibility": "visible",
+        "text-max-width": 9,
+        "text-transform": "uppercase",
+        "text-letter-spacing": 0.2
+      },
+      "paint": {
+        "icon-color": "hsl(10, 23%, 32%)",
+        "text-color": "hsl(10, 23%, 32%)",
+        "text-opacity": 1,
+        "text-halo-color": "hsla(43, 71%, 92%, 0.8)",
+        "text-halo-width": 1.2,
+        "icon-opacity": 1
+      }
+    },
+    {
+      "id": "Capital city labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "minzoom": 4,
+      "maxzoom": 16,
+      "filter": ["all", ["==", "capital", 2], ["==", "class", "city"]],
+      "layout": {
+        "icon-size": 0.8,
+        "text-font": ["Merriweather Bold", "Noto Sans Bold"],
+        "text-size": {"base": 1.2, "stops": [[7, 15], [11, 25]]},
+        "icon-image": "star",
+        "text-field": "{name:en}",
+        "visibility": "visible",
+        "text-anchor": "left",
+        "text-offset": [0.4, 0],
+        "text-justify": "left",
+        "text-max-width": 8,
+        "text-transform": "uppercase",
+        "text-letter-spacing": 0.2
+      },
+      "paint": {
+        "icon-color": "hsl(10, 23%, 32%)",
+        "text-color": "hsl(10, 23%, 32%)",
+        "text-halo-color": "hsla(43, 71%, 92%, 0.8)",
+        "text-halo-width": 1.2,
+        "text-opacity": 1,
+        "icon-opacity": 1
+      }
+    },
+    {
+      "id": "Country labels",
+      "type": "symbol",
+      "metadata": {},
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "minzoom": 1,
+      "maxzoom": 12,
+      "filter": ["all", ["==", "class", "country"], ["has", "iso_a2"]],
+      "layout": {
+        "text-font": ["Merriweather Bold", "Noto Sans Bold"],
+        "text-size": [
+          "interpolate",
+          ["linear", 1],
+          ["zoom"],
+          0,
+          6,
+          1,
+          9,
+          4,
+          ["case", [">", ["get", "rank"], 2], 12, 14],
+          8,
+          ["case", [">", ["get", "rank"], 2], 16, 20]
+        ],
+        "text-field": "{name:en}",
+        "visibility": "visible",
+        "text-padding": 1,
+        "text-max-width": {"stops": [[1, 5], [5, 8]]},
+        "text-transform": "uppercase",
+        "text-allow-overlap": false,
+        "text-letter-spacing": 0.3
+      },
+      "paint": {
+        "icon-color": "hsl(10, 23%, 32%)",
+        "text-color": "hsl(10, 23%, 32%)",
+        "text-opacity": 1,
+        "text-halo-blur": 0.8,
+        "icon-halo-color": "hsla(43, 71%, 92%, 0.8)",
+        "text-halo-color": "hsla(43, 71%, 92%, 0.8)",
+        "text-halo-width": 1,
+        "icon-opacity": 1
+      }
+    },
+    {
+      "id": "Continent labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "maxzoom": 1,
+      "filter": ["==", "class", "continent"],
+      "layout": {
+        "text-font": ["Merriweather Bold", "Noto Sans Bold"],
+        "text-size": {"stops": [[0, 12], [2, 13]]},
+        "text-field": "{name}",
+        "visibility": "visible",
+        "text-max-width": 6.25,
+        "text-transform": "uppercase",
+        "text-letter-spacing": 0.3
+      },
+      "paint": {
+        "icon-color": "hsl(10, 23%, 32%)",
+        "text-color": "hsl(10, 23%, 32%)",
+        "text-halo-blur": 1,
+        "icon-halo-color": "hsl(43, 71%, 92%)",
+        "text-halo-color": "hsl(43, 71%, 92%)",
+        "text-halo-width": 2,
+        "text-opacity": 1,
+        "icon-opacity": 1
+      }
+    }
+  ]
+}

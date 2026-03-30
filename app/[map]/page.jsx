@@ -5,12 +5,16 @@ import Cartographer from "@/components/cartographer"
 import { combineAndDownload, getConsts, getDescriptionFromFaction } from "@/lib/utils"
 import { Skull } from "lucide-react"
 import Link from "next/link"
+import Scratch from "@/components/forms/scratch"
 
 export default async function mapLobby({ params }) {
   const { map } = await params
   if (map === "favicon.ico") return
   const iconIndex = generateIconIdList(map)
-  if (map === "custom") {
+  if (map === "scratch") {
+    const styleIndex = generateStylesList()
+    return <Scratch styleIndex={styleIndex} />
+  } else if (map === "custom") {
     return <Cartographer name={map} fid={0} data={{ type: "FeatureCollection", features: [] }} iconIndex={iconIndex} />
   }
 
@@ -129,6 +133,17 @@ export function generateIconIdList(mapName) {
     mainIndex.sort(),
     mapIndex.sort(),
   ];
+}
+
+export function generateStylesList() {
+  const styleIndex = [];
+  const files = fs.readdirSync("lib/maplibreStyles", { withFileTypes: true });
+  for (const file of files) {
+    if (!file.isFile() || !file.name.endsWith(".json")) continue;
+    const name = path.basename(file.name, ".json");
+    styleIndex.push(name);
+  }
+  return styleIndex
 }
 
 export function generateStaticParams() {
