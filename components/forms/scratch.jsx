@@ -773,6 +773,8 @@ function getStyleOptions(styleIndex) {
       description = "has 3D terrain data"
     } else if (style === "watercolor") {
       description = "no labels"
+    } else if (style === "satellite") {
+      description = "unstable image source"
     }
     return {
       value: style,

@@ -201,7 +201,8 @@ export default function Toolbox({ map, pan, width, params, height, mobile, name,
     crosshairX.style.height = '1px'
     crosshairX.style.zIndex = 2;
     crosshairX.style.visibility = 'hidden'
-    crosshairX.style.border = '1px dashed rgba(255, 255, 255, 0.5)'
+    crosshairX.style.border = '1px dashed white'
+    crosshairX.style.boxShadow = '0 0 4px black'
     crosshairX.style.width = `${Math.min(Math.max(crosshairLength, 50), width - 50)}px`
     crosshairX.style.transform = 'translateX(-50%)'
     mapboxChildrenParent.appendChild(crosshairX)
@@ -212,7 +213,8 @@ export default function Toolbox({ map, pan, width, params, height, mobile, name,
     crosshairY.style.top = '50%'
     crosshairY.style.left = '50%'
     crosshairY.style.width = '1px'
-    crosshairY.style.border = '1px dashed rgba(255, 255, 255, 0.5)'
+    crosshairY.style.border = '1px dashed white'
+    crosshairY.style.boxShadow = '0 0 4px black'
     crosshairY.style.height = `${Math.min(Math.max(crosshairLength, 50), height - 50)}px`
     crosshairY.style.transform = 'translateY(-50%)'
     mapboxChildrenParent.appendChild(crosshairY);
