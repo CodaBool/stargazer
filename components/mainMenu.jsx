@@ -408,7 +408,7 @@ export function MainMenu({ cloudMaps, session, revalidate, hash, systems }) {
               }
             </div>
           ))}
-          {systems.length === 2 && <p className='mb-10 mt-2 text-center'>Looking for more maps? Checkout one of the <a href="https://github.com/CodaBool/stargazer/wiki/Forks" className='text-blue-300'>forks</a></p>}
+          {systems.length === 2 && <p className='mb-10 mt-2 text-center'>Looking for more maps? Checkout one of the federated <a href="https://github.com/CodaBool/stargazer/wiki/Forks" className='text-blue-300'>forks</a></p>}
         </div>
       )}
 

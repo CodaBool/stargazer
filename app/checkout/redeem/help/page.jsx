@@ -15,16 +15,15 @@ import db from "@/lib/db"
 import { Input } from '@/components/ui/input'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { getServerSession } from 'next-auth'
-import { redirect } from 'next/navigation'
 
 export default async function Page() {
 
   // auth
   const session = await getServerSession(authOptions)
-  if (!session) redirect('/login?back=/&callback=/checkout/redeem/help')
-  const user = await db.user.findUnique({ where: { email: session.user.email } })
-  if (!user) redirect('/login?back=/&callback=/checkout/redeem/help')
-
+  let user
+  if (session) {
+    user = await db.user.findUnique({ where: { email: session.user.email } })
+  }
 
   return (
     <div className='starfield'>
@@ -53,7 +52,13 @@ export default async function Page() {
                 Copy your <span className="font-medium text-white">secret</span>
               </li>
 
-              <Input value={user.secret} className="my-4" readOnly />
+              {(user && session) ? (
+                <Input value={user.secret} className="my-4" readOnly />
+              ) : (
+                  <Link href={"/login?back=/&callback=/checkout/redeem/help"}
+                    className="inline-flex items-center justify-center rounded-md bg-slate-700 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 transition-colors mx-auto"
+                  >Sign in to retrieve your secret</Link>
+              )}
 
               <li className="leading-relaxed">
                 Place your secret in the <span className="font-medium text-white">Stargazer Secret</span> setting and save
