@@ -201,7 +201,7 @@ export default function Controls({ name, params, setSize, TYPES, GEO_EDIT }) {
       const mapsWithData = Object.keys(maps).filter(id => id.split('-')[0] === name)
 
       // if no data exists set an id and save
-      if (!mapsWithData.length || params.get("new")) {
+      if ((!mapsWithData.length || params.get("new")) && params.get("skipCreation") !== "1") {
 
         console.log("no data exists, or given create param", params.get("new"), "maps =", maps)
         const id = Date.now()
