@@ -275,17 +275,19 @@ export default function DrawerComponent({
             "
             style={{
               textShadow: `
-                0 0 3px black,
-                0 0 6px black,
+                0 0 5px black,
+                0 0 5px black,
                 1px 1px 0 black,
                 -1px -1px 0 black
-              `
+              `,
+              fontWeight: 800,
+
             }}
           >
             <Crosshair
               size={mobile ? 14 : 20}
               onClick={recenter}
-              className="inline mr-2 mb-1 cursor-pointer bg-black/40 rounded-full border-white/80"
+              className="inline mr-2 mb-1 cursor-pointer bg-black/60 rounded-full border-white/20"
             />
             {coordinatesPretty}
           </div>
@@ -649,14 +651,16 @@ export function BadgeList({ list, variant = "secondary", label, align = "right" 
 
 
   return (
-    <div className={`flex flex-col gap-2 text-${align} text-sm`}>
-      <span className="uppercase tracking-wide text-[0.65rem]" style={{
+    <div className={`flex flex-col gap-1 text-${align} text-sm`}>
+      <span className="uppercase tracking-wide text-[0.85rem]" style={{
         textShadow: `
-          0 0 3px black,
-          0 0 6px black,
+          0 0 5px black,
+          0 0 5px black,
           1px 1px 0 black,
           -1px -1px 0 black
-        `
+        `,
+        fontWeight: 800,
+
       }}>
         {label}
       </span>
