@@ -25,11 +25,11 @@ const FEATURES = [
   { id: 7, label: "Fog of war" },
   { id: 8, label: "Integrate with external generators (watabou)" },
   { id: 9, label: "Add Aunic space to Lancer" },
-  { id: 10, label: "[Foundry] Support using a custom URL for a map" },
+  // removed id 10 here, you can replace 10 or addend
   { id: 11, label: "[Foundry] Integrate with simple-quest module" },
   { id: 12, label: "[Foundry] Allow polygons and lines to have Foundry links" },
   { id: 13, label: "Stability and fixing bugs" },
-  { id: 14, label: "translations" },
+  { id: 14, label: "more translations" },
   { id: 15, label: "expose api and macros" },
   { id: 16, label: "add moon(s) form" },
   { id: 17, label: "write guide for how to self-host Stargazer" },
