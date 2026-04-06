@@ -69,7 +69,8 @@ export default function MapSettings({ map, id, data, config }) {
         [bounds[0], bounds[1]],
         [bounds[2], bounds[3]]
       ]
-      delete body.MAX_BOUNDS
+    } else {
+      body.VIEW.maxBounds = []
     }
     if (body.MAX_ZOOM) {
       body.MAX_ZOOM = Number(body.MAX_ZOOM)
@@ -89,6 +90,8 @@ export default function MapSettings({ map, id, data, config }) {
 
     delete body.file
     delete body.name
+    delete body.MAX_BOUNDS
+
     console.log("cloud submit", {
       ...newObj,
       config: {

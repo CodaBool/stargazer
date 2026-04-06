@@ -180,8 +180,8 @@ export default function Scratch({ styleIndex }) {
           defaults.TRAVEL_RATE = 3
           defaults.DISTANCE_CONVERTER = 0.621371
         }
-
         defaults.STYLE = styleMap[body.stylePreset]
+        defaults.VIEW.maxBounds = []
 
 
 

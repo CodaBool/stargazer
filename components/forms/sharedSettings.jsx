@@ -289,15 +289,28 @@ export default function SharedSettings({
               name="MAX_BOUNDS"
               rules={{
                 validate: v => {
-                  if (v === "" || typeof v === "undefined") return true
-                  const parts = v.split(",")
-                  return (
-                    (parts.length === 4 &&
-                      parts.every(
-                        part => part.trim().length > 0 && !isNaN(part.trim()),
-                      )) ||
-                    "Value must be four numbers separated by commas"
-                  )
+                  if (v === "" || typeof v === "undefined") return true;
+                  const parts = v.split(",").map(p => p.trim());
+                  if (parts.length !== 4 || parts.some(p => p === "" || isNaN(p))) {
+                    return "Value must be four numbers separated by commas";
+                  }
+                  const [minLng, minLat, maxLng, maxLat] = parts.map(Number);
+                  if (!realGalaxy) {
+                    // enforce real-world bounds
+                    if (
+                      minLng < -180 || minLng > 180 ||
+                      maxLng < -180 || maxLng > 180 ||
+                      minLat < -90 || minLat > 90 ||
+                      maxLat < -90 || maxLat > 90
+                    ) {
+                      return "Coordinates must be within real-world bounds: lng [-180,180], lat [-90,90]";
+                    }
+                  }
+                  // logical bounds check (always useful)
+                  if (minLng >= maxLng || minLat >= maxLat) {
+                    return "Min values must be less than max values";
+                  }
+                  return true;
                 },
               }}
               defaultValue={
@@ -340,6 +353,8 @@ export default function SharedSettings({
                       source
                     </a>
                     )
+                    <br /><br />
+                    Leave blank to have no boundary for the map
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -600,11 +615,18 @@ export default function SharedSettings({
                               // use Fallout's presets
                               mapName = "fallout"
                             }
+
+                            // for custom maps, we want it unbound for Earth maps
+                            let maxBounds = getConsts(mapName)
+                              .VIEW.maxBounds.flat()
+                              .join(",")
+                            if (mapName === "fallout") {
+                              maxBounds = ""
+                            }
+
                             form.setValue(
                               "MAX_BOUNDS",
-                              getConsts(mapName)
-                                .VIEW.maxBounds.flat()
-                                .join(","),
+                              maxBounds,
                             )
                             form.setValue(
                               "CENTER",

@@ -86,14 +86,6 @@ export default function MapSettings({ map, id }) {
       body.VIEW.zoom = Number(body.ZOOM)
       delete body.ZOOM
     }
-    if (body.MAX_BOUNDS) {
-      const bounds = body.MAX_BOUNDS.split(",").map(Number)
-      body.VIEW.maxBounds = [
-        [bounds[0], bounds[1]],
-        [bounds[2], bounds[3]]
-      ]
-      delete body.MAX_BOUNDS
-    }
     if (body.MAX_ZOOM) {
       body.MAX_ZOOM = Number(body.MAX_ZOOM)
     }
@@ -106,18 +98,24 @@ export default function MapSettings({ map, id }) {
     if (JSON.stringify(body.LAYOUT_OVERRIDE)?.replaceAll(" ", "") === "{}") {
       delete body.LAYOUT_OVERRIDE
     }
+    console.log("123!!!!",body.MAX_BOUNDS)
+
     if (body.MAX_BOUNDS) {
+      console.log("given!!!!",body.MAX_BOUNDS)
       const bounds = body.MAX_BOUNDS.split(",").map(Number)
       body.VIEW.maxBounds = [
         [bounds[0], bounds[1]],
         [bounds[2], bounds[3]]
       ]
-      delete body.MAX_BOUNDS
+    } else {
+      body.VIEW.maxBounds = []
     }
 
     setSubmitting(false)
     delete body.file
     delete body.name
+    delete body.MAX_BOUNDS
+
     const maps = await getMaps()
     const currentConfig = maps[`${map}-${id}`]?.config
     console.log("local submit", {

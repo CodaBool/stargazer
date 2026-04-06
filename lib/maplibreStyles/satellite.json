@@ -1,17 +1,6 @@
 {
   "version": 8,
   "name": "Satellite",
-  "light": {"anchor": "viewport", "intensity": 0.3, "position": [1.5, 235, 30]},
-  "sky": {
-    "sky-color": "hsl(208, 90%, 72%)",
-    "sky-horizon-blend": 0.2,
-    "horizon-color": "hsl(0, 0%, 100%)",
-    "horizon-fog-blend": 0.9,
-    "fog-color": "hsla(0, 0%, 100%, 0.2)",
-    "fog-ground-blend": 0.8,
-    "atmosphere-blend": 0.2
-  },
-  "projection": {"type": "globe"},
   "sources": {
     "aws": {
       "maxzoom": 17,

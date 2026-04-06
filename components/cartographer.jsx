@@ -143,6 +143,13 @@ export default function Cartographer({ name, data, uuid, remoteConfig, iconIndex
     if (config.STYLE?.sprite !== "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/sprite/watercolor/combined" && config.STYLE?.sprite !== "https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/sprite/toner/combined" && config.STYLE?.sprite) {
       config.STYLE.sprite = `https://raw.githubusercontent.com/CodaBool/stargazer/refs/heads/main/public/sprite/${name}/spritesheet`
     }
+    console.log("maxBounds", config.VIEW.maxBounds)
+
+    if (config.VIEW.maxBounds?.length === 0) {
+      delete config.VIEW.maxBounds
+    }
+
+    console.log("CONFIG", config)
     setConfig(config)
     // console.log("writing", config)
     // what's better than 2 race conditions...3!
