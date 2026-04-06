@@ -149,7 +149,6 @@ export default function Cartographer({ name, data, uuid, remoteConfig, iconIndex
       delete config.VIEW.maxBounds
     }
 
-    console.log("CONFIG", config)
     setConfig(config)
     // console.log("writing", config)
     // what's better than 2 race conditions...3!

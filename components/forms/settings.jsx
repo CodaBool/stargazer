@@ -98,10 +98,8 @@ export default function MapSettings({ map, id }) {
     if (JSON.stringify(body.LAYOUT_OVERRIDE)?.replaceAll(" ", "") === "{}") {
       delete body.LAYOUT_OVERRIDE
     }
-    console.log("123!!!!",body.MAX_BOUNDS)
 
     if (body.MAX_BOUNDS) {
-      console.log("given!!!!",body.MAX_BOUNDS)
       const bounds = body.MAX_BOUNDS.split(",").map(Number)
       body.VIEW.maxBounds = [
         [bounds[0], bounds[1]],
