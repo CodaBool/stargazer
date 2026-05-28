@@ -7,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 export async function fetchClientSecret(userId, userName, email) {
   const origin = (await headers()).get("origin")
   const session = await stripe.checkout.sessions.create({
-    ui_mode: "embedded",
+    ui_mode: "embedded_page",
     line_items: [
       {
         price: process.env.PRICE_ID,
