@@ -1,22 +1,38 @@
-import Stripe from "stripe";
-import { headers } from "next/headers";
-import db from "@/lib/db";
+import Stripe from "stripe"
+import { headers } from "next/headers"
+import db from "@/lib/db"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 export async function POST(req) {
   try {
-    const sig = (await headers()).get("stripe-signature");
+    const sig = (await headers()).get("stripe-signature")
     if (!sig) throw "missing signature"
-    const body = await req.text();
-    const event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_SECRET_WEBHOOK)
+    const body = await req.text()
+    const event = stripe.webhooks.constructEvent(
+      body,
+      sig,
+      process.env.STRIPE_SECRET_WEBHOOK,
+    )
 
     if (event.type !== "checkout.session.completed") {
       console.log("unhandled stripe event", event.type)
       return Response.json({ ok: true })
     }
 
-    const { id, payment_intent, client_reference_id, customer_details } = event.data.object
+    const {
+      id,
+      payment_intent,
+      client_reference_id,
+      customer_details,
+      metadata,
+    } = event.data.object
+
+    if (metadata?.project !== "stargazer") {
+      console.log("different project session", metadata?.project)
+      return Response.json({ ok: true })
+    }
+
     await db.user.update({
       where: { id: client_reference_id },
       data: {
@@ -32,7 +48,7 @@ export async function POST(req) {
     return Response.json({ msg: "success" })
   } catch (error) {
     console.error(error)
-    if (typeof error === 'string') {
+    if (typeof error === "string") {
       return Response.json({ error }, { status: 400 })
     } else if (typeof error?.message === "string") {
       return Response.json({ error: error.message }, { status: 500 })
