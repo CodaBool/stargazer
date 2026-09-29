@@ -8,7 +8,7 @@ Stargazer allows you to customize locations while also benefiting from a wealth 
 
 Just add your unofficial points and publish
 
-## 🌟 [Start Stargazing](https://stargazer.vercel.app)
+## 🌟 [Start Stargazing](https://the-cartographer.vercel.app)
 
 ### 🎲 Foundry
 > Here for the [Foundry module?](https://github.com/CodaBool/map)
