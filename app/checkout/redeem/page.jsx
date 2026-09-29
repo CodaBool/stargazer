@@ -1,6 +1,4 @@
 import db from "@/lib/db";
-import { Check } from "lucide-react"
-import Client from "./component.jsx"
 
 export default async function RedeemPage({ searchParams }) {
   const params = await searchParams
@@ -11,20 +9,10 @@ export default async function RedeemPage({ searchParams }) {
   if (!user) return <p className="text-center mt-20"><Client msg="unauthorized" />unauthorized</p>
   if (user.premium) return <p className="text-center mt-20"><Client msg="Your account is already premium" />Your account is already premium</p>
 
-  await db.user.update({
-    where: { id: user.id },
-    data: {
-      premium: true,
-      premiumGrantedAt: new Date(),
-      foundryWorld: world,
-    },
-  })
-
   return (
     <div className="flex items-center justify-center min-h-[80vh] starfield flex-col text-2xl select-text">
-      <Check className="animate-bounce" size={64} />
-      <h1 className=" text-white">Premium Redeemed</h1>
-      <Client msg="Premium Redeemed" />
+      <h1 className=" text-white">Premium redemption no longer supported</h1>
+      <p className=" text-white">Due to switching to a FOSS (free and open source) model, free Stargazer premium can no longer be awarded from the module</p>
     </div>
   )
 }
