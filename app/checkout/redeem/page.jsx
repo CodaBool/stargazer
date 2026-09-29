@@ -4,10 +4,10 @@ export default async function RedeemPage({ searchParams }) {
   const params = await searchParams
   const { secret, world, salt } = params
 
-  if (!secret || salt !== process.env.FOUNDRY_LINK_SECRET) return <p className="text-center mt-20"><Client msg="unauthorized" />unauthorized</p>
+  if (!secret || salt !== process.env.FOUNDRY_LINK_SECRET) return <p className="text-center mt-20">unauthorized</p>
   const user = await db.user.findUnique({ where: { secret } })
-  if (!user) return <p className="text-center mt-20"><Client msg="unauthorized" />unauthorized</p>
-  if (user.premium) return <p className="text-center mt-20"><Client msg="Your account is already premium" />Your account is already premium</p>
+  if (!user) return <p className="text-center mt-20">unauthorized</p>
+  if (user.premium) return <p className="text-center mt-20">Your account is already premium</p>
 
   return (
     <div className="flex items-center justify-center min-h-[80vh] starfield flex-col text-2xl select-text">
