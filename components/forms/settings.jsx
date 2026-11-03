@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from "react-hook-form"
 import { useEffect, useState } from "react"
 import 'react-quill-new/dist/quill.bubble.css'
-import { getConsts, getMaps, localSet } from "@/lib/utils"
+import { combineLayersDedup, getConsts, getMaps, localSet } from "@/lib/utils"
 import SharedSettings from "./sharedSettings"
 
 export default function MapSettings({ map, id }) {
@@ -36,7 +36,9 @@ export default function MapSettings({ map, id }) {
     if (body.file) {
       if (approved) {
         // console.log("submit with file", body)
-        const geojson = body.file
+        const geojson = body.uploadMode === "replace"
+          ? body.file
+          : combineLayersDedup([data.geojson, body.file])
 
         geojson.features.forEach(f => {
           // Remove properties with null or empty string values
@@ -111,6 +113,7 @@ export default function MapSettings({ map, id }) {
 
     setSubmitting(false)
     delete body.file
+    delete body.uploadMode
     delete body.name
     delete body.MAX_BOUNDS
 

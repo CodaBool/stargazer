@@ -677,7 +677,7 @@ function DetailedView({ data, revalidate, session, cloudMaps, setSelectedMap, se
                   <p className="text-gray-400">Click below to replace cloud data with your local data (names must match, remote settings have priority):</p>
                   {remoteCopies.map(cloudMap => (
                     <DialogClose asChild key={cloudMap.id}>
-                      <Card onClick={() => replaceRemoteMap(data, revalidate)} className="cursor-pointer hover-grow">
+                      <Card onClick={() => replaceRemoteMap(data, cloudMap.id, revalidate)} className="cursor-pointer hover-grow">
                         <CardHeader>
                           <CardTitle>{cloudMap.name}</CardTitle>
                           <CardDescription>{new Date(cloudMap.updatedAt).toLocaleDateString("en-US", {
@@ -797,16 +797,13 @@ function deleteMapRemote(id, revalidate) {
     })
 }
 
-function replaceRemoteMap(localMap, revalidate) {
-  window.alert("this feature unfortunately needs more time in the oven. Please upload as a new map until a future update.")
-  return
-  console.log("sending", localMap)
+function replaceRemoteMap(localMap, cloudId, revalidate) {
   fetch('/api/map', {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ geojson: localMap.geojson, id: localMap.id, map: localMap.map, name: localMap.name, replace: true }),
+    body: JSON.stringify({ geojson: localMap.geojson, id: cloudId, mode: "replace" }),
   })
     .then(response => response.json())
     .then(data => {

@@ -123,6 +123,12 @@
   }
 }
 
+/* stops drawer drags from turning into pull-to-refresh on mobile */
+html,
+body {
+  overscroll-behavior-y: none;
+}
+
 body {
   background: black;
   color: white;

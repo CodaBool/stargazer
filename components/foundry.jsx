@@ -176,7 +176,7 @@ export function Link({ mobile, name, params }) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ geojson: map.geojson, id: map.meta.uuid, secret }),
+        body: JSON.stringify({ geojson: map.geojson, id: map.meta.uuid, secret, mode: "replace" }),
       })
         .then(response => response.json())
         .then(data => {

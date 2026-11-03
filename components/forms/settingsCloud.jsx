@@ -32,15 +32,13 @@ export default function MapSettings({ map, id, data, config }) {
 
     if (body.file) {
       if (approved) {
-        const geojson = body.file
-        newObj.geojson = geojson
+        newObj.geojson = body.file
+        if (body.uploadMode === "replace") newObj.mode = "replace"
       } else {
         // show a dialog letting the user know how many features they would add
         setAlert(preAlert)
         return
       }
-    } else {
-      newObj.geojson = data.geojson
     }
 
     // massage data into proper nesting
@@ -89,6 +87,7 @@ export default function MapSettings({ map, id, data, config }) {
 
 
     delete body.file
+    delete body.uploadMode
     delete body.name
     delete body.MAX_BOUNDS
 

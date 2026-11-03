@@ -1,17 +1,18 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import MapComponent from './map'
 import { combineLayers, getConsts, getMaps, isMobile, hardwareCheck, localSet, USER_LOCATION_ID_START, useStore } from '@/lib/utils'
 import Map from '@vis.gl/react-maplibre'
 import Controls from './controls.jsx'
 import Editor from './editor'
 import { useSearchParams } from 'next/navigation'
+import { devFixtures } from '@/lib/devFixtures'
 
 import RBush from 'rbush'
 // allows for local editing
 const GEO_EDIT = (false && process.env.NEXT_PUBLIC_URL === "http://192.168.0.16:3000")
 
-export default function Cartographer({ name, data, uuid, remoteConfig, iconIndex }) {
+export default function Cartographer({ name, data: rawData, uuid, remoteConfig, iconIndex }) {
   const CONFIG = getConsts(name)
   const [crashed, setCrashed] = useState() // crash reloading
   const [size, setSize] = useState()
@@ -24,6 +25,13 @@ export default function Cartographer({ name, data, uuid, remoteConfig, iconIndex
   CONFIG.VIEW.longitude = params.get("lng") || CONFIG.VIEW.longitude
   CONFIG.VIEW.latitude = params.get("lat") || CONFIG.VIEW.latitude
   const locked = params.get("locked") === "1"
+  // dev only, ?fixtures=1 adds edge case features (see lib/devFixtures.js)
+  // read once, since a first visit rewrites the URL to ?id=<new map> and drops it
+  const [fixtures] = useState(() => process.env.NODE_ENV === "development" && !!params.get("fixtures"))
+  const data = useMemo(() => {
+    if (!fixtures) return rawData
+    return { ...rawData, features: [...rawData.features, ...devFixtures(CONFIG)] }
+  }, [rawData, fixtures])
   const showControls = params.get("controls") !== "0" && !mobile && !uuid && !locked && !params.get("preview")
   const showEditor = params.get("editor") !== "0" && !mobile && !uuid && !locked && !params.get("preview")
 

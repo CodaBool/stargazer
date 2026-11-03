@@ -8,8 +8,8 @@ import {
 } from "@/components/ui/drawer"
 import { Suspense, useEffect, useMemo, useState } from "react"
 import { Badge } from "@/components/ui/badge.jsx"
-import { genLink, gridHelpers, sanitizeContent, svgBase } from "@/lib/utils.js"
-import { generateSystemAtClick } from "@/lib/fakeData.js"
+import { drawerOffset, genLink, gridHelpers, sanitizeContent, svgBase } from "@/lib/utils.js"
+import { generateSystemAtClick, parseStarTypes } from "@/lib/fakeData.js"
 import { useMap } from "@vis.gl/react-maplibre"
 import SolarSystem from "./solarSystem.jsx"
 import LocationSystem from "./locationSystem.jsx"
@@ -186,9 +186,7 @@ export default function DrawerComponent({
       center: coordinates,
       duration: 700,
       curve: map.getZoom() < (MIN_ZOOM + ((MAX_ZOOM - MIN_ZOOM) / 3) / 2) ? 0.1 : 1.42,
-      padding: {
-        bottom: params.get("iframe") ? height / 2 : 110, // arbitrary px for drawer
-      },
+      offset: drawerOffset(params, height),
     })
 
     if (selectedId != null) {
@@ -204,10 +202,7 @@ export default function DrawerComponent({
     }
   }
 
-  const starNum =
-    typeof display.starType === "string"
-      ? display.starType.split(",").filter(Boolean).length
-      : 0
+  const starNum = parseStarTypes(display.starType).length
 
   return (
     <Drawer
@@ -399,6 +394,12 @@ export default function DrawerComponent({
                   label="Tags"
                   align="left"
                 />
+                <BadgeList
+                  list={display.biomes}
+                  variant="secondary"
+                  label="Biomes"
+                  align="left"
+                />
               </div>
             </div>
           </div>
@@ -513,6 +514,12 @@ export default function DrawerComponent({
           </div>
 
           <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+            {display.biodiversity && (
+              <div>
+                <dt className="text-gray-400 uppercase text-[0.6rem] tracking-wide">Biodiversity</dt>
+                <dd className="capitalize">{display.biodiversity}</dd>
+              </div>
+            )}
             {typeof display.temperature !== "undefined" && (
               <div>
                 <dt className="text-gray-400 uppercase text-[0.6rem] tracking-wide">
@@ -553,6 +560,22 @@ export default function DrawerComponent({
                   <dd>{(display.pressure / 1000).toFixed(1)} bars</dd>
                 </div>
               )}
+            {typeof display.magneticField !== "undefined" && (
+              <div>
+                <dt className="text-gray-400 uppercase text-[0.6rem] tracking-wide">
+                  Magnetic Field
+                </dt>
+                <dd>{Number(display.magneticField).toFixed(2)} G</dd>
+              </div>
+            )}
+            {typeof display.radiation !== "undefined" && (
+              <div>
+                <dt className="text-gray-400 uppercase text-[0.6rem] tracking-wide">
+                  Radiation
+                </dt>
+                <dd>{Number(display.radiation).toFixed(1)} mSv/year</dd>
+              </div>
+            )}
             {typeof display.hoursInDay !== "undefined" && (
               <div>
                 <dt className="text-gray-400 uppercase text-[0.6rem] tracking-wide">

@@ -3,7 +3,7 @@ import * as maplibregl from 'maplibre-gl'
 import { useMap, Layer, Source, Popup } from '@vis.gl/react-maplibre'
 import { GeoGrid } from 'geogrid-maplibre-gl'
 import { useEffect, useRef, useState } from 'react'
-import { createPopupHTML, localSet, getMaps, useMode, getPaint, gridHelpers, boundsToCoord, useStore, withUserFilters, hasFilterClause } from "@/lib/utils.js"
+import { createPopupHTML, drawerOffset, localSet, getMaps, useMode, getPaint, gridHelpers, boundsToCoord, useStore, withUserFilters, hasFilterClause } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut, Compass } from "lucide-react"
 import SearchBar from './searchbar'
 import * as turf from '@turf/turf'
@@ -15,6 +15,10 @@ import { useDraw } from "./controls";
 import { Calibrate, Link, Quest } from './foundry'
 import Drawer from './drawer'
 import Debug from './ui/debug'
+
+// maplibre-gl v6 resolves its worker next to the bundled chunk, which 404s under Next.js
+// the worker file is copied into public/ by postinstall
+maplibregl.setWorkerUrl(`/maplibre-gl-worker.mjs?v=${maplibregl.getVersion()}`)
 
 let popup = new maplibregl.Popup({
   closeButton: false,
@@ -282,9 +286,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
         center: [lng, lat],
         duration: 700, zoom,
         curve: wrapper.getZoom() < (MIN_ZOOM + zoomStep / 2) ? 0.1 : 1.42,
-        padding: {
-          bottom: params.get("iframe") ? height / 2 : 110, // arbitrary px for drawer
-        },
+        offset: drawerOffset(params, height),
       })
 
       // Hacky solution since trying to offset for the drawer when zoomed out is hard
@@ -520,6 +522,21 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     }, 10)
   }, [wrapper, params.get("name"), params.get("lat"), params.get("lng"), data, params.get("type"), params.get("goto")])
 
+  // dev only, ?open=<featureId> flies to a feature and opens its drawer for UI checks
+  // read once, since a first visit rewrites the URL to ?id=<new map> and drops it
+  const [devOpen] = useState(() => process.env.NODE_ENV === "development" ? params.get("open") : null)
+  const openedRef = useRef(false)
+  useEffect(() => {
+    if (!devOpen || !wrapper || !locationGroups || openedRef.current) return
+    const feature = data.features.find(f => String(f.id) === devOpen)
+    if (!feature) {
+      console.warn(`?open=${devOpen} matched no feature`)
+      return
+    }
+    openedRef.current = true
+    pan(feature, undefined, true)
+  }, [wrapper, locationGroups, data, devOpen])
+
   // add all custom icons
   if (wrapper) {
     data.features.forEach(f => {
@@ -672,7 +689,7 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
       {params.get("calibrate") && <Calibrate width={width} height={height} mobile={mobile} name={name} IS_GALAXY={IS_GALAXY} GRID_DENSITY={GRID_DENSITY} />}
       {params.get("quest") && <Quest name={name} uuid={uuid} />}
       <Debug />
-      {(!locked && params.get("tutorial") !== "0") && <Tutorial name={name} IS_GALAXY={IS_GALAXY} />}
+      {(!locked && params.get("tutorial") !== "0" && !devOpen) && <Tutorial name={name} IS_GALAXY={IS_GALAXY} />}
       {!locked && <Drawer {...drawerContent} passedLocationClick={locationClick} params={params} drawerContent={drawerContent} setDrawerContent={setDrawerContent} name={name} IS_GALAXY={IS_GALAXY} GEO_EDIT={GEO_EDIT} VIEW={VIEW} GENERATE_LOCATIONS={GENERATE_LOCATIONS} GRID_DENSITY={GRID_DENSITY || 1} COORD_OFFSET={COORD_OFFSET} SEARCH_SIZE={SEARCH_SIZE} MIN_ZOOM={MIN_ZOOM} MAX_ZOOM={MAX_ZOOM} mobile={mobile} width={width} height={height} />}
       {params.get("toolbox") !== "0" && <Toolbox data={data} params={params} width={width} height={height} mobile={mobile} name={name} map={wrapper} pan={pan} isRemote={!!uuid} DISTANCE_CONVERTER={DISTANCE_CONVERTER} IS_GALAXY={IS_GALAXY} UNIT={UNIT} COORD_OFFSET={COORD_OFFSET} GRID_DENSITY={GRID_DENSITY} TRAVEL_RATE={Number(TRAVEL_RATE)} TRAVEL_RATE_UNIT={TRAVEL_RATE_UNIT} TRAVEL_TIME_UNIT={TRAVEL_TIME_UNIT} SHIP_CLASS={SHIP_CLASS} TIME_DILATION={TIME_DILATION} />}
       {params.get("hamburger") !== "0" && <Hamburger name={name} params={params} map={wrapper} mobile={mobile} />}

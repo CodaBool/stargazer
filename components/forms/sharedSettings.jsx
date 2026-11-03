@@ -31,11 +31,12 @@ import { useWatch } from "react-hook-form"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
 import { ArrowLeft, Download, LoaderCircle, Settings } from "lucide-react"
 import "react-quill-new/dist/quill.bubble.css"
 import {
   combineAndDownload,
-  combineLayers,
   getConsts,
   getMaps,
   localSet,
@@ -83,6 +84,8 @@ export default function SharedSettings({
   TYPES,
 }) {
   const isGalaxy = useWatch({ control: form.control, name: "IS_GALAXY" })
+  const uploadMode =
+    useWatch({ control: form.control, name: "uploadMode" }) || "merge"
   const onBgImageChange = useMemo(
     () =>
       makeBgImageOnChangeHandler({
@@ -1408,11 +1411,8 @@ export default function SharedSettings({
                                 toast.success(
                                   `Added ${altered} required value${altered > 1 ? "s" : ""} to your uploaded map`,
                                 )
-                              const combinedGeojson = combineLayers([
-                                fileData,
-                                data.geojson,
-                              ])
-                              form.setValue("file", combinedGeojson)
+                              // merged with existing data on submit, see uploadMode
+                              form.setValue("file", fileData)
                               form.clearErrors("invalid")
                             } catch (error) {
                               console.log(error)
@@ -1441,7 +1441,29 @@ export default function SharedSettings({
                       </Button>
                     </div>
                   </FormControl>
+                  <RadioGroup
+                    value={uploadMode}
+                    onValueChange={v => form.setValue("uploadMode", v)}
+                    className="flex gap-6 pt-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="merge" id="uploadMode-merge" />
+                      <Label htmlFor="uploadMode-merge">
+                        Merge with existing features
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="replace" id="uploadMode-replace" />
+                      <Label htmlFor="uploadMode-replace">
+                        Replace all existing features
+                      </Label>
+                    </div>
+                  </RadioGroup>
                   <FormDescription>
+                    Merging keeps your current features and overwrites any with
+                    the same id as an uploaded one. Replacing deletes every
+                    current feature and keeps only the uploaded file.
+                    <br />
                     Upload a GeoJSON or TopoJSON file to fill the map with data.
                     If uploading a topojson the layers must be named as follows:
                     "location" for points, "territory" for polygons, "guide" for
@@ -1752,14 +1774,18 @@ export default function SharedSettings({
           <AlertDialogContent style={{ minWidth: "64vw" }}>
             <AlertDialogHeader>
               <AlertDialogTitle>
-                Adding {alert?.total} features!
+                {uploadMode === "replace"
+                  ? `Replacing all features with ${alert?.total} features!`
+                  : `Adding ${alert?.total} features!`}
               </AlertDialogTitle>
               <AlertDialogDescription asChild>
                 <div>
                   This change is difficult to undo. Creating a backup from the
                   main menu first is recommended.
                   <hr className="my-4" />
-                  These are the features that will be added:
+                  {uploadMode === "replace"
+                    ? `Every current feature on ${data.name} will be deleted. These are the features that will replace them:`
+                    : "These are the features that will be added:"}
                   <br />
                   <br />
                   <ul>

@@ -69,18 +69,6 @@ export async function PUT(req) {
     }
 
     if (!user) throw "there is an issue with your account or session"
-    if (body.replace) {
-      // find id by name since the user has accepted the risk
-      const mapToReplace = await db.map.findMany({
-        where: {
-          userId: String(user.id),
-          name: String(body.name),
-          map: String(body.map)
-        },
-      })
-      if (mapToReplace.length > 1) throw "too many maps to replace"
-      body.id = mapToReplace[0].id
-    }
     const map = await db.map.findUnique({
       where: {
         id: String(body.id),
@@ -105,8 +93,15 @@ export async function PUT(req) {
     const updates = { ...map }
     if (body.geojson) {
       if (!validGeojson(body.geojson)) throw "invalid geojson"
+      const replace = body.mode === "replace"
+      if (replace) {
+        // never go below the stored maxId so deleted feature ids are not reused
+        prevMaxId = Math.max(prevMaxId, getStartingMaxId(body.geojson, null))
+      }
       const maxId = ensureUserFeatureIds(body.geojson, prevMaxId)
-      const { locations, territories, guides } = getFeatureData(body.geojson)
+      r2Obj.geojson = replace ? body.geojson : combineLayersDedup([r2Obj.geojson, body.geojson])
+      r2Obj.maxId = maxId
+      const { locations, territories, guides } = getFeatureData(r2Obj.geojson)
       updates.locations = locations
       updates.territories = territories
       updates.guides = guides
@@ -116,9 +111,6 @@ export async function PUT(req) {
       // // WARN: it might be possible that stale geojson is bundled with legit PUT data
       // if (!geojsonChange) throw "this map is already in sync"
       // updates.hash = newHash
-
-      r2Obj.geojson = combineLayersDedup([r2Obj.geojson, body.geojson])
-      r2Obj.maxId = maxId
     }
     if (body.config) {
       r2Obj.config = {

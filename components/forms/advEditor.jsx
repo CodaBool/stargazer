@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { RgbaColorPicker } from "react-colorful"
 import { debounce } from "@/lib/utils"
+import { BIOME_TYPES, getGeneratedBody } from "@/lib/fakeData"
 import dynamic from "next/dynamic"
 import { Slider } from "../ui/slider"
 
@@ -61,6 +62,7 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
     [],
   )
   const type = feature?.properties?.type
+  const generated = useMemo(() => getGeneratedBody(feature), [feature])
 
   // local UI state (fast), debounced persistence (slow)
   const [values, setValues] = useState(() => feature?.properties ?? {})
@@ -107,7 +109,7 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
   }, [type])
   const temperatureRange = useMemo(() => {
     if (type === "star")
-      return { min: 2_000, max: 25_000, step: 1_000, defaults: 5499 }
+      return { min: -273, max: 150_000, step: 1, defaults: 5499 }
     return { min: -273, max: 300, step: 1, defaults: 15 }
   }, [type])
 
@@ -336,6 +338,34 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
               </Field>
             )}
 
+            {BIOME_TYPES.includes(type) && (
+              <>
+                <Field label="Biomes">
+                  <Comma
+                    label={null}
+                    value={values.biomes ?? generated.biomes}
+                    onChange={v => set("biomes", v, { immediate: true })}
+                    placeholder="Swamp, Jungle, Forest..."
+                    hideLabel
+                  />
+                  <p className="text-xs text-muted-foreground">Generated: {generated.biomes || "none"}</p>
+                  {values.biomes !== undefined && <Button type="button" variant="ghost" size="sm" onClick={() => set("biomes", undefined, { immediate: true })}>Use generated</Button>}
+                </Field>
+                <Field label="Biodiversity">
+                  <Select
+                    value={values.biodiversity || "generated"}
+                    onValueChange={v => set("biodiversity", v === "generated" ? undefined : v, { immediate: true })}
+                  >
+                    <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="generated">Generated ({generated.biodiversity || "none"})</SelectItem>
+                      {["none", "low", "moderate", "high"].map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </>
+            )}
+
             {type === "ringed_planet" && (
               <Field label="Ring Size">
                 {sliderNum(
@@ -499,6 +529,26 @@ export function FormComponent({ feature, mapName, IS_GALAXY, editProp }) {
                     min={0}
                     max={10_000}
                     step={10}
+                  />
+                </Field>
+                <Field label="Magnetic Field (G)">
+                  <SliderWithInput
+                    value={values.magneticField}
+                    onChange={v => set("magneticField", v === "" ? undefined : v)}
+                    min={0}
+                    max={100}
+                    step={0.01}
+                    placeholder="generated"
+                  />
+                </Field>
+                <Field label="Radiation (mSv/year)">
+                  <SliderWithInput
+                    value={values.radiation}
+                    onChange={v => set("radiation", v === "" ? undefined : v)}
+                    min={0}
+                    max={5000}
+                    step={0.1}
+                    placeholder="generated"
                   />
                 </Field>
               </>
@@ -933,9 +983,11 @@ function ColorGrid({ value, count, alpha = false, onChange }) {
   )
 }
 
-function SliderWithInput({ value, onChange, min, max, step }) {
+function SliderWithInput({ value, onChange, min, max, step, placeholder }) {
   const v = typeof value === "number" ? value : Number(value)
   const safe = Number.isFinite(v) ? v : min
+  // with a placeholder, a missing value shows an empty input instead of min
+  const empty = placeholder && (value === undefined || value === null || value === "")
 
   return (
     <div className="flex items-center gap-3">
@@ -952,7 +1004,8 @@ function SliderWithInput({ value, onChange, min, max, step }) {
       <Input
         type="number"
         className="w-28 h-8"
-        value={Number.isFinite(safe) ? safe : ""}
+        value={empty ? "" : Number.isFinite(safe) ? safe : ""}
+        placeholder={placeholder}
         onChange={e => {
           const raw = e.target.value
           if (raw === "") return onChange("")
@@ -1040,8 +1093,12 @@ const KNOWN_KEYS = new Set([
   "daysInYear",
   "gravity",
   "pressure",
+  "magneticField",
+  "radiation",
   "icePercent",
   "composition",
+  "biomes",
+  "biodiversity",
 
   // meta
   "FID",

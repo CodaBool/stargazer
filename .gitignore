@@ -11,3 +11,5 @@ junk.*
 .crushignore
 generated/
 backup.sql
+/public/maplibre-gl-worker.mjs
+/tests/e2e/.profile

@@ -133,6 +133,9 @@ export function createStarBlobLayer(rotationSpeed = 0.1, colors, pixels, seed) {
 
   if (!colors.base) {
     switch (colors.scheme) {
+      case 'brown':
+        colorPalette = [new Vector4(158 / 255, 84 / 255, 48 / 255, 1)];
+        break;
       case 'blue':
         colorPalette = [new Vector4(227 / 255, 231 / 255, 255 / 255, 1)];
         break;
