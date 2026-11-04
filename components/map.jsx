@@ -203,16 +203,9 @@ export default function Map({ width, height, locationGroups, data, name, mobile,
     if (IGNORE_POLY?.includes(e.features[0].properties.type) || modeRef.current === "measure") return
     const coordinates = e.lngLat;
     const popupContent = createPopupHTML(e, name)
-    if (mobile) {
-      // place in center of screen
-      popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap())
-      const popupElement = document.querySelector(".maplibregl-popup");
-      popupElement.style.top = "50%"
-      popupElement.style.left = "50%"
-      popupElement.style.transform = "translateX(-50%)"
-    } else {
-      popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap())
-    }
+    // maplibre picks an anchor that keeps the popup on screen and rewrites the
+    // transform on idle, so manual centering here would push it off screen
+    popup.setLngLat(coordinates).setHTML(popupContent).addTo(wrapper.getMap())
   }
 
   // fit will be true if a search

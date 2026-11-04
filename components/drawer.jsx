@@ -61,6 +61,9 @@ export default function DrawerComponent({
     size: 120,
     snaps: [0.28, 0.92],
   }))
+  // vaul measures drags from the active snap, so it must track where the drawer really is
+  const [activeSnap, setActiveSnap] = useState(null)
+  useEffect(() => setActiveSnap(null), [d])
 
   function isValidHttpUrl(string) {
     if (typeof string === "string" && string.startsWith("http")) return true
@@ -210,7 +213,8 @@ export default function DrawerComponent({
       onOpenChange={() => setDrawerContent(null)}
       modal={false}
       snapPoints={snaps}
-      activeSnapPoint={snaps[0]}
+      activeSnapPoint={snaps.includes(activeSnap) ? activeSnap : snaps[0]}
+      setActiveSnapPoint={setActiveSnap}
     >
       <DrawerContent>
         <DrawerTitle />
